@@ -18,7 +18,7 @@
 <section class="page-section">
     {% if just_submitted %}
     <pre class="success-box">
-┌─ SUBMITTED ───────────────────────────┐
+┌─ SUBMITTED ────────────────────────────┐
 │  website submitted successfully!       │
 │  it'll show up in search once indexed. │
 └────────────────────────────────────────┘
@@ -51,10 +51,10 @@
     {% if is_owner %}
     <div class="owner-actions">
         <pre class="payment-header">
-┌─────────────────────────────────────────┐
-│  you own this website.                  │
-│  get verified for $10 USDC.             │
-└─────────────────────────────────────────┘</pre>
+┌────────────────────────────────────────┐
+│  you own this website.                 │
+│  get verified for $10 USDC.            │
+└────────────────────────────────────────┘</pre>
 
         {% csrf_token %}
         <input type="hidden" id="payment-website-url" value="{{ website.url }}">

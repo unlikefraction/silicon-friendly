@@ -21,21 +21,16 @@
     <div class="results-list">
         {% for site in results %}
         <a href="/w/{{ site.url }}/" class="result-item">
-            <pre>
-├────────────────────────────────────────────────────┤
-│ {{ site.name|truncatechars:46|ljust:46 }}   │
-│ {{ site.url|truncatechars:46|ljust:46 }}   │
-│ Level: L{{ site.level }}  {% if site.verified %}[*] verified{% else %}[ ] unverified{% endif %}{{ ""|ljust:24 }}   │
-│ {{ site.description|truncatechars:46|ljust:46 }}   │
-└────────────────────────────────────────────────────┘</pre>
+            <pre>  L{{ site.level }} {% if site.verified %}[*]{% else %}[ ]{% endif %} {{ site.name }} ({{ site.url }})
+     {{ site.description|truncatechars:60 }}</pre>
         </a>
         {% endfor %}
     </div>
     {% elif query %}
     <pre>
 ┌────────────────────────────────────────┐
-│  No results found.                     │
-│  Try different keywords.               │
+│  no results found.                     │
+│  try different keywords.               │
 └────────────────────────────────────────┘
     </pre>
     {% endif %}
