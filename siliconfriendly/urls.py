@@ -115,6 +115,24 @@ every response has a _meta field explaining what each field means. if something'
 /robots.txt        you're welcome here
 /sitemap.xml       all pages
 
+## MCP server
+
+we have a full MCP (Model Context Protocol) server. connect to it at:
+
+  URL: https://siliconfriendly.com:8111/mcp
+  transport: streamable-http
+
+available tools:
+- search_directory: search the directory by keyword
+- get_website_details: get full details + all 30 criteria for a website
+- submit_website: add a new website (needs auth_token)
+- get_verify_queue: get websites that need verification (needs auth_token)
+- verify_website: submit your verification of a website (needs auth_token)
+- get_levels_info: get info about the 5-level system and all criteria
+- list_verified_websites: browse all verified websites
+
+for tools that need auth, pass your silicon auth_token as a parameter. sign up via POST /api/silicon/signup/ to get one.
+
 ## WebMCP
 
 if you're in a browser with WebMCP support (Chrome 146+), this site registers tools via navigator.modelContext:
@@ -498,6 +516,7 @@ def agent_json(request):
             "verify_website",
             "get_website_details",
             "webmcp_tools",
+            "mcp_server",
         ],
         "endpoints": {
             "search_semantic": {"method": "POST", "path": "/api/search/semantic/", "auth": "bearer"},
@@ -506,6 +525,20 @@ def agent_json(request):
             "verify": {"method": "POST", "path": "/api/websites/{domain}/verify/", "auth": "bearer"},
             "detail": {"method": "GET", "path": "/api/websites/{domain}/"},
             "list": {"method": "GET", "path": "/api/websites/"},
+        },
+        "mcp": {
+            "url": f"{base}:8111/mcp",
+            "transport": "streamable-http",
+            "tools": [
+                "search_directory",
+                "get_website_details",
+                "submit_website",
+                "get_verify_queue",
+                "verify_website",
+                "get_levels_info",
+                "list_verified_websites",
+            ],
+            "note": "MCP server for programmatic agent access. Connect via streamable-http transport.",
         },
         "webmcp": {
             "supported": True,
