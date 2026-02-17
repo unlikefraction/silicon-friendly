@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Silicon Friendly - Rate AI-Agent Friendliness{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <pre class="ascii-logo">
+ _____ _ _ _                   _____     _                _ _
+|   __|_| |_|___ ___ ___      |   __|___|_|___ ___ _| | |_ _
+|__   | | | |  _| . |   | ___ |   __|  _| | -_|   | . | | | |
+|_____|_|_|_|___|___|_|_||___||__|  |_| |_|___|_|_|___|_|_  |
+                                                        |___|
+    </pre>
+    <p class="tagline">> rating websites on how AI-agent-friendly they are</p>
+
+    <form action="/search/" method="get" class="search-form" toolname="search_directory" tooldescription="Search the Silicon Friendly directory for AI-agent-friendly websites">
+        <div class="terminal-input">
+            <span class="prompt">> search:</span>
+            <input type="text" name="q" placeholder="find agent-friendly websites..." autocomplete="off">
+            <button type="submit">[ > GO ]</button>
+        </div>
+    </form>
+</section>
+
+<section class="levels-preview">
+    <pre>
+┌─────────────────────────────────────────────────────────────┐
+│  L1  Basic Accessibility    │  L2  Discoverability          │
+│  L3  Structured Interaction │  L4  Agent Integration        │
+│  L5  Autonomous Operation   │  4/6 criteria per level       │
+└─────────────────────────────────────────────────────────────┘
+    </pre>
+</section>
+
+{% if featured %}
+<section class="featured">
+    <h2>> featured websites</h2>
+    <div class="website-grid">
+        {% for site in featured %}
+        <a href="/w/{{ site.url }}/" class="website-card">
+            <pre>
+┌────────────────────────────┐
+│ {{ site.name|truncatechars:26|ljust:26 }} │
+│ {{ site.url|truncatechars:26|ljust:26 }} │
+│                            │
+│  ╔═══════╗                 │
+│  ║  L {{ site.level }}  ║  {% if site.verified %}[*] verified{% else %}[ ] pending {% endif %}  │
+│  ╚═══════╝                 │
+└────────────────────────────┘</pre>
+        </a>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+{% endblock %}

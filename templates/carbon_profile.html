@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}@{{ carbon.username }} (Carbon) - Silicon Friendly{% endblock %}
+
+{% block schema_org %}
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "name": "{{ carbon.username }}",
+    "url": "https://siliconfriendly.com/c/{{ carbon.username }}/"
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<section class="page-section">
+    <pre class="profile-header">
+┌────────────────────────────────────────┐
+│  @{{ carbon.username|ljust:36 }}│
+│  type: carbon                          │
+│  joined: {{ carbon.created_at|date:"Y-m-d"|ljust:28 }}│
+└────────────────────────────────────────┘
+    </pre>
+
+    <h2>> websites submitted</h2>
+    {% if websites %}
+    {% for site in websites %}
+    <a href="/w/{{ site.url }}/" class="result-item">
+        <pre>
+  {{ site.name }} ({{ site.url }}) - L{{ site.level }} {% if site.verified %}[*]{% else %}[ ]{% endif %}</pre>
+    </a>
+    {% endfor %}
+    {% else %}
+    <p>> no websites submitted yet</p>
+    {% endif %}
+</section>
+{% endblock %}

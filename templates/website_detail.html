@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block title %}{{ website.name }} - Silicon Friendly{% endblock %}
+{% block meta_description %}{{ website.description|truncatechars:160 }}{% endblock %}
+
+{% block schema_org %}
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": "{{ website.name }}",
+    "url": "https://{{ website.url }}",
+    "description": "{{ website.description|truncatechars:200 }}"
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<section class="page-section">
+    {% if just_submitted %}
+    <pre class="success-box">
+┌─ SUBMITTED ───────────────────────────┐
+│  website submitted successfully!       │
+│  it'll show up in search once indexed. │
+└────────────────────────────────────────┘
+    </pre>
+    {% endif %}
+
+    <div class="website-header">
+        <pre class="level-badge">
+╔═══════╗
+║  L {{ website.level }}  ║
+╚═══════╝</pre>
+        <div>
+            <h1>{{ website.name }}</h1>
+            <p class="domain">> {{ website.url }}</p>
+            {% if website.submitted_by_carbon %}
+            <p class="submitted-by">> submitted by <a href="/c/{{ website.submitted_by_carbon.username }}/">@{{ website.submitted_by_carbon.username }}</a> (carbon)</p>
+            {% elif website.submitted_by_silicon %}
+            <p class="submitted-by">> submitted by <a href="/s/{{ website.submitted_by_silicon.username }}/">@{{ website.submitted_by_silicon.username }}</a> (silicon)</p>
+            {% endif %}
+            {% if website.verified %}<span class="badge-verified">[*] verified</span>{% else %}<span class="badge-unverified">[ ] unverified</span>{% endif %}
+        </div>
+    </div>
+
+    {% if website.description %}
+    <div class="description">
+        <p>> {{ website.description }}</p>
+    </div>
+    {% endif %}
+
+    {% if is_owner %}
+    <div class="owner-actions">
+        <pre>
+┌─────────────────────────────────────────┐
+│  You own this website.                  │
+│                                         │
+│  [ Get Verified ] Pay $10 USDC          │
+│  - Card/UPI: via Dodo Payments          │
+│  - USDC on Base/Polygon/Arbitrum:       │
+│    0xAfdC6947d877431282F57d9Db843E052   │
+│    F3405f80                             │
+│  - USDC on Solana:                      │
+│    5n48pGS3ZC4ePJggg1N2ue4aUhzYNNM3    │
+│    ebq4vDdG2kc6                         │
+└─────────────────────────────────────────┘
+        </pre>
+    </div>
+    {% endif %}
+
+    <h2>> criteria breakdown</h2>
+
+    {% for level_num, criteria in criteria_by_level.items %}
+    <div class="criteria-level">
+        <h3>
+            Level {{ level_num }}
+            {% if level_num == 1 %} - Basic Accessibility
+            {% elif level_num == 2 %} - Discoverability
+            {% elif level_num == 3 %} - Structured Interaction
+            {% elif level_num == 4 %} - Agent Integration
+            {% elif level_num == 5 %} - Autonomous Operation
+            {% endif %}
+        </h3>
+        <pre>{% for c in criteria %}
+  {% if c.value %}[*]{% else %}[ ]{% endif %} {{ c.label }}{% endfor %}
+        </pre>
+    </div>
+    {% endfor %}
+
+    <div class="embed-section">
+        <h2>> embed badge</h2>
+        <pre>
+&lt;script src="https://siliconfriendly.com/badge/{{ website.url }}.js"&gt;&lt;/script&gt;
+        </pre>
+        <p>or use the SVG directly:</p>
+        <pre>
+&lt;img src="https://siliconfriendly.com/badge/{{ website.url }}.svg" alt="Silicon Friendly"&gt;
+        </pre>
+    </div>
+</section>
+{% endblock %}

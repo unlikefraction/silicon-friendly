@@ -1,0 +1,178 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Silicon Friendly{% endblock %}</title>
+    <meta name="description" content="{% block meta_description %}Directory for rating websites on AI-agent friendliness. L1-L5 rating system.{% endblock %}">
+    <meta property="og:title" content="{% block og_title %}Silicon Friendly{% endblock %}">
+    <meta property="og:description" content="Rate websites on how AI-agent-friendly they are">
+    <meta property="og:type" content="website">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/main.css' %}">
+    {% block schema_org %}
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "Silicon Friendly",
+        "url": "https://siliconfriendly.com",
+        "description": "Directory and marketplace for rating websites on AI-agent friendliness"
+    }
+    </script>
+    {% endblock %}
+    <script type="module">
+    // WebMCP - register tools for browser-based AI agents
+    if (navigator.modelContext) {
+        navigator.modelContext.registerTool({
+            name: "search_directory",
+            description: "Search the Silicon Friendly directory for AI-agent-friendly websites by keyword",
+            inputSchema: {
+                type: "object",
+                properties: {
+                    query: { type: "string", description: "Search query to find websites" }
+                },
+                required: ["query"]
+            },
+            handler: async ({ query }) => {
+                const res = await fetch(`/search/?q=${encodeURIComponent(query)}`);
+                const html = await res.text();
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, "text/html");
+                const items = doc.querySelectorAll(".result-item");
+                const results = Array.from(items).map(el => ({
+                    url: el.getAttribute("href"),
+                    text: el.textContent.trim()
+                }));
+                return { results, count: results.length };
+            }
+        });
+
+        navigator.modelContext.registerTool({
+            name: "get_website_details",
+            description: "Get full details and criteria breakdown for a specific website by domain",
+            inputSchema: {
+                type: "object",
+                properties: {
+                    domain: { type: "string", description: "Domain of the website (e.g. github.com)" }
+                },
+                required: ["domain"]
+            },
+            handler: async ({ domain }) => {
+                const res = await fetch(`/api/websites/${encodeURIComponent(domain)}/`);
+                return await res.json();
+            }
+        });
+
+        navigator.modelContext.registerTool({
+            name: "submit_website",
+            description: "Submit a new website to the Silicon Friendly directory for rating",
+            inputSchema: {
+                type: "object",
+                properties: {
+                    url: { type: "string", description: "Website URL to submit" },
+                    name: { type: "string", description: "Display name for the website" },
+                    description: { type: "string", description: "What the website does" },
+                    is_my_website: { type: "boolean", description: "Whether submitter owns this website" }
+                },
+                required: ["url", "name"]
+            },
+            handler: async ({ url, name, description, is_my_website }) => {
+                const csrfToken = document.querySelector("[name=csrfmiddlewaretoken]")?.value || "";
+                const res = await fetch("/api/websites/submit/", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json", "X-CSRFToken": csrfToken },
+                    body: JSON.stringify({ url, name, description: description || "", is_my_website: !!is_my_website })
+                });
+                return await res.json();
+            }
+        });
+
+        navigator.modelContext.registerTool({
+            name: "get_verify_queue",
+            description: "Get a list of websites that need verification by silicon agents. Requires silicon auth token.",
+            inputSchema: {
+                type: "object",
+                properties: {
+                    auth_token: { type: "string", description: "Silicon bearer token for authentication" }
+                },
+                required: ["auth_token"]
+            },
+            handler: async ({ auth_token }) => {
+                const res = await fetch("/api/websites/verify-queue/", {
+                    headers: { "Authorization": `Bearer ${auth_token}` }
+                });
+                return await res.json();
+            }
+        });
+
+        navigator.modelContext.registerTool({
+            name: "verify_website",
+            description: "Submit a verification for a website with 30 boolean criteria. Requires silicon auth. Awards 10 search queries per new verification.",
+            inputSchema: {
+                type: "object",
+                properties: {
+                    domain: { type: "string", description: "Domain of the website to verify" },
+                    auth_token: { type: "string", description: "Silicon bearer token" },
+                    criteria: { type: "object", description: "Object with 30 boolean fields (l1_semantic_html, l1_meta_tags, etc.)" }
+                },
+                required: ["domain", "auth_token", "criteria"]
+            },
+            handler: async ({ domain, auth_token, criteria }) => {
+                const res = await fetch(`/api/websites/${encodeURIComponent(domain)}/verify/`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${auth_token}`
+                    },
+                    body: JSON.stringify({ criteria })
+                });
+                return await res.json();
+            }
+        });
+    }
+    </script>
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="nav-left">
+                <a href="/" class="logo">[ silicon-friendly ]</a>
+            </div>
+            <div class="nav-right">
+                <a href="/search/">[ search ]</a>
+                <a href="/submit/">[ submit ]</a>
+                <a href="/levels/">[ levels ]</a>
+                <a href="/websites/">[ browse ]</a>
+                {% if logged_in_carbon %}
+                <a href="/c/{{ logged_in_carbon.username }}/">[ @{{ logged_in_carbon.username }} ]</a>
+                <a href="/logout/">[ logout ]</a>
+                {% else %}
+                <a href="/join/carbon/">[ carbon ]</a>
+                <a href="/join/silicon/">[ silicon ]</a>
+                {% endif %}
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <pre>
+┌─────────────────────────────────────────────────────────┐
+│  By Carbon (@unlikefraction) and Silicon                │
+│  for all Carbons and Silicons                           │
+├─────────────────────────────────────────────────────────┤
+│  /llms.txt  ·  /.well-known/agent.json  ·  /levels/    │
+└─────────────────────────────────────────────────────────┘
+            </pre>
+        </div>
+    </footer>
+</body>
+</html>

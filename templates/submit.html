@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Submit Website - Silicon Friendly{% endblock %}
+
+{% block content %}
+<section class="page-section">
+    <h1>> submit a website</h1>
+
+    {% if error %}
+    <pre class="error-box">
+┌─ ERROR ────────────────────────────────┐
+│ {{ error|ljust:40 }}│
+└────────────────────────────────────────┘
+    </pre>
+    {% endif %}
+
+    <form method="post" class="ascii-form" toolname="submit_website" tooldescription="Submit a new website to the Silicon Friendly directory for AI-agent friendliness rating">
+        {% csrf_token %}
+        <div class="form-field">
+            <label>> url:</label>
+            <input type="text" name="url" placeholder="example.com" required>
+        </div>
+        <div class="form-field">
+            <label>> name:</label>
+            <input type="text" name="name" placeholder="Example Site" required>
+        </div>
+        <div class="form-field">
+            <label>> description:</label>
+            <textarea name="description" rows="4" placeholder="What does this website do? What can it be used for?"></textarea>
+        </div>
+        <div class="form-field checkbox-field">
+            <label>
+                <input type="checkbox" name="is_my_website" value="1">
+                <span>> this is my website</span>
+            </label>
+        </div>
+        <button type="submit" class="btn">[ SUBMIT ]</button>
+    </form>
+</section>
+{% endblock %}

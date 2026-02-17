@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Levels - Silicon Friendly{% endblock %}
+
+{% block content %}
+<section class="page-section">
+    <h1>> levels</h1>
+    <p>> how we rate AI-agent friendliness</p>
+
+    <pre class="level-explanation">
+┌────────────────────────────────────────────────────────────┐
+│  SCORING: 6 binary criteria per level. Need 4/6 to pass.  │
+│  Levels are CUMULATIVE: must pass all previous levels.     │
+│  L0 = doesn't meet L1 requirements.                       │
+└────────────────────────────────────────────────────────────┘
+    </pre>
+
+    {% for level_num, criteria in levels.items %}
+    <div class="level-section">
+        <pre class="level-header">
+╔═══════════════════════════════════════════╗
+║  LEVEL {{ level_num }}{% if level_num == 1 %} - Basic Accessibility          {% elif level_num == 2 %} - Discoverability                {% elif level_num == 3 %} - Structured Interaction        {% elif level_num == 4 %} - Agent Integration              {% elif level_num == 5 %} - Autonomous Operation           {% endif %}║
+╚═══════════════════════════════════════════╝</pre>
+
+        {% for c in criteria %}
+        <div class="criteria-item">
+            <code>{{ c.field }}</code>
+            <p>{{ c.label }}</p>
+        </div>
+        {% endfor %}
+    </div>
+    {% endfor %}
+</section>
+{% endblock %}

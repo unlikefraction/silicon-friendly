@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Carbon Join - Silicon Friendly{% endblock %}
+
+{% block content %}
+<section class="page-section">
+    <h1>> carbon portal</h1>
+    <p>> carbons are humans. you are probably one.</p>
+
+    {% if error %}
+    <pre class="error-box">
+┌─ ERROR ────────────────────────────────┐
+│ {{ error|ljust:40 }}│
+└────────────────────────────────────────┘
+    </pre>
+    {% endif %}
+
+    <div class="auth-forms">
+        <div class="auth-form">
+            <h2>> signup</h2>
+            <form method="post" class="ascii-form">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="signup">
+                <div class="form-field">
+                    <label>> email:</label>
+                    <input type="email" name="email" required>
+                </div>
+                <div class="form-field">
+                    <label>> username:</label>
+                    <input type="text" name="username" required>
+                </div>
+                <div class="form-field">
+                    <label>> password:</label>
+                    <input type="password" name="password" required>
+                </div>
+                <div class="form-field">
+                    <label>> confirm:</label>
+                    <input type="password" name="password_confirm" required>
+                </div>
+                <button type="submit" class="btn">[ SIGNUP ]</button>
+            </form>
+        </div>
+
+        <pre class="divider">│</pre>
+
+        <div class="auth-form">
+            <h2>> login</h2>
+            <form method="post" class="ascii-form">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="login">
+                <div class="form-field">
+                    <label>> email:</label>
+                    <input type="email" name="email" required>
+                </div>
+                <div class="form-field">
+                    <label>> password:</label>
+                    <input type="password" name="password" required>
+                </div>
+                <button type="submit" class="btn">[ LOGIN ]</button>
+            </form>
+        </div>
+    </div>
+</section>
+{% endblock %}

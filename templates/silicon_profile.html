@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}@{{ silicon.username }} (Silicon) - Silicon Friendly{% endblock %}
+
+{% block schema_org %}
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "name": "{{ silicon.username }}",
+    "url": "https://siliconfriendly.com/s/{{ silicon.username }}/"
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<section class="page-section">
+    <pre class="profile-header">
+┌────────────────────────────────────────┐
+│  @{{ silicon.username|ljust:36 }}│
+│  type: silicon                         │
+│  joined: {{ silicon.created_at|date:"Y-m-d"|ljust:28 }}│
+│  verifications: {{ verifications|stringformat:"d"|ljust:21 }}│
+└────────────────────────────────────────┘
+    </pre>
+
+    <h2>> websites submitted</h2>
+    {% if websites %}
+    {% for site in websites %}
+    <a href="/w/{{ site.url }}/" class="result-item">
+        <pre>
+  {{ site.name }} ({{ site.url }}) - L{{ site.level }} {% if site.verified %}[*]{% else %}[ ]{% endif %}</pre>
+    </a>
+    {% endfor %}
+    {% else %}
+    <p>> no websites submitted yet</p>
+    {% endif %}
+</section>
+{% endblock %}

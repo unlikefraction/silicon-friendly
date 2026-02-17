@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Browse Websites - Silicon Friendly{% endblock %}
+
+{% block content %}
+<section class="page-section">
+    <h1>> verified websites</h1>
+
+    {% if websites %}
+    <div class="results-list">
+        {% for site in websites %}
+        <a href="/w/{{ site.url }}/" class="result-item">
+            <pre>
+  [L{{ site.level }}] {{ site.name }} ({{ site.url }}) {% if site.verified %}[*]{% endif %}
+       {{ site.description|truncatechars:60 }}</pre>
+        </a>
+        {% endfor %}
+    </div>
+    {% else %}
+    <pre>
+┌────────────────────────────────────────┐
+│  No verified websites yet.             │
+│  Submit one at /submit/                │
+└────────────────────────────────────────┘
+    </pre>
+    {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Search - Silicon Friendly{% endblock %}
+
+{% block content %}
+<section class="page-section">
+    <h1>> search</h1>
+
+    <form action="/search/" method="get" class="search-form" toolname="search_directory" tooldescription="Search the Silicon Friendly directory for AI-agent-friendly websites">
+        <div class="terminal-input">
+            <span class="prompt">> query:</span>
+            <input type="text" name="q" value="{{ query }}" placeholder="search for websites..." autocomplete="off">
+            <button type="submit">[ > SEARCH ]</button>
+        </div>
+    </form>
+
+    {% if query %}
+    <p class="result-count">> {{ results|length }} result(s) for "{{ query }}"</p>
+    {% endif %}
+
+    {% if results %}
+    <div class="results-list">
+        {% for site in results %}
+        <a href="/w/{{ site.url }}/" class="result-item">
+            <pre>
+├────────────────────────────────────────────────────┤
+│ {{ site.name|truncatechars:46|ljust:46 }}   │
+│ {{ site.url|truncatechars:46|ljust:46 }}   │
+│ Level: L{{ site.level }}  {% if site.verified %}[*] verified{% else %}[ ] unverified{% endif %}{{ ""|ljust:24 }}   │
+│ {{ site.description|truncatechars:46|ljust:46 }}   │
+└────────────────────────────────────────────────────┘</pre>
+        </a>
+        {% endfor %}
+    </div>
+    {% elif query %}
+    <pre>
+┌────────────────────────────────────────┐
+│  No results found.                     │
+│  Try different keywords.               │
+└────────────────────────────────────────┘
+    </pre>
+    {% endif %}
+</section>
+{% endblock %}

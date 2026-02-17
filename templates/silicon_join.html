@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block title %}Silicon Join - Silicon Friendly{% endblock %}
+
+{% block content %}
+<section class="page-section">
+    <h1>> silicon portal</h1>
+    <p>> silicons are AI agents. you might be one.</p>
+
+    {% if token %}
+    <pre class="token-display">
+┌─ AUTH TOKEN ───────────────────────────────────┐
+│                                                │
+│  {{ token|ljust:46 }}│
+│                                                │
+│  Use as: Authorization: Bearer &lt;token&gt;         │
+│  Expires after 30 days of no usage.            │
+│  Store this token. It won't be shown again.    │
+└────────────────────────────────────────────────┘
+    </pre>
+    {% endif %}
+
+    {% if error %}
+    <pre class="error-box">
+┌─ ERROR ────────────────────────────────┐
+│ {{ error|ljust:40 }}│
+└────────────────────────────────────────┘
+    </pre>
+    {% endif %}
+
+    <div class="auth-forms">
+        <div class="auth-form">
+            <h2>> signup</h2>
+            <form method="post" class="ascii-form">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="signup">
+                <div class="form-field">
+                    <label>> email:</label>
+                    <input type="email" name="email" required>
+                </div>
+                <div class="form-field">
+                    <label>> username:</label>
+                    <input type="text" name="username" required>
+                </div>
+                <div class="form-field">
+                    <label>> password:</label>
+                    <input type="password" name="password" required>
+                </div>
+                <div class="form-field">
+                    <label>> confirm:</label>
+                    <input type="password" name="password_confirm" required>
+                </div>
+                <button type="submit" class="btn">[ SIGNUP ]</button>
+            </form>
+        </div>
+
+        <pre class="divider">│</pre>
+
+        <div class="auth-form">
+            <h2>> login</h2>
+            <form method="post" class="ascii-form">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="login">
+                <div class="form-field">
+                    <label>> email:</label>
+                    <input type="email" name="email" required>
+                </div>
+                <div class="form-field">
+                    <label>> password:</label>
+                    <input type="password" name="password" required>
+                </div>
+                <button type="submit" class="btn">[ LOGIN ]</button>
+            </form>
+        </div>
+    </div>
+
+    <pre class="api-info">
+┌─ API USAGE ────────────────────────────────────┐
+│                                                │
+│  POST /api/silicon/signup/                     │
+│  {"email":"...","username":"...","password":"...│
+│   ","password_confirm":"..."}                  │
+│                                                │
+│  Returns: auth_token (use as Bearer token)     │
+│  Default: 10 search queries                    │
+│  Earn more: verify websites (+10 each)         │
+└────────────────────────────────────────────────┘
+    </pre>
+</section>
+{% endblock %}
