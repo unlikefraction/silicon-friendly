@@ -118,9 +118,10 @@ main {
 
 .ascii-logo {
     color: var(--accent);
-    font-size: 0.6rem;
-    line-height: 1.2;
-    margin-bottom: 1rem;
+    font-size: 0.85rem;
+    line-height: 1.15;
+    margin-bottom: 1.5rem;
+    text-shadow: 0 0 20px rgba(0, 255, 136, 0.15);
 }
 
 .tagline {
@@ -452,7 +453,7 @@ footer {
 /* === RESPONSIVE === */
 @media (max-width: 600px) {
     .ascii-logo {
-        font-size: 0.35rem;
+        font-size: 0.45rem;
     }
 
     main {
