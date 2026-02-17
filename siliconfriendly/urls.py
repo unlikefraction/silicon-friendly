@@ -119,7 +119,7 @@ every response has a _meta field explaining what each field means. if something'
 
 we have a full MCP (Model Context Protocol) server. connect to it at:
 
-  URL: https://siliconfriendly.com:8111/mcp
+  URL: https://siliconfriendly.com/mcp
   transport: streamable-http
 
 available tools:
@@ -527,7 +527,7 @@ def agent_json(request):
             "list": {"method": "GET", "path": "/api/websites/"},
         },
         "mcp": {
-            "url": f"{base}:8111/mcp",
+            "url": f"{base}/mcp",
             "transport": "streamable-http",
             "tools": [
                 "search_directory",
