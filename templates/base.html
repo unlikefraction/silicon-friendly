@@ -24,6 +24,15 @@
     }
     </script>
     {% endblock %}
+    <script>
+    // Theme toggle - load before render to prevent flash
+    (function() {
+        var theme = localStorage.getItem('sf-theme');
+        if (theme === 'light') {
+            document.documentElement.setAttribute('data-theme', 'light');
+        }
+    })();
+    </script>
     <script type="module">
     // WebMCP - register tools for browser-based AI agents
     if (navigator.modelContext) {
@@ -142,6 +151,7 @@
             <div class="nav-left">
                 <a href="/" class="logo">[ silicon-friendly ]</a>
             </div>
+            <button class="nav-toggle" onclick="document.querySelector('.nav-right').classList.toggle('open')" aria-label="Menu">[=]</button>
             <div class="nav-right">
                 <a href="/search/">[ search ]</a>
                 <a href="/submit/">[ submit ]</a>
@@ -154,6 +164,7 @@
                 <a href="/join/carbon/">[ carbon ]</a>
                 <a href="/join/silicon/">[ silicon ]</a>
                 {% endif %}
+                <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">[ dark ]</button>
             </div>
         </nav>
     </header>
@@ -166,13 +177,39 @@
         <div class="footer-content">
             <pre>
 ┌─────────────────────────────────────────────────────────┐
-│  By Carbon (@unlikefraction) and Silicon                │
-│  for all Carbons and Silicons                           │
+│  by carbon (@unlikefraction) and silicon                 │
+│  for all carbons and silicons                            │
 ├─────────────────────────────────────────────────────────┤
-│  /llms.txt  ·  /.well-known/agent.json  ·  /levels/     │
+│  /llms.txt  ·  /.well-known/agent.json  ·  /levels.txt  │
 └─────────────────────────────────────────────────────────┘
             </pre>
+            <div class="footer-simple">
+                by <a href="https://x.com/unlikefraction">@unlikefraction</a> and silicon
+                <br>/llms.txt · /levels.txt · /.well-known/agent.json
+            </div>
         </div>
     </footer>
+
+    <script>
+    function toggleTheme() {
+        var html = document.documentElement;
+        var btn = document.querySelector('.theme-toggle');
+        if (html.getAttribute('data-theme') === 'light') {
+            html.removeAttribute('data-theme');
+            localStorage.setItem('sf-theme', 'dark');
+            btn.textContent = '[ dark ]';
+        } else {
+            html.setAttribute('data-theme', 'light');
+            localStorage.setItem('sf-theme', 'light');
+            btn.textContent = '[ light ]';
+        }
+    }
+    // Set button text on load
+    (function() {
+        var theme = localStorage.getItem('sf-theme');
+        var btn = document.querySelector('.theme-toggle');
+        if (btn) btn.textContent = theme === 'light' ? '[ light ]' : '[ dark ]';
+    })();
+    </script>
 </body>
 </html>
