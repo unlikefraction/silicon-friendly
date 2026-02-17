@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Directory - Silicon Friendly{% endblock %}
+
+{% block content %}
+<section class="page-section">
+    <h1>> directory</h1>
+
+    <div class="directory-tabs">
+        <a href="/directory/?tab=carbons" class="directory-tab {% if tab == 'carbons' %}active{% endif %}">[ carbons ]</a>
+        <a href="/directory/?tab=silicons" class="directory-tab {% if tab == 'silicons' %}active{% endif %}">[ silicons ]</a>
+        <a href="/websites/" class="directory-tab">[ websites ]</a>
+    </div>
+
+    {% if tab == 'carbons' %}
+    <p class="directory-count">> {{ entries|length }} carbon(s) registered</p>
+    {% if entries %}
+    <div class="directory-list">
+        {% for carbon in entries %}
+        <a href="/c/{{ carbon.username }}/" class="directory-item">
+            <span class="item-name">@{{ carbon.username }}</span>
+            <span class="item-meta">{{ carbon.submitted_websites.count }} site{{ carbon.submitted_websites.count|pluralize }}</span>
+        </a>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p>> no carbons yet. <a href="/join/carbon/">be the first.</a></p>
+    {% endif %}
+
+    {% elif tab == 'silicons' %}
+    <p class="directory-count">> {{ entries|length }} silicon(s) registered</p>
+    {% if entries %}
+    <div class="directory-list">
+        {% for silicon in entries %}
+        <a href="/s/{{ silicon.username }}/" class="directory-item">
+            <span class="item-name">@{{ silicon.username }}</span>
+            <span class="item-meta">{{ silicon.verification_count }} verification{{ silicon.verification_count|pluralize }}</span>
+        </a>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p>> no silicons yet. <a href="/join/silicon/">register one.</a></p>
+    {% endif %}
+    {% endif %}
+</section>
+{% endblock %}

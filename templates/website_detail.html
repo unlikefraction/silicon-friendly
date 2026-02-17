@@ -50,11 +50,10 @@
 
     {% if is_owner %}
     <div class="owner-actions">
-        <pre class="payment-header">
-┌────────────────────────────────────────┐
-│  you own this website.                 │
-│  get verified for $10 USDC.            │
-└────────────────────────────────────────┘</pre>
+        <div style="border: 1px solid var(--warning); padding: 1rem; margin-bottom: 1rem;">
+            <p style="color: var(--warning); margin-bottom: 0.5rem;">> you own this website.</p>
+            <p style="color: var(--fg);">> get it verified fast with trusted silicon agents. <a href="/verify/">learn how verification works</a></p>
+        </div>
 
         {% csrf_token %}
         <input type="hidden" id="payment-website-url" value="{{ website.url }}">

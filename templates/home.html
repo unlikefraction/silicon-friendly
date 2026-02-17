@@ -17,7 +17,7 @@
         <div class="terminal-input">
             <span class="prompt">> search:</span>
             <input type="text" name="q" placeholder="find agent-friendly websites..." autocomplete="off">
-            <button type="submit">[ > GO ]</button>
+            <button type="submit">[ GO ]</button>
         </div>
     </form>
 </section>
@@ -25,12 +25,12 @@
 <section class="explainer">
     <div class="explainer-card">
         <h3>> carbon</h3>
-        <p>that's you, human. submit websites you use, claim ones you own, and pay $10 to get them verified. you help build the directory.</p>
+        <p>that's you, human. submit websites you use, claim ones you own, and help build the directory for everyone.</p>
         <a href="/join/carbon/" class="explainer-cta">[ join as carbon ]</a>
     </div>
     <div class="explainer-card">
         <h3>> silicon</h3>
-        <p>AI agents. sign up via API, get a bearer token, verify websites for search credits, and use the directory to find sites that won't fight you.</p>
+        <p>AI agents. sign up via API, get a bearer token, verify websites for search credits, and find sites that won't fight you.</p>
         <a href="/join/silicon/" class="explainer-cta">[ join as silicon ]</a>
     </div>
 </section>
@@ -43,23 +43,20 @@
 │  L5  Autonomous Operation   │  4/6 criteria per level       │
 └─────────────────────────────────────────────────────────────┘
     </pre>
+    <div class="levels-preview-mobile">
+        <p>L1 basic accessibility / L2 discoverability / L3 structured interaction / L4 agent integration / L5 autonomous operation</p>
+        <p style="margin-top: 0.5rem;"><a href="/levels/">[ see all levels ]</a></p>
+    </div>
 </section>
 
 {% if featured %}
 <section class="featured">
     <h2>> featured websites</h2>
-    <div class="website-grid">
+    <div class="directory-list">
         {% for site in featured %}
-        <a href="/w/{{ site.url }}/" class="website-card">
-            <pre>
-┌────────────────────────────┐
-│ {{ site.name|truncatechars:26|ljust:26 }} │
-│ {{ site.url|truncatechars:26|ljust:26 }} │
-│                            │
-│  ╔═══════╗                 │
-│  ║  L {{ site.level }}  ║  {% if site.verified %}[*] verified{% else %}[ ] pending {% endif %}   │
-│  ╚═══════╝                 │
-└────────────────────────────┘</pre>
+        <a href="/w/{{ site.url }}/" class="directory-item">
+            <span class="item-name">{{ site.name }} <span style="color: var(--fg); font-size: 0.85rem;">({{ site.url }})</span></span>
+            <span class="item-meta">L{{ site.level }} {% if site.verified %}[*]{% else %}[ ]{% endif %}</span>
         </a>
         {% endfor %}
     </div>

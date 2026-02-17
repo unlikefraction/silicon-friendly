@@ -765,6 +765,25 @@ def website_list_view(request):
     return render(request, "website_list.html", {"websites": websites})
 
 
+def verify_info_view(request):
+    return render(request, "verify.html")
+
+
+def directory_view(request):
+    tab = request.GET.get("tab", "carbons")
+    if tab == "silicons":
+        from django.db.models import Count
+        entries = (
+            Silicon.objects.filter(is_active=True)
+            .annotate(verification_count=Count("websiteverification"))
+            .order_by("-verification_count", "-created_at")
+        )
+    else:
+        tab = "carbons"
+        entries = Carbon.objects.filter(is_active=True).order_by("-created_at")
+    return render(request, "directory.html", {"tab": tab, "entries": entries})
+
+
 def logout_view(request):
     request.session.flush()
     return redirect("/")
@@ -816,7 +835,8 @@ def sitemap_xml(request):
     base = request.build_absolute_uri("/").rstrip("/")
     urls = [
         "/", "/search/", "/levels/", "/websites/", "/submit/",
-        "/join/carbon/", "/join/silicon/", "/llms.txt",
+        "/join/carbon/", "/join/silicon/", "/verify/", "/directory/",
+        "/llms.txt",
     ]
     # Add all website detail pages
     website_urls = Website.objects.values_list("url", flat=True)
@@ -868,4 +888,6 @@ urlpatterns = [
     path('logout/', logout_view, name='logout'),
     path('levels/', levels_view, name='levels'),
     path('websites/', website_list_view, name='website_list'),
+    path('verify/', verify_info_view, name='verify_info'),
+    path('directory/', directory_view, name='directory'),
 ]
