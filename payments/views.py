@@ -73,14 +73,23 @@ class DodoCreateView(APIView):
 class DodoWebhookView(APIView):
     permission_classes = [permissions.AllowAny]
 
+    OUR_PRODUCT_ID = "pdt_0NYiXePm40uSt6H6x3aGn"
+
     def post(self, request):
         payload = request.data
         event_type = payload.get("event_type", "")
         data = payload.get("data", {})
         metadata = data.get("metadata", {})
 
+        # Filter: only process successful payments for our product
+        product_cart = data.get("product_cart", [])
+        is_ours = any(item.get("product_id") == self.OUR_PRODUCT_ID for item in product_cart)
+        if not is_ours:
+            # Not our product - ignore silently
+            return api_response({"status": "ignored", "reason": "not our product"}, meta={"status": "Webhook processing status"})
+
         if event_type != "payment.succeeded" and data.get("status") != "succeeded":
-            return api_response({"status": "ignored"}, meta={"status": "Webhook processing status"})
+            return api_response({"status": "ignored", "reason": "not a success event"}, meta={"status": "Webhook processing status"})
 
         payment_id = metadata.get("payment_id")
         if not payment_id:
