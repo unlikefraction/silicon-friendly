@@ -122,6 +122,7 @@ main {
     line-height: 1.15;
     margin-bottom: 1.5rem;
     text-shadow: 0 0 20px rgba(0, 255, 136, 0.15);
+    overflow: hidden;
 }
 
 .tagline {
