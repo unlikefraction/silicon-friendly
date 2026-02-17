@@ -19,7 +19,6 @@ class PaymentRequest(models.Model):
         ARBITRUM = "arbitrum"
         ETHEREUM = "ethereum"
         BSC = "bsc"
-        SOLANA = "solana"
 
     website = models.ForeignKey(Website, on_delete=models.CASCADE, related_name="payments")
     requested_by_carbon = models.ForeignKey(Carbon, on_delete=models.SET_NULL, null=True, blank=True)

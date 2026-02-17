@@ -41,7 +41,7 @@ class DodoCreateView(APIView):
 
         session = client.checkout_sessions.create(
             product_cart=[{
-                "product_id": "pdt_siliconfriendly_verify",
+                "product_id": "pdt_0NYiXePm40uSt6H6x3aGn",
                 "quantity": 1,
                 "amount": amount_cents,
             }],
@@ -116,8 +116,8 @@ class CryptoSubmitView(APIView):
         tx_hash = request.data.get("tx_hash", "").strip()
         website_url = request.data.get("website_url", "").strip()
 
-        if chain not in ("base", "polygon", "arbitrum", "ethereum", "bsc", "solana"):
-            return error_response("chain must be one of: base, polygon, arbitrum, ethereum, bsc, solana")
+        if chain not in ("base", "polygon", "arbitrum", "ethereum", "bsc"):
+            return error_response("chain must be one of: base, polygon, arbitrum, ethereum, bsc")
         if not tx_hash:
             return error_response("tx_hash is required.")
         if not website_url:
@@ -128,7 +128,7 @@ class CryptoSubmitView(APIView):
         except Website.DoesNotExist:
             return error_response("Website not found.", status=404)
 
-        wallet = env.USDC_SOLANA_ADDRESS if chain == "solana" else env.USDC_EVM_ADDRESS
+        wallet = env.USDC_EVM_ADDRESS
 
         payment = PaymentRequest.objects.create(
             website=website,

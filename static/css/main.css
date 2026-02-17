@@ -297,6 +297,78 @@ main {
     color: var(--warning);
 }
 
+/* === PAYMENT === */
+.payment-header {
+    color: var(--warning);
+}
+
+.payment-methods {
+    margin-top: 1rem;
+}
+
+.payment-tab-bar {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.payment-tab {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--fg);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    padding: 0.4rem 1rem;
+    cursor: pointer;
+}
+.payment-tab:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+.payment-tab.active {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--surface);
+}
+
+.payment-method-content {
+    padding: 1rem;
+    border: 1px solid var(--border);
+    background: var(--surface);
+}
+
+.chain-select {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--fg-bright);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.9rem;
+    padding: 0.5rem;
+    outline: none;
+    cursor: pointer;
+}
+.chain-select:focus {
+    border-color: var(--accent);
+}
+.chain-select option {
+    background: var(--bg);
+    color: var(--fg-bright);
+}
+
+.payment-note {
+    color: var(--fg);
+    font-size: 0.8rem;
+    margin-top: 0.75rem;
+    opacity: 0.7;
+}
+
+.payment-status {
+    margin-top: 1rem;
+    font-size: 0.85rem;
+    min-height: 1.2em;
+}
+
 /* === FORMS === */
 .ascii-form {
     max-width: 400px;

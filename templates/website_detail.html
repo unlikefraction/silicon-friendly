@@ -50,21 +50,45 @@
 
     {% if is_owner %}
     <div class="owner-actions">
-        <pre>
+        <pre class="payment-header">
 ┌─────────────────────────────────────────┐
-│  You own this website.                  │
-│                                         │
-│  [ Get Verified ] Pay $10 USDC          │
-│  - Card/UPI: via Dodo Payments          │
-│  - USDC on Base/Polygon/Arbitrum:       │
-│    0xAfdC6947d877431282F57d9Db843E052   │
-│    F3405f80                             │
-│  - USDC on Solana:                      │
-│    5n48pGS3ZC4ePJggg1N2ue4aUhzYNNM3    │
-│    ebq4vDdG2kc6                         │
-└─────────────────────────────────────────┘
-        </pre>
+│  you own this website.                  │
+│  get verified for $10 USDC.             │
+└─────────────────────────────────────────┘</pre>
+
+        {% csrf_token %}
+        <input type="hidden" id="payment-website-url" value="{{ website.url }}">
+
+        <div class="payment-methods">
+            <div class="payment-tab-bar">
+                <button class="payment-tab active" onclick="showPaymentSection('pay-crypto'); this.parentNode.querySelectorAll('.payment-tab').forEach(t=>t.classList.remove('active')); this.classList.add('active');">[ crypto ]</button>
+                <button class="payment-tab" onclick="showPaymentSection('pay-card'); this.parentNode.querySelectorAll('.payment-tab').forEach(t=>t.classList.remove('active')); this.classList.add('active');">[ card / UPI ]</button>
+            </div>
+
+            <div id="pay-crypto" class="payment-method-content" style="display: block;">
+                <div class="form-field">
+                    <label>> chain</label>
+                    <select id="chain-select" class="chain-select">
+                        <option value="base">Base</option>
+                        <option value="polygon">Polygon</option>
+                        <option value="arbitrum">Arbitrum</option>
+                        <option value="ethereum">Ethereum</option>
+                        <option value="bsc">BNB Smart Chain</option>
+                    </select>
+                </div>
+                <button id="pay-crypto-btn" class="btn" onclick="payWithWallet()">[ connect wallet & pay $10 USDC ]</button>
+                <p class="payment-note">> sends USDC directly from your wallet via MetaMask</p>
+            </div>
+
+            <div id="pay-card" class="payment-method-content" style="display: none;">
+                <button class="btn" onclick="payWithDodo()">[ pay $10 with card / UPI ]</button>
+                <p class="payment-note">> redirects to Dodo Payments checkout</p>
+            </div>
+        </div>
+
+        <div id="payment-status" class="payment-status"></div>
     </div>
+    <script src="{% static 'js/payment.js' %}"></script>
     {% endif %}
 
     <h2>> criteria breakdown</h2>
