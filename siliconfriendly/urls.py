@@ -1379,8 +1379,20 @@ from websites.models import Website, WebsiteVerification, CRITERIA_FIELDS, LEVEL
 
 
 def home_view(request):
-    featured = Website.objects.filter(verified=True).order_by("-updated_at")[:6]
-    return render(request, "home.html", {"featured": featured})
+    just_verified = Website.objects.filter(verified=True).order_by("-updated_at")[:5]
+
+    # Group verified websites by level (level is a @property, must compute in Python)
+    all_verified = list(Website.objects.filter(verified=True).order_by("-updated_at"))
+    levels = {1: [], 2: [], 3: [], 4: [], 5: []}
+    for w in all_verified:
+        lvl = w.level
+        if 1 <= lvl <= 5:
+            levels[lvl].append(w)
+
+    return render(request, "home.html", {
+        "just_verified": just_verified,
+        "levels": levels,
+    })
 
 
 def search_view(request):

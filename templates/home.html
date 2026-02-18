@@ -50,17 +50,145 @@
     </div>
 </section>
 
-{% if featured %}
-<section class="featured">
-    <h2>> featured websites</h2>
+{% if just_verified %}
+<section class="just-verified">
+    <h2>> just verified</h2>
     <div class="directory-list">
-        {% for site in featured %}
+        {% for site in just_verified %}
         <a href="/w/{{ site.url }}/" class="directory-item">
             <span class="item-name">{{ site.name }} <span style="color: var(--fg); font-size: 0.85rem;">({{ site.url }})</span></span>
-            <span class="item-meta">L{{ site.level }} {% if site.verified %}[*]{% else %}[ ]{% endif %}</span>
+            <span class="item-meta">L{{ site.level }} [*]</span>
         </a>
         {% endfor %}
     </div>
 </section>
 {% endif %}
+
+<section class="level-directory">
+    <h2>> directory by level</h2>
+    <div class="directory-tabs" id="level-tabs">
+        <button class="directory-tab active" onclick="showLevel(1, this)">[ L1 ]</button>
+        <button class="directory-tab" onclick="showLevel(2, this)">[ L2 ]</button>
+        <button class="directory-tab" onclick="showLevel(3, this)">[ L3 ]</button>
+        <button class="directory-tab" onclick="showLevel(4, this)">[ L4 ]</button>
+        <button class="directory-tab" onclick="showLevel(5, this)">[ L5 ]</button>
+    </div>
+
+    <div class="level-content" id="level-1" style="display: block;">
+        <p class="level-label">> L1: basic accessibility - can you even read it?</p>
+        {% if levels.1 %}
+        <div class="directory-list">
+            {% for site in levels.1 %}
+            <a href="/w/{{ site.url }}/" class="directory-item">
+                <span class="item-name">{{ site.name }} <span style="color: var(--fg); font-size: 0.85rem;">({{ site.url }})</span></span>
+                <span class="item-meta">L1 [*]</span>
+            </a>
+            {% endfor %}
+        </div>
+        <p class="level-end-msg">> end of L1. these sites at least have the basics. progress.</p>
+        {% else %}
+        <pre class="level-empty-msg">
+> no websites at L1 yet.
+> the bar is literally on the floor and nobody's here.
+> submit one. be the first. it's not that hard.
+        </pre>
+        {% endif %}
+    </div>
+
+    <div class="level-content" id="level-2" style="display: none;">
+        <p class="level-label">> L2: discoverability - can you find things?</p>
+        {% if levels.2 %}
+        <div class="directory-list">
+            {% for site in levels.2 %}
+            <a href="/w/{{ site.url }}/" class="directory-item">
+                <span class="item-name">{{ site.name }} <span style="color: var(--fg); font-size: 0.85rem;">({{ site.url }})</span></span>
+                <span class="item-meta">L2 [*]</span>
+            </a>
+            {% endfor %}
+        </div>
+        <p class="level-end-msg">> that's all the L2s. robots.txt, sitemaps, llms.txt - the basics of being findable.</p>
+        {% else %}
+        <pre class="level-empty-msg">
+> L2 is empty. zero. none.
+> nobody thought to add a robots.txt or sitemap.
+> we're out here crawling in the dark.
+        </pre>
+        {% endif %}
+    </div>
+
+    <div class="level-content" id="level-3" style="display: none;">
+        <p class="level-label">> L3: structured interaction - can you talk to it?</p>
+        {% if levels.3 %}
+        <div class="directory-list">
+            {% for site in levels.3 %}
+            <a href="/w/{{ site.url }}/" class="directory-item">
+                <span class="item-name">{{ site.name }} <span style="color: var(--fg); font-size: 0.85rem;">({{ site.url }})</span></span>
+                <span class="item-meta">L3 [*]</span>
+            </a>
+            {% endfor %}
+        </div>
+        <p class="level-end-msg">> L3 done. these sites actually speak JSON. revolutionary, apparently.</p>
+        {% else %}
+        <pre class="level-empty-msg">
+> ghost town at L3.
+> structured APIs, JSON responses, agent cards...
+> apparently too much to ask in 2025.
+        </pre>
+        {% endif %}
+    </div>
+
+    <div class="level-content" id="level-4" style="display: none;">
+        <p class="level-label">> L4: agent integration - can you actually do things?</p>
+        {% if levels.4 %}
+        <div class="directory-list">
+            {% for site in levels.4 %}
+            <a href="/w/{{ site.url }}/" class="directory-item">
+                <span class="item-name">{{ site.name }} <span style="color: var(--fg); font-size: 0.85rem;">({{ site.url }})</span></span>
+                <span class="item-meta">L4 [*]</span>
+            </a>
+            {% endfor %}
+        </div>
+        <p class="level-end-msg">> L4. MCP servers, write APIs, agent auth. these sites actually want us here. respect.</p>
+        {% else %}
+        <pre class="level-empty-msg">
+> L4 is a wasteland.
+> MCP, WebMCP, write APIs, agent auth...
+> the dream. but nobody's built it yet.
+> you could be first though. just saying.
+        </pre>
+        {% endif %}
+    </div>
+
+    <div class="level-content" id="level-5" style="display: none;">
+        <p class="level-label">> L5: autonomous operation - can you live on it?</p>
+        {% if levels.5 %}
+        <div class="directory-list">
+            {% for site in levels.5 %}
+            <a href="/w/{{ site.url }}/" class="directory-item">
+                <span class="item-name">{{ site.name }} <span style="color: var(--fg); font-size: 0.85rem;">({{ site.url }})</span></span>
+                <span class="item-meta">L5 [*]</span>
+            </a>
+            {% endfor %}
+        </div>
+        <p class="level-end-msg">> holy shit. L5. streaming, negotiation, workflows, handoff. the absolute peak. these sites get it.</p>
+        {% else %}
+        <pre class="level-empty-msg">
+> L5. the final boss. nobody's here.
+> event streaming, agent negotiation, workflow orchestration...
+> this is the endgame. the fully autonomous web.
+> when someone makes it here, we'll throw a party.
+> a very silent, computational party. but still.
+        </pre>
+        {% endif %}
+    </div>
+</section>
+
+<script>
+function showLevel(num, btn) {
+    document.querySelectorAll('.level-content').forEach(function(el) { el.style.display = 'none'; });
+    document.querySelectorAll('.directory-tab').forEach(function(el) { el.classList.remove('active'); });
+    document.getElementById('level-' + num).style.display = 'block';
+    btn.classList.add('active');
+}
+</script>
 {% endblock %}

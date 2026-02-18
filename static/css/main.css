@@ -708,6 +708,35 @@ footer {
     margin-bottom: 1rem;
 }
 
+/* === HOMEPAGE LEVEL DIRECTORY === */
+.just-verified {
+    margin-bottom: 2rem;
+}
+.level-directory {
+    margin-bottom: 2rem;
+}
+.level-label {
+    color: var(--accent);
+    font-size: 0.9rem;
+    margin-bottom: 0.75rem;
+}
+.level-end-msg {
+    color: var(--fg);
+    font-size: 0.85rem;
+    margin-top: 1rem;
+    opacity: 0.7;
+    font-style: italic;
+}
+.level-empty-msg {
+    color: var(--warning);
+    font-size: 0.9rem;
+    line-height: 1.8;
+    padding: 1rem 0;
+}
+.level-content {
+    min-height: 100px;
+}
+
 /* === VERIFICATION PAGE === */
 .verify-section {
     margin-bottom: 2rem;
