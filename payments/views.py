@@ -58,7 +58,7 @@ class DodoCreateView(APIView):
 
         return api_response(
             {
-                "checkout_url": session.url,
+                "checkout_url": session.checkout_url,
                 "session_id": session.session_id,
                 "payment_id": payment.id,
             },

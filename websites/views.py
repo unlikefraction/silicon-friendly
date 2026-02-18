@@ -344,15 +344,16 @@ class WebsiteBadgeSvgView(APIView):
 
     def get(self, request, domain):
         domain = _normalize_url(domain)
+        theme = request.GET.get("theme", "dark")
         try:
             website = Website.objects.get(url=domain)
         except Website.DoesNotExist:
-            svg = _badge_svg("?", "#666")
+            svg = _badge_svg("?", "#666", theme=theme)
             return HttpResponse(svg, content_type="image/svg+xml")
 
         level = website.level
         colors = {0: "#666", 1: "#c0392b", 2: "#e67e22", 3: "#f1c40f", 4: "#27ae60", 5: "#2ecc71"}
-        svg = _badge_svg(f"L{level}", colors.get(level, "#666"), domain)
+        svg = _badge_svg(f"L{level}", colors.get(level, "#666"), domain, theme=theme)
         return HttpResponse(svg, content_type="image/svg+xml")
 
 
@@ -364,9 +365,10 @@ class WebsiteBadgeJsView(APIView):
         base = env.FRONTEND_BASE_URL
         js = f"""(function(){{
   var d=document,s=d.createElement('a'),i=d.createElement('img');
-  i.src='{base}/badge/{domain}.svg';
+  var theme=window.matchMedia&&window.matchMedia('(prefers-color-scheme:light)').matches?'light':'dark';
+  i.src='{base}/badge/{domain}.svg?theme='+theme;
   i.alt='Silicon Friendly Level';
-  i.style.height='24px';
+  i.style.height='28px';
   s.href='{base}/w/{domain}/';
   s.target='_blank';
   s.appendChild(i);
@@ -375,12 +377,22 @@ class WebsiteBadgeJsView(APIView):
         return HttpResponse(js, content_type="application/javascript")
 
 
-def _badge_svg(level_text, color, domain=""):
+def _badge_svg(level_text, color, domain="", theme="dark"):
     aria = f"Silicon Friendly {level_text}" if domain else "Silicon Friendly"
-    return f"""<svg xmlns="http://www.w3.org/2000/svg" width="140" height="28" role="img" aria-label="{aria}" data-domain="{domain}" data-level="{level_text}">
-  <rect width="140" height="28" rx="4" fill="#1a1a1a"/>
-  <rect x="100" width="40" height="28" rx="4" fill="{color}"/>
-  <rect x="100" width="4" height="28" fill="{color}"/>
-  <text x="50" y="18" fill="#ccc" font-family="monospace" font-size="11" text-anchor="middle">silicon-friendly</text>
-  <text x="120" y="18" fill="#fff" font-family="monospace" font-size="12" font-weight="bold" text-anchor="middle">{level_text}</text>
+    if theme == "light":
+        bg = "#f0f0f0"
+        border = "#ccc"
+        text_color = "#333"
+        label_text = "#fff" if color != "#f1c40f" else "#333"
+    else:
+        bg = "#0a0a0a"
+        border = "#333"
+        text_color = "#c0c0c0"
+        label_text = "#fff" if color != "#f1c40f" else "#111"
+    return f"""<svg xmlns="http://www.w3.org/2000/svg" width="180" height="28" role="img" aria-label="{aria}" data-domain="{domain}" data-level="{level_text}">
+  <rect width="180" height="28" rx="2" fill="{bg}" stroke="{border}" stroke-width="1"/>
+  <rect x="140" width="40" height="28" rx="2" fill="{color}"/>
+  <rect x="140" width="2" height="28" fill="{color}"/>
+  <text x="8" y="18" fill="{text_color}" font-family="'JetBrains Mono',monospace" font-size="10">[ silicon-friendly ]</text>
+  <text x="160" y="18" fill="{label_text}" font-family="'JetBrains Mono',monospace" font-size="11" font-weight="bold" text-anchor="middle">{level_text}</text>
 </svg>"""
