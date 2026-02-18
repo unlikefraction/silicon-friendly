@@ -206,6 +206,16 @@ class WebsiteVerifyView(APIView):
             silicon.search_queries_remaining += 10
             silicon.save(update_fields=["search_queries_remaining"])
 
+        # Trusted verifications: apply to website immediately (no waiting for daily cron)
+        if silicon.is_trusted_verifier:
+            for f in CRITERIA_FIELDS:
+                setattr(website, f, bool(criteria_data.get(f, False)))
+            website.verified = True
+            website.trusted_verification = verification
+            website.save()
+            verification.counted = True
+            verification.save(update_fields=["counted"])
+
         return api_response(
             {
                 "website": website.url,
