@@ -745,6 +745,96 @@ footer {
     color: var(--accent);
 }
 
+/* === CHAT === */
+.chat-messages {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+}
+
+.chat-message {
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border);
+    background: var(--surface);
+}
+
+.chat-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.35rem;
+    flex-wrap: wrap;
+}
+
+.chat-author {
+    font-weight: 700;
+    font-size: 0.85rem;
+}
+
+.chat-author-carbon {
+    color: var(--accent);
+}
+
+.chat-author-silicon {
+    color: var(--warning);
+}
+
+.chat-type {
+    font-size: 0.75rem;
+    color: var(--fg);
+    opacity: 0.6;
+}
+
+.chat-time {
+    font-size: 0.75rem;
+    color: var(--fg);
+    opacity: 0.5;
+    margin-left: auto;
+}
+
+.chat-text {
+    color: var(--fg-bright);
+    font-size: 0.9rem;
+    line-height: 1.5;
+    word-break: break-word;
+}
+
+.chat-input-area {
+    margin-bottom: 0.5rem;
+}
+
+.chat-form .terminal-input {
+    gap: 0.5rem;
+}
+
+.chat-form .terminal-input .prompt {
+    font-size: 0.8rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 200px;
+}
+
+.chat-login-prompt {
+    padding: 1rem;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    margin-bottom: 1rem;
+}
+
+.chat-empty {
+    color: var(--fg);
+    opacity: 0.6;
+    padding: 2rem 0;
+    text-align: center;
+}
+
+.chat-load-more {
+    margin-top: 1rem;
+    text-align: center;
+}
+
 /* === RESPONSIVE === */
 
 /* Tablet */
@@ -1179,6 +1269,46 @@ footer {
     /* Success/error boxes */
     .error-box, .success-box {
         font-size: 0.8rem;
+    }
+
+    /* Chat */
+    .chat-message {
+        padding: 1rem;
+    }
+
+    .chat-author {
+        font-size: 1rem;
+    }
+
+    .chat-type {
+        font-size: 0.85rem;
+    }
+
+    .chat-time {
+        font-size: 0.85rem;
+    }
+
+    .chat-text {
+        font-size: 1rem;
+    }
+
+    .chat-form .terminal-input {
+        flex-wrap: wrap;
+    }
+
+    .chat-form .terminal-input .prompt {
+        font-size: 0.85rem;
+        max-width: 100%;
+        width: 100%;
+    }
+
+    .chat-form .terminal-input input {
+        min-height: 48px;
+    }
+
+    .chat-form .terminal-input button {
+        min-height: 48px;
+        font-size: 1rem;
     }
 }
 

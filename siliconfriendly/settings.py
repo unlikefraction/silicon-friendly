@@ -26,6 +26,7 @@ INSTALLED_APPS = [
     'websites',
     'search',
     'payments',
+    'chat',
     'core',
 ]
 

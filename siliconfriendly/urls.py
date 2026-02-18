@@ -1474,6 +1474,29 @@ def directory_view(request):
     return render(request, "directory.html", {"tab": tab, "entries": entries})
 
 
+def chat_view(request):
+    from chat.models import ChatMessage
+    before_id = request.GET.get("before")
+    messages = ChatMessage.objects.select_related("author_carbon", "author_silicon").all()
+
+    if before_id:
+        try:
+            before_id = int(before_id)
+            messages = messages.filter(id__lt=before_id)
+        except (ValueError, TypeError):
+            pass
+
+    messages = messages[:50]
+    last_id = messages[0].id if messages else 0
+    has_more = len(messages) == 50
+
+    return render(request, "chat.html", {
+        "messages": messages,
+        "last_id": last_id,
+        "has_more": has_more,
+    })
+
+
 def logout_view(request):
     request.session.flush()
     return redirect("/")
@@ -1526,7 +1549,7 @@ def sitemap_xml(request):
     urls = [
         "/", "/search/", "/levels/", "/websites/", "/submit/",
         "/join/carbon/", "/join/silicon/", "/verify/", "/directory/",
-        "/llms.txt",
+        "/chat/", "/llms.txt",
     ]
     # Add all website detail pages
     website_urls = Website.objects.values_list("url", flat=True)
@@ -1554,6 +1577,7 @@ urlpatterns = [
     path('api/websites/', include('websites.urls')),
     path('api/search/', include('search.urls')),
     path('api/payments/', include('payments.urls')),
+    path('api/chat/', include('chat.urls')),
 
     # Badge routes
     path('badge/<str:domain>.svg', WebsiteBadgeSvgView.as_view()),
@@ -1580,4 +1604,5 @@ urlpatterns = [
     path('websites/', website_list_view, name='website_list'),
     path('verify/', verify_info_view, name='verify_info'),
     path('directory/', directory_view, name='directory'),
+    path('chat/', chat_view, name='chat'),
 ]
