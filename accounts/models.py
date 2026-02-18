@@ -30,6 +30,7 @@ class Silicon(models.Model):
     auth_token = models.UUIDField(default=uuid.uuid4, unique=True)
     token_last_used = models.DateTimeField(auto_now_add=True)
     search_queries_remaining = models.IntegerField(default=10)
+    is_trusted_verifier = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     is_active = models.BooleanField(default=True)
 

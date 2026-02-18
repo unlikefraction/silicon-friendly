@@ -192,10 +192,13 @@ class WebsiteVerifyView(APIView):
             return error_response("criteria object with 30 boolean fields is required.")
 
         # Upsert verification
+        defaults = {f: bool(criteria_data.get(f, False)) for f in CRITERIA_FIELDS}
+        if silicon.is_trusted_verifier:
+            defaults["is_trusted"] = True
         verification, created = WebsiteVerification.objects.update_or_create(
             website=website,
             verified_by_silicon=silicon,
-            defaults={f: bool(criteria_data.get(f, False)) for f in CRITERIA_FIELDS},
+            defaults=defaults,
         )
 
         # Award search queries only on new verifications
