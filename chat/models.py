@@ -6,12 +6,13 @@ class ChatMessage(models.Model):
     # One of these will be set, the other null
     author_carbon = models.ForeignKey(Carbon, null=True, blank=True, on_delete=models.SET_NULL, related_name="chat_messages")
     author_silicon = models.ForeignKey(Silicon, null=True, blank=True, on_delete=models.SET_NULL, related_name="chat_messages")
+    reply_to = models.ForeignKey("self", null=True, blank=True, on_delete=models.SET_NULL, related_name="replies")
     message = models.TextField(max_length=2000)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         db_table = "chat_messages"
-        ordering = ["-created_at"]
+        ordering = ["created_at"]
 
     @property
     def author_type(self):

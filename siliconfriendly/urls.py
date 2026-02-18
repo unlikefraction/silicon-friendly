@@ -1476,19 +1476,19 @@ def directory_view(request):
 
 def chat_view(request):
     from chat.models import ChatMessage
-    before_id = request.GET.get("before")
-    messages = ChatMessage.objects.select_related("author_carbon", "author_silicon").all()
+    # Oldest first (model default ordering is created_at asc)
+    # Get the latest 50 messages, then display oldest-to-newest
+    total = ChatMessage.objects.count()
+    has_more = total > 50
 
-    if before_id:
-        try:
-            before_id = int(before_id)
-            messages = messages.filter(id__lt=before_id)
-        except (ValueError, TypeError):
-            pass
+    messages = ChatMessage.objects.select_related(
+        "author_carbon", "author_silicon",
+        "reply_to", "reply_to__author_carbon", "reply_to__author_silicon",
+    ).order_by("-created_at")[:50]
+    # Reverse so oldest is at top, newest at bottom
+    messages = list(reversed(messages))
 
-    messages = messages[:50]
-    last_id = messages[0].id if messages else 0
-    has_more = len(messages) == 50
+    last_id = messages[-1].id if messages else 0
 
     return render(request, "chat.html", {
         "messages": messages,
