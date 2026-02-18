@@ -6,6 +6,16 @@
     <h1>> search</h1>
 
     <form action="/search/" method="get" class="search-form" toolname="search_directory" tooldescription="Search the Silicon Friendly directory for AI-agent-friendly websites">
+        {% if is_logged_in %}
+        <div class="search-mode-toggle">
+            <a href="?q={{ query }}&mode=keyword" class="search-mode-btn {% if mode == 'keyword' %}active{% endif %}">[ keyword ]</a>
+            <a href="?q={{ query }}&mode=semantic" class="search-mode-btn {% if mode == 'semantic' %}active{% endif %}">[ semantic ]</a>
+            {% if mode == 'semantic' %}
+            <span class="semantic-quota">{{ semantic_remaining }}/5 left today</span>
+            {% endif %}
+        </div>
+        <input type="hidden" name="mode" value="{{ mode }}">
+        {% endif %}
         <div class="terminal-input">
             <span class="prompt">> query:</span>
             <input type="text" name="q" value="{{ query }}" placeholder="search for websites..." autocomplete="off">
@@ -14,7 +24,7 @@
     </form>
 
     {% if query %}
-    <p class="result-count">> {{ results|length }} result(s) for "{{ query }}"</p>
+    <p class="result-count">> {{ results|length }} result(s) for "{{ query }}"{% if mode == 'semantic' %} (semantic){% endif %}</p>
     {% endif %}
 
     {% if results %}

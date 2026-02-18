@@ -298,6 +298,31 @@ main {
     transition: color 0.15s;
 }
 
+/* === SEARCH MODE TOGGLE === */
+.search-mode-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+.search-mode-btn {
+    color: var(--fg);
+    font-size: 0.9rem;
+    padding: 0.25rem 0;
+}
+.search-mode-btn.active {
+    color: var(--accent);
+}
+.search-mode-btn:hover {
+    color: var(--accent);
+}
+.semantic-quota {
+    color: var(--fg);
+    font-size: 0.8rem;
+    opacity: 0.6;
+    margin-left: 0.5rem;
+}
+
 /* === RESULTS === */
 .result-count {
     color: var(--fg);

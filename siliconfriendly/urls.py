@@ -1385,26 +1385,89 @@ def home_view(request):
 
 def search_view(request):
     query = request.GET.get("q", "")
+    mode = request.GET.get("mode", "keyword")
     results = []
+    semantic_remaining = 0
+    is_logged_in = bool(request.session.get("carbon_id"))
+
+    # Carbon semantic search: 5 per day, tracked in session
+    if is_logged_in:
+        from django.utils import timezone
+        today_str = timezone.now().strftime("%Y-%m-%d")
+        sem_date = request.session.get("semantic_search_date", "")
+        sem_count = request.session.get("semantic_search_count", 0)
+        if sem_date != today_str:
+            sem_date = today_str
+            sem_count = 0
+            request.session["semantic_search_date"] = sem_date
+            request.session["semantic_search_count"] = 0
+        semantic_remaining = max(0, 5 - sem_count)
+
     if query:
-        from websites.tasks import _normalise_token
-        tokens = set()
-        for word in query.lower().split():
-            t = _normalise_token(word)
-            if t and len(t) >= 2:
-                tokens.add(t)
-        if tokens:
-            from websites.models import Keyword
-            from django.db import models as m
-            website_overlap = (
-                Keyword.objects.filter(token__in=tokens)
-                .values("websites__id")
-                .annotate(overlap=m.Count("token"))
-                .order_by("-overlap")[:20]
+        if mode == "semantic" and is_logged_in and semantic_remaining > 0:
+            # Semantic search for logged-in carbons
+            from websites.tasks import _get_client
+            from google.genai import types as genai_types
+            from pgvector.django import CosineDistance
+
+            client = _get_client()
+            config = genai_types.EmbedContentConfig(
+                task_type="RETRIEVAL_QUERY",
+                output_dimensionality=768,
             )
-            ids = [r["websites__id"] for r in website_overlap if r["websites__id"]]
-            results = Website.objects.filter(id__in=ids)
-    return render(request, "search.html", {"query": query, "results": results})
+            res = client.models.embed_content(
+                model="gemini-embedding-001",
+                contents=[query],
+                config=config,
+            )
+            query_vec = res.embeddings[0].values
+            norm = sum(x * x for x in query_vec) ** 0.5
+            if norm > 0:
+                query_vec = [x / norm for x in query_vec]
+
+            results = list(
+                Website.objects
+                .filter(embedding__isnull=False)
+                .annotate(distance=CosineDistance("embedding", query_vec))
+                .order_by("distance")[:20]
+            )
+
+            # Deduct search
+            request.session["semantic_search_count"] = request.session.get("semantic_search_count", 0) + 1
+            semantic_remaining = max(0, semantic_remaining - 1)
+        else:
+            # Keyword search (default, no quota)
+            mode = "keyword"
+            from websites.tasks import _normalise_token
+            tokens = set()
+            for word in query.lower().split():
+                t = _normalise_token(word)
+                if t and len(t) >= 2:
+                    tokens.add(t)
+            if tokens:
+                from websites.models import Keyword
+                from django.db import models as m
+                website_overlap = (
+                    Keyword.objects.filter(token__in=tokens)
+                    .values("websites__id")
+                    .annotate(overlap=m.Count("token"))
+                    .order_by("-overlap")[:20]
+                )
+                ids = [r["websites__id"] for r in website_overlap if r["websites__id"]]
+                # Maintain relevance ordering
+                id_to_pos = {id_: i for i, id_ in enumerate(ids)}
+                results = sorted(
+                    Website.objects.filter(id__in=ids),
+                    key=lambda w: id_to_pos.get(w.id, 999),
+                )
+
+    return render(request, "search.html", {
+        "query": query,
+        "results": results,
+        "mode": mode,
+        "is_logged_in": is_logged_in,
+        "semantic_remaining": semantic_remaining,
+    })
 
 
 def website_detail_view(request, domain):
