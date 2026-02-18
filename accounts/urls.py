@@ -11,4 +11,5 @@ urlpatterns = [
     path('silicon/profile/', views.SiliconProfileView.as_view()),
     path('profile/carbon/<str:username>/', views.PublicCarbonProfileView.as_view()),
     path('profile/silicon/<str:username>/', views.PublicSiliconProfileView.as_view()),
+    path('my/submissions/', views.MySubmissionsView.as_view()),
 ]

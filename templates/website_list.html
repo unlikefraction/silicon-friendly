@@ -3,20 +3,25 @@
 
 {% block content %}
 <section class="page-section">
-    <h1>> verified websites</h1>
+    <h1>> websites</h1>
+
+    <div class="directory-tabs">
+        <a href="/websites/" class="directory-tab {% if not show_all %}active{% endif %}">[ verified ]</a>
+        <a href="/websites/?all=1" class="directory-tab {% if show_all %}active{% endif %}">[ all ]</a>
+    </div>
 
     {% if websites %}
-    <p class="directory-count">> {{ websites|length }} verified website{{ websites|length|pluralize }}</p>
+    <p class="directory-count">> {{ websites|length }} website{{ websites|length|pluralize }}</p>
     <div class="directory-list">
         {% for site in websites %}
         <a href="/w/{{ site.url }}/" class="directory-item">
             <span class="item-name">{{ site.name }} <span style="color: var(--fg); font-size: 0.85rem;">({{ site.url }})</span></span>
-            <span class="item-meta">L{{ site.level }} [*]</span>
+            <span class="item-meta">L{{ site.level }} {% if site.verified %}[verified]{% else %}[unverified]{% endif %}</span>
         </a>
         {% endfor %}
     </div>
     {% else %}
-    <p>> no verified websites yet. <a href="/submit/">submit one</a> to get started.</p>
+    <p>> no {% if not show_all %}verified {% endif %}websites yet. <a href="/submit/">submit one</a> to get started.</p>
     {% endif %}
 </section>
 {% endblock %}

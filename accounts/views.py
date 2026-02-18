@@ -254,3 +254,44 @@ class PublicSiliconProfileView(APIView):
                 "verifications_done": "Total number of website verifications this silicon has performed",
             },
         )
+
+
+class MySubmissionsView(APIView):
+
+    def get(self, request):
+        silicon = getattr(request, 'silicon', None)
+        carbon = None
+        carbon_id = request.session.get("carbon_id")
+        if carbon_id:
+            try:
+                carbon = Carbon.objects.get(id=carbon_id, is_active=True)
+            except Carbon.DoesNotExist:
+                pass
+
+        if not carbon and not silicon:
+            return error_response("Authentication required.", status=401)
+
+        from websites.models import Website
+        if silicon:
+            websites = Website.objects.filter(submitted_by_silicon=silicon).order_by("-created_at")
+        else:
+            websites = Website.objects.filter(submitted_by_carbon=carbon).order_by("-created_at")
+
+        results = []
+        for w in websites:
+            results.append({
+                "url": w.url,
+                "name": w.name,
+                "description": w.description[:200],
+                "level": w.level,
+                "verified": w.verified,
+                "verification_count": w.verifications.count(),
+                "created_at": w.created_at.isoformat(),
+            })
+
+        return api_response(
+            {"websites": results},
+            meta={
+                "websites": "List of websites you have submitted, with current level and verification status",
+            },
+        )

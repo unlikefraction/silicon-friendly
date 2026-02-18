@@ -8,12 +8,18 @@ from google.genai import types as genai_types
 
 
 def _website_search_result(w, score=None):
+    criteria = {}
+    for f in CRITERIA_FIELDS:
+        criteria[f] = getattr(w, f)
+
     result = {
         "url": w.url,
         "name": w.name,
         "description": w.description[:200],
         "level": w.level,
         "verified": w.verified,
+        "verification_count": w.verifications.count(),
+        "criteria": criteria,
     }
     if score is not None:
         result["score"] = round(score, 4)

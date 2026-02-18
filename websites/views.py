@@ -162,7 +162,11 @@ class WebsiteListView(APIView):
     permission_classes = [permissions.AllowAny]
 
     def get(self, request):
-        websites = Website.objects.filter(verified=True).order_by("-updated_at")
+        include_unverified = request.query_params.get("all", "").lower() in ("true", "1", "yes")
+        if include_unverified:
+            websites = Website.objects.all().order_by("-updated_at")
+        else:
+            websites = Website.objects.filter(verified=True).order_by("-updated_at")
         paginator = PageNumberPagination()
         paginator.page_size = 20
         page = paginator.paginate_queryset(websites, request)
