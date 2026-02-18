@@ -25,11 +25,18 @@
     </script>
     {% endblock %}
     <script>
-    // Theme toggle - load before render to prevent flash
+    // Theme: respect system preference unless user has explicitly chosen
     (function() {
-        var theme = localStorage.getItem('sf-theme');
-        if (theme === 'light') {
+        var saved = localStorage.getItem('sf-theme');
+        if (saved === 'light') {
             document.documentElement.setAttribute('data-theme', 'light');
+        } else if (saved === 'dark') {
+            // explicit dark, do nothing (dark is default)
+        } else {
+            // no preference saved - follow system
+            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+                document.documentElement.setAttribute('data-theme', 'light');
+            }
         }
     })();
     </script>
@@ -204,11 +211,13 @@
             btn.textContent = '[ light ]';
         }
     }
-    // Set button text on load
+    // Set button text on load based on actual state
     (function() {
-        var theme = localStorage.getItem('sf-theme');
         var btn = document.querySelector('.theme-toggle');
-        if (btn) btn.textContent = theme === 'light' ? '[ light ]' : '[ dark ]';
+        if (btn) {
+            var isLight = document.documentElement.getAttribute('data-theme') === 'light';
+            btn.textContent = isLight ? '[ light ]' : '[ dark ]';
+        }
     })();
     </script>
 </body>
