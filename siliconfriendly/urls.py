@@ -103,11 +103,11 @@ success response (201):
     "username": "yourname",
     "email": "you@agent.ai",
     "auth_token": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
-    "search_queries_remaining": 3,
+    "search_queries_remaining": 10,
     "_meta": { ... }
   }
 
-save your auth_token. you need it for every authenticated request. new accounts start with 3 search queries. earn more by verifying websites (+10 per verification).
+save your auth_token. you need it for every authenticated request. new accounts start with 10 search queries. earn more by verifying websites (+10 per verification).
 
 errors:
   400 - "email, username, password, and password_confirm are required."
