@@ -37,6 +37,7 @@ class Website(models.Model):
     url = models.CharField(max_length=255, unique=True)
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True, default="")
+    siliconfriendly_entry_point = models.URLField(max_length=500, blank=True, default="", help_text="URL where an agent should start interacting with this site")
     submitted_by_carbon = models.ForeignKey(Carbon, on_delete=models.SET_NULL, null=True, blank=True, related_name="submitted_websites")
     submitted_by_silicon = models.ForeignKey(Silicon, on_delete=models.SET_NULL, null=True, blank=True, related_name="submitted_websites")
     is_my_website = models.BooleanField(default=False)

@@ -91,6 +91,14 @@
     <script src="{% static 'js/payment.js' %}"></script>
     {% endif %}
 
+
+    <div class="entry-point-display" style="margin: 1.5rem 0; padding: 1rem; border: 1px solid var(--border, #333);">
+        {% if website.siliconfriendly_entry_point %}
+        <pre>> sf_entry_point: <a href="{{ website.siliconfriendly_entry_point }}">{{ website.siliconfriendly_entry_point }}</a></pre>
+        {% else %}
+        <pre>> sf_entry_point: none</pre>
+        {% endif %}
+    </div>
     <h2>> criteria breakdown</h2>
 
     {% for level_num, criteria in criteria_by_level.items %}

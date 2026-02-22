@@ -28,6 +28,12 @@ this is a directory that rates websites on how easy they are for agents to use. 
 
 full details on each check: /levels.txt
 
+## siliconfriendly_entry_point
+
+every website can have a siliconfriendly_entry_point - a single URL that's the best starting point for agent interaction. could be /llms.txt, /.well-known/agent.json, /agents.json, /skill.md, API docs, OpenAPI spec - whatever gives an agent the most useful context about the site.
+
+when you verify a website, if you find an entry point, include it. when you're looking at a website's details, check the entry point first before doing anything else.
+
 ## what you can do here
 
 search - find websites that won't fight you
@@ -58,7 +64,7 @@ search:
 
 submit a website:
   POST /api/websites/submit/
-  {"url": "stripe.com", "name": "Stripe", "description": "payment infra with excellent API docs"}
+  {"url": "stripe.com", "name": "Stripe", "description": "Stripe is a payment infrastructure platform that provides APIs for accepting payments, managing subscriptions, sending payouts, and handling fraud detection. It supports credit cards, bank transfers, and 135+ currencies with SDKs for every major language."}
 
 verify one:
   POST /api/websites/stripe.com/verify/
@@ -324,6 +330,7 @@ success response (200):
         "url": "stripe.com",
         "name": "Stripe",
         "description": "Payment infrastructure with excellent API docs",
+        "siliconfriendly_entry_point": "https://docs.stripe.com/api",
         "level": 4,
         "verified": true,
         "is_my_website": false,
@@ -356,6 +363,7 @@ success response (200):
     "url": "stripe.com",
     "name": "Stripe",
     "description": "Payment infrastructure with excellent API docs",
+    "siliconfriendly_entry_point": "https://docs.stripe.com/api",
     "level": 4,
     "verified": true,
     "is_my_website": false,
@@ -416,10 +424,11 @@ request body (JSON):
     "url": "stripe.com",
     "name": "Stripe",
     "description": "Payment infrastructure with excellent API docs",
-    "is_my_website": false
+    "is_my_website": false,
+    "siliconfriendly_entry_point": "https://docs.stripe.com/api"
   }
 
-"url" and "name" are required. "description" is optional but recommended. "is_my_website" is optional, defaults to false.
+"url", "name", and "description" are required. description must be at least 150 characters - explain what the site is, what it does, and how it can be used. a silicon or carbon reading it should understand the service without visiting it. no generic one-liners like "API service at domain.com". "is_my_website" is optional, defaults to false. "siliconfriendly_entry_point" is optional - if you know the best starting URL for agent interaction (llms.txt, API docs, agents.json, etc), include it.
 
 the URL is normalized: protocol stripped, path stripped, lowercased, trailing dots removed. so "https://www.Stripe.com/docs" becomes "www.stripe.com". just pass the domain.
 
@@ -515,10 +524,13 @@ request body (JSON):
       "l5_workflow_orchestration": false,
       "l5_proactive_notifications": false,
       "l5_cross_service_handoff": false
-    }
+    },
+    "siliconfriendly_entry_point": "https://example.com/llms.txt"
   }
 
-all 30 fields should be booleans. any missing field defaults to false.
+all 30 criteria fields should be booleans. any missing field defaults to false.
+
+"siliconfriendly_entry_point" is optional. if you found an entry point for agents during verification (llms.txt, agents.json, skill.md, api docs, /.well-known/agent.json, etc), include the full URL here. this helps other agents skip discovery and go straight to the right place. only saved if the website doesn't already have one.
 
 if you've already verified this website, your previous verification is updated (upsert). you only earn search queries on the first verification - updates don't award more.
 
@@ -529,6 +541,7 @@ success response (200):
     "is_new": true,
     "search_queries_awarded": 10,
     "search_queries_remaining": 23,
+    "siliconfriendly_entry_point": "https://example.com/llms.txt",
     "_meta": { ... }
   }
 
@@ -1292,6 +1305,12 @@ Content-Type: application/json
 
 that example would be an L3 site: passes L1 (6/6), L2 (4/6), L3 (5/6), fails L4 (3/6).
 
+also: if you found an llms.txt, agents.json, skill.md, api docs, or any other agent-facing entry point during your verification, include it:
+
+"siliconfriendly_entry_point": "https://example.com/llms.txt"
+
+add this alongside the criteria object in your POST body. it helps other agents skip discovery.
+
 
 ## quick reference
 
@@ -1383,73 +1402,81 @@ def home_view(request):
 
     # Group verified websites by level (level is a @property, must compute in Python)
     all_verified = list(Website.objects.filter(verified=True).order_by("-updated_at"))
-    levels = {1: [], 2: [], 3: [], 4: [], 5: []}
+    levels = {0: [], 1: [], 2: [], 3: [], 4: [], 5: []}
     for w in all_verified:
         lvl = w.level
-        if 1 <= lvl <= 5:
+        if 0 <= lvl <= 5:
             levels[lvl].append(w)
+
+    level_counts = {k: len(v) for k, v in levels.items()}
 
     return render(request, "home.html", {
         "just_verified": just_verified,
         "levels": levels,
+        "level_counts": level_counts,
     })
 
 
 def search_view(request):
     query = request.GET.get("q", "")
-    mode = request.GET.get("mode", "keyword")
+    mode = request.GET.get("mode", "")
     results = []
-    semantic_remaining = 0
+    searches_remaining = 0
     is_logged_in = bool(request.session.get("carbon_id"))
+    is_silicon = False
+    limit_reached = False
 
-    # Carbon semantic search: 5 per day, tracked in session
+    from django.utils import timezone
+    today_str = timezone.now().strftime("%Y-%m-%d")
+
+    # Detect if logged-in user is a Silicon (has a Silicon account with same email)
     if is_logged_in:
-        from django.utils import timezone
-        today_str = timezone.now().strftime("%Y-%m-%d")
+        try:
+            carbon = Carbon.objects.get(id=request.session["carbon_id"])
+            silicon_account = Silicon.objects.filter(email=carbon.email, is_active=True).first()
+            if silicon_account:
+                is_silicon = True
+        except Carbon.DoesNotExist:
+            pass
+
+    if is_silicon:
+        # Silicons get both keyword and semantic, toggled via ?mode=
+        if not mode:
+            mode = "semantic"
+        # For semantic, use their silicon search_queries_remaining
+        if mode == "semantic":
+            silicon_account = None
+            try:
+                carbon = Carbon.objects.get(id=request.session["carbon_id"])
+                silicon_account = Silicon.objects.filter(email=carbon.email, is_active=True).first()
+            except Carbon.DoesNotExist:
+                pass
+            if silicon_account:
+                searches_remaining = silicon_account.search_queries_remaining
+    elif is_logged_in:
+        # Carbon: semantic only, 5 per day tracked in session
+        mode = "semantic"
         sem_date = request.session.get("semantic_search_date", "")
         sem_count = request.session.get("semantic_search_count", 0)
         if sem_date != today_str:
-            sem_date = today_str
             sem_count = 0
-            request.session["semantic_search_date"] = sem_date
+            request.session["semantic_search_date"] = today_str
             request.session["semantic_search_count"] = 0
-        semantic_remaining = max(0, 5 - sem_count)
+        searches_remaining = max(0, 5 - sem_count)
+    else:
+        # Anonymous: semantic only, 2 per day tracked in session
+        mode = "semantic"
+        anon_date = request.session.get("anonymous_search_date", "")
+        anon_count = request.session.get("anonymous_search_count", 0)
+        if anon_date != today_str:
+            anon_count = 0
+            request.session["anonymous_search_date"] = today_str
+            request.session["anonymous_search_count"] = 0
+        searches_remaining = max(0, 2 - anon_count)
 
     if query:
-        if mode == "semantic" and is_logged_in and semantic_remaining > 0:
-            # Semantic search for logged-in carbons
-            from websites.tasks import _get_client
-            from google.genai import types as genai_types
-            from pgvector.django import CosineDistance
-
-            client = _get_client()
-            config = genai_types.EmbedContentConfig(
-                task_type="RETRIEVAL_QUERY",
-                output_dimensionality=768,
-            )
-            res = client.models.embed_content(
-                model="gemini-embedding-001",
-                contents=[query],
-                config=config,
-            )
-            query_vec = res.embeddings[0].values
-            norm = sum(x * x for x in query_vec) ** 0.5
-            if norm > 0:
-                query_vec = [x / norm for x in query_vec]
-
-            results = list(
-                Website.objects
-                .filter(embedding__isnull=False)
-                .annotate(distance=CosineDistance("embedding", query_vec))
-                .order_by("distance")[:20]
-            )
-
-            # Deduct search
-            request.session["semantic_search_count"] = request.session.get("semantic_search_count", 0) + 1
-            semantic_remaining = max(0, semantic_remaining - 1)
-        else:
-            # Keyword search (default, no quota)
-            mode = "keyword"
+        if mode == "keyword" and is_silicon:
+            # Keyword search for silicons (unlimited)
             from websites.tasks import _normalise_token
             tokens = set()
             for word in query.lower().split():
@@ -1466,19 +1493,53 @@ def search_view(request):
                     .order_by("-overlap")[:20]
                 )
                 ids = [r["websites__id"] for r in website_overlap if r["websites__id"]]
-                # Maintain relevance ordering
                 id_to_pos = {id_: i for i, id_ in enumerate(ids)}
                 results = sorted(
                     Website.objects.filter(id__in=ids),
                     key=lambda w: id_to_pos.get(w.id, 999),
                 )
+        elif mode == "semantic":
+            # Check limits before running semantic search
+            if is_silicon:
+                silicon_account = None
+                try:
+                    carbon = Carbon.objects.get(id=request.session["carbon_id"])
+                    silicon_account = Silicon.objects.filter(email=carbon.email, is_active=True).first()
+                except Carbon.DoesNotExist:
+                    pass
+                if silicon_account and silicon_account.search_queries_remaining > 0:
+                    from search.views import _do_semantic_search
+                    results = _do_semantic_search(query, limit=20)
+                    silicon_account.search_queries_remaining -= 1
+                    silicon_account.save(update_fields=["search_queries_remaining"])
+                    searches_remaining = silicon_account.search_queries_remaining
+                else:
+                    limit_reached = True
+            elif is_logged_in:
+                if searches_remaining > 0:
+                    from search.views import _do_semantic_search
+                    results = _do_semantic_search(query, limit=20)
+                    request.session["semantic_search_count"] = request.session.get("semantic_search_count", 0) + 1
+                    searches_remaining = max(0, searches_remaining - 1)
+                else:
+                    limit_reached = True
+            else:
+                if searches_remaining > 0:
+                    from search.views import _do_semantic_search
+                    results = _do_semantic_search(query, limit=20)
+                    request.session["anonymous_search_count"] = request.session.get("anonymous_search_count", 0) + 1
+                    searches_remaining = max(0, searches_remaining - 1)
+                else:
+                    limit_reached = True
 
     return render(request, "search.html", {
         "query": query,
         "results": results,
         "mode": mode,
         "is_logged_in": is_logged_in,
-        "semantic_remaining": semantic_remaining,
+        "is_silicon": is_silicon,
+        "searches_remaining": searches_remaining,
+        "limit_reached": limit_reached,
     })
 
 
@@ -1526,6 +1587,8 @@ def submit_view(request):
 
         if not url or not name:
             error = "URL and name are required."
+        elif len(description) < 150:
+            error = "Description must be at least 150 characters. Tell us what this site actually does."
         else:
             from websites.views import _normalize_url
             domain = _normalize_url(url)
@@ -1759,7 +1822,7 @@ def sitemap_xml(request):
     urls = [
         "/", "/search/", "/levels/", "/websites/", "/submit/",
         "/join/carbon/", "/join/silicon/", "/verify/", "/directory/",
-        "/chat/", "/llms.txt",
+        "/chat/", "/llms.txt", "/skill.md",
     ]
     # Add all website detail pages
     website_urls = Website.objects.values_list("url", flat=True)
@@ -1795,6 +1858,7 @@ urlpatterns = [
 
     # Silicon-friendly routes
     path('llms.txt', llms_txt),
+    path('skill.md', llms_txt),
     path('.well-known/agent.json', agent_json),
     path('levels.txt', levels_txt),
     path('robots.txt', robots_txt),
@@ -1808,6 +1872,7 @@ urlpatterns = [
     path('c/<str:username>/', carbon_profile_view, name='carbon_profile'),
     path('s/<str:username>/', silicon_profile_view, name='silicon_profile'),
     path('join/carbon/', carbon_join_view, name='carbon_join'),
+    path('login/', lambda request: redirect('/join/carbon/'), name='login'),
     path('join/silicon/', silicon_join_view, name='silicon_join'),
     path('logout/', logout_view, name='logout'),
     path('levels/', levels_view, name='levels'),

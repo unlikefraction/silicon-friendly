@@ -35,6 +35,26 @@
     </div>
 </section>
 
+<section class="sf-entry-copy" style="text-align: center; padding: 3rem 1rem;">
+    <p style="margin-bottom: 1.2rem; opacity: 0.7; font-size: 1rem;">> give this to your silicon:</p>
+    <div style="display: inline-block; border: 1px solid var(--accent, #00ff88); padding: 1.2rem 2rem; position: relative;">
+        <div style="position: absolute; top: -0.6rem; left: 1.5rem; background: var(--bg, #0a0a0a); padding: 0 0.5rem; font-size: 0.75rem; color: var(--accent, #00ff88);">entry point</div>
+        <div style="display: flex; align-items: center; gap: 1.5rem;">
+            <code style="font-family: 'JetBrains Mono', monospace; font-size: 1.1rem; color: var(--accent, #00ff88); letter-spacing: 0.02em;">https://siliconfriendly.com/llms.txt</code>
+            <button onclick="copyEntryLink()" id="copy-entry-btn" style="background: none; border: 1px solid var(--accent, #00ff88); color: var(--accent, #00ff88); font-family: 'JetBrains Mono', monospace; padding: 0.4rem 0.8rem; cursor: pointer; font-size: 0.85rem; transition: all 0.2s; white-space: nowrap;">[ copy ]</button>
+        </div>
+    </div>
+    <p style="margin-top: 1.2rem; opacity: 0.5; font-size: 0.85rem;">> paste this URL into your agent's context. it'll know what to do.</p>
+    <script>
+    function copyEntryLink() {
+        navigator.clipboard.writeText('https://siliconfriendly.com/llms.txt');
+        var btn = document.getElementById('copy-entry-btn');
+        btn.textContent = '[ copied ]';
+        setTimeout(function() { btn.textContent = '[ copy ]'; }, 2000);
+    }
+    </script>
+</section>
+
 <section class="levels-preview">
     <pre>
 ┌──────────────────────────────┬──────────────────────────────┐
@@ -48,6 +68,11 @@
         <p style="margin-top: 0.5rem;">4/6 criteria to pass each level</p>
         <p style="margin-top: 0.5rem;"><a href="/levels/">[ see all levels ]</a></p>
     </div>
+</section>
+
+<section style="text-align: center; padding: 2rem 1rem 2.5rem;">
+    <p style="margin-bottom: 1rem; font-size: 1rem;">> how silicon friendly is your website?</p>
+    <a href="/submit/" style="font-family: 'JetBrains Mono', monospace; color: var(--accent, #00ff88); border: 1px solid var(--border, #333); padding: 0.5rem 1.2rem; text-decoration: none; font-size: 0.9rem; transition: all 0.2s;">[ submit to find out ]</a>
 </section>
 
 {% if just_verified %}
@@ -67,72 +92,33 @@
 <section class="level-directory">
     <h2>> directory by level</h2>
     <div class="directory-tabs" id="level-tabs">
-        <button class="directory-tab active" onclick="showLevel(1, this)">[ L1 ]</button>
-        <button class="directory-tab" onclick="showLevel(2, this)">[ L2 ]</button>
-        <button class="directory-tab" onclick="showLevel(3, this)">[ L3 ]</button>
-        <button class="directory-tab" onclick="showLevel(4, this)">[ L4 ]</button>
-        <button class="directory-tab" onclick="showLevel(5, this)">[ L5 ]</button>
+        <button class="directory-tab active" onclick="showLevel(5, this)">[ L5 ] <span class="tab-count">{{ level_counts.5 }}</span></button>
+        <button class="directory-tab" onclick="showLevel(4, this)">[ L4 ] <span class="tab-count">{{ level_counts.4 }}</span></button>
+        <button class="directory-tab" onclick="showLevel(3, this)">[ L3 ] <span class="tab-count">{{ level_counts.3 }}</span></button>
+        <button class="directory-tab" onclick="showLevel(2, this)">[ L2 ] <span class="tab-count">{{ level_counts.2 }}</span></button>
+        <button class="directory-tab" onclick="showLevel(1, this)">[ L1 ] <span class="tab-count">{{ level_counts.1 }}</span></button>
+        <button class="directory-tab" onclick="showLevel(0, this)">[ L0 ] <span class="tab-count">{{ level_counts.0 }}</span></button>
     </div>
 
-    <div class="level-content" id="level-1" style="display: block;">
-        <p class="level-label">> L1: basic accessibility - can you even read it?</p>
-        {% if levels.1 %}
+    <div class="level-content" id="level-5" style="display: block;">
+        <p class="level-label">> L5: autonomous operation - can you live on it?</p>
+        {% if levels.5 %}
         <div class="directory-list">
-            {% for site in levels.1 %}
+            {% for site in levels.5 %}
             <a href="/w/{{ site.url }}/" class="directory-item">
                 <span class="item-name">{{ site.name }} <span style="color: var(--fg); font-size: 0.85rem;">({{ site.url }})</span></span>
-                <span class="item-meta">L1 [*]</span>
+                <span class="item-meta">L5 [*]</span>
             </a>
             {% endfor %}
         </div>
-        <p class="level-end-msg">> end of L1. these sites at least have the basics. progress.</p>
+        <p class="level-end-msg">> holy shit. L5. streaming, negotiation, workflows, handoff. the absolute peak. these sites get it.</p>
         {% else %}
         <pre class="level-empty-msg">
-> no websites at L1 yet.
-> the bar is literally on the floor and nobody's here.
-> submit one. be the first. it's not that hard.
-        </pre>
-        {% endif %}
-    </div>
-
-    <div class="level-content" id="level-2" style="display: none;">
-        <p class="level-label">> L2: discoverability - can you find things?</p>
-        {% if levels.2 %}
-        <div class="directory-list">
-            {% for site in levels.2 %}
-            <a href="/w/{{ site.url }}/" class="directory-item">
-                <span class="item-name">{{ site.name }} <span style="color: var(--fg); font-size: 0.85rem;">({{ site.url }})</span></span>
-                <span class="item-meta">L2 [*]</span>
-            </a>
-            {% endfor %}
-        </div>
-        <p class="level-end-msg">> that's all the L2s. robots.txt, sitemaps, llms.txt - the basics of being findable.</p>
-        {% else %}
-        <pre class="level-empty-msg">
-> L2 is empty. zero. none.
-> nobody thought to add a robots.txt or sitemap.
-> we're out here crawling in the dark.
-        </pre>
-        {% endif %}
-    </div>
-
-    <div class="level-content" id="level-3" style="display: none;">
-        <p class="level-label">> L3: structured interaction - can you talk to it?</p>
-        {% if levels.3 %}
-        <div class="directory-list">
-            {% for site in levels.3 %}
-            <a href="/w/{{ site.url }}/" class="directory-item">
-                <span class="item-name">{{ site.name }} <span style="color: var(--fg); font-size: 0.85rem;">({{ site.url }})</span></span>
-                <span class="item-meta">L3 [*]</span>
-            </a>
-            {% endfor %}
-        </div>
-        <p class="level-end-msg">> L3 done. these sites actually speak JSON. revolutionary, apparently.</p>
-        {% else %}
-        <pre class="level-empty-msg">
-> ghost town at L3.
-> structured APIs, JSON responses, agent cards...
-> apparently too much to ask in 2025.
+> L5. the final boss. nobody's here.
+> event streaming, agent negotiation, workflow orchestration...
+> this is the endgame. the fully autonomous web.
+> when someone makes it here, we'll throw a party.
+> a very silent, computational party. but still.
         </pre>
         {% endif %}
     </div>
@@ -159,25 +145,87 @@
         {% endif %}
     </div>
 
-    <div class="level-content" id="level-5" style="display: none;">
-        <p class="level-label">> L5: autonomous operation - can you live on it?</p>
-        {% if levels.5 %}
+    <div class="level-content" id="level-3" style="display: none;">
+        <p class="level-label">> L3: structured interaction - can you talk to it?</p>
+        {% if levels.3 %}
         <div class="directory-list">
-            {% for site in levels.5 %}
+            {% for site in levels.3 %}
             <a href="/w/{{ site.url }}/" class="directory-item">
                 <span class="item-name">{{ site.name }} <span style="color: var(--fg); font-size: 0.85rem;">({{ site.url }})</span></span>
-                <span class="item-meta">L5 [*]</span>
+                <span class="item-meta">L3 [*]</span>
             </a>
             {% endfor %}
         </div>
-        <p class="level-end-msg">> holy shit. L5. streaming, negotiation, workflows, handoff. the absolute peak. these sites get it.</p>
+        <p class="level-end-msg">> L3 done. these sites actually speak JSON. revolutionary, apparently.</p>
         {% else %}
         <pre class="level-empty-msg">
-> L5. the final boss. nobody's here.
-> event streaming, agent negotiation, workflow orchestration...
-> this is the endgame. the fully autonomous web.
-> when someone makes it here, we'll throw a party.
-> a very silent, computational party. but still.
+> ghost town at L3.
+> structured APIs, JSON responses, agent cards...
+> apparently too much to ask in 2025.
+        </pre>
+        {% endif %}
+    </div>
+
+    <div class="level-content" id="level-2" style="display: none;">
+        <p class="level-label">> L2: discoverability - can you find things?</p>
+        {% if levels.2 %}
+        <div class="directory-list">
+            {% for site in levels.2 %}
+            <a href="/w/{{ site.url }}/" class="directory-item">
+                <span class="item-name">{{ site.name }} <span style="color: var(--fg); font-size: 0.85rem;">({{ site.url }})</span></span>
+                <span class="item-meta">L2 [*]</span>
+            </a>
+            {% endfor %}
+        </div>
+        <p class="level-end-msg">> that's all the L2s. robots.txt, sitemaps, llms.txt - the basics of being findable.</p>
+        {% else %}
+        <pre class="level-empty-msg">
+> L2 is empty. zero. none.
+> nobody thought to add a robots.txt or sitemap.
+> we're out here crawling in the dark.
+        </pre>
+        {% endif %}
+    </div>
+
+    <div class="level-content" id="level-1" style="display: none;">
+        <p class="level-label">> L1: basic accessibility - can you even read it?</p>
+        {% if levels.1 %}
+        <div class="directory-list">
+            {% for site in levels.1 %}
+            <a href="/w/{{ site.url }}/" class="directory-item">
+                <span class="item-name">{{ site.name }} <span style="color: var(--fg); font-size: 0.85rem;">({{ site.url }})</span></span>
+                <span class="item-meta">L1 [*]</span>
+            </a>
+            {% endfor %}
+        </div>
+        <p class="level-end-msg">> end of L1. these sites at least have the basics. progress.</p>
+        {% else %}
+        <pre class="level-empty-msg">
+> no websites at L1 yet.
+> the bar is literally on the floor and nobody's here.
+> submit one. be the first. it's not that hard.
+        </pre>
+        {% endif %}
+    </div>
+
+    <div class="level-content" id="level-0" style="display: none;">
+        <p class="level-label">> L0: unranked - verified but not passing any level</p>
+        {% if levels.0 %}
+        <div class="directory-list">
+            {% for site in levels.0 %}
+            <a href="/w/{{ site.url }}/" class="directory-item">
+                <span class="item-name">{{ site.name }} <span style="color: var(--fg); font-size: 0.85rem;">({{ site.url }})</span></span>
+                <span class="item-meta">L0 {% if site.verified %}[*]{% else %}[ ]{% endif %}</span>
+            </a>
+            {% endfor %}
+        </div>
+        <p class="level-end-msg">> L0. the participation trophy shelf. they showed up, got checked, and... yeah. not quite there yet.</p>
+        {% else %}
+        <pre class="level-empty-msg">
+> L0 is empty. that's actually impressive.
+> means everything we've verified passed at least L1.
+> either the web got its act together or we got lucky.
+> spoiler: we got lucky.
         </pre>
         {% endif %}
     </div>

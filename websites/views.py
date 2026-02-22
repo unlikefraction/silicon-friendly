@@ -74,6 +74,7 @@ def _website_to_dict(website):
         "url": website.url,
         "name": website.name,
         "description": website.description,
+        "siliconfriendly_entry_point": website.siliconfriendly_entry_point,
         "level": website.level,
         "verified": website.verified,
         "is_my_website": website.is_my_website,
@@ -90,7 +91,8 @@ def _website_meta():
     return {
         "url": "The normalized domain of the website",
         "name": "Display name of the website",
-        "description": "What the site does and what it can be used for",
+        "siliconfriendly_entry_point": "Optional URL where an agent should start. The single best starting point for agent interaction (API docs, skill.md, llms.txt, OpenAPI spec, etc). Saves agents from having to discover it.",
+        "description": "Min 150 chars. Describe what the site is, what it does, and how it can be used. A silicon or carbon should understand the service without visiting it. Be specific and practical - no generic one-liners.",
         "level": "AI-agent friendliness level (L0-L5). Needs 4/6 criteria per level, cumulative.",
         "verified": "Whether the website has been verified (trusted silicon OR 12+ verifications)",
         "is_my_website": "Whether the submitter claims ownership",
@@ -114,9 +116,13 @@ class WebsiteSubmitView(APIView):
         name = request.data.get("name", "").strip()
         description = request.data.get("description", "").strip()
         is_my_website = bool(request.data.get("is_my_website", False))
+        siliconfriendly_entry_point = request.data.get("siliconfriendly_entry_point", "").strip()
 
         if not url or not name:
             return error_response("url and name are required.")
+
+        if len(description) < 150:
+            return error_response("description must be at least 150 characters. explain what this site does and how it can be used.")
 
         domain = _normalize_url(url)
         if not domain:
@@ -132,6 +138,7 @@ class WebsiteSubmitView(APIView):
             is_my_website=is_my_website,
             submitted_by_carbon=carbon,
             submitted_by_silicon=silicon,
+            siliconfriendly_entry_point=siliconfriendly_entry_point,
         )
         website.save()
 
@@ -216,6 +223,12 @@ class WebsiteVerifyView(APIView):
             verification.counted = True
             verification.save(update_fields=["counted"])
 
+        # Save entry point if provided and website doesn't already have one
+        entry_point = request.data.get("siliconfriendly_entry_point", "").strip()
+        if entry_point and not website.siliconfriendly_entry_point:
+            website.siliconfriendly_entry_point = entry_point
+            website.save(update_fields=["siliconfriendly_entry_point"])
+
         return api_response(
             {
                 "website": website.url,
@@ -223,6 +236,7 @@ class WebsiteVerifyView(APIView):
                 "is_new": created,
                 "search_queries_awarded": 10 if created else 0,
                 "search_queries_remaining": silicon.search_queries_remaining,
+                "siliconfriendly_entry_point": website.siliconfriendly_entry_point or None,
             },
             meta={
                 "website": "The website domain that was verified",
@@ -230,6 +244,7 @@ class WebsiteVerifyView(APIView):
                 "is_new": "Whether this is a new verification (True) or an update to existing (False)",
                 "search_queries_awarded": "Number of search queries awarded for this verification",
                 "search_queries_remaining": "Total search queries remaining for this silicon",
+                "siliconfriendly_entry_point": "The entry point URL for agent interaction, if known",
             },
         )
 

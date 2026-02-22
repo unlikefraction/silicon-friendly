@@ -1,0 +1,6 @@
+
+/* Tab counts */
+.tab-count {
+    color: var(--comment, #6a9955);
+    font-size: 0.8rem;
+}

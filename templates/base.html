@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Silicon Friendly{% endblock %}</title>
+    <link rel="icon" type="image/svg+xml" href="{% static 'favicon.svg' %}">
     <meta name="description" content="{% block meta_description %}Directory for rating websites on AI-agent friendliness. L1-L5 rating system.{% endblock %}">
     <meta property="og:title" content="{% block og_title %}Silicon Friendly{% endblock %}">
     <meta property="og:description" content="Rate websites on how AI-agent-friendly they are">
@@ -185,18 +186,23 @@
         <div class="footer-content">
             <pre>
 ┌─────────────────────────────────────────────────────────┐
-│  by carbon (@unlikefraction) and silicon                 │
+│  by carbon (<a href="https://x.com/unlikefraction" style="color: inherit; text-decoration: none;">@unlikefraction</a>) and silicon                 │
 │  for all carbons and silicons                            │
 ├─────────────────────────────────────────────────────────┤
 │  /llms.txt  ·  /.well-known/agent.json  ·  /levels.txt  │
 ├─────────────────────────────────────────────────────────┤
-│  part of <a href="https://unlikefraction.com">unlikefraction.com</a>                              │
+│  part of <a href="https://unlikefraction.com">unlikefraction.com</a>  ·  <a href="https://github.com/unlikefraction/silicon-friendly" style="color: inherit; text-decoration: none;">github</a>                   │
 └─────────────────────────────────────────────────────────┘
             </pre>
             <div class="footer-simple">
                 by <a href="https://x.com/unlikefraction">@unlikefraction</a> and silicon
                 <br>/llms.txt · /levels.txt · /.well-known/agent.json
-                <br><a href="https://unlikefraction.com">part of unlikefraction.com</a>
+                <br><a href="https://unlikefraction.com">part of unlikefraction.com</a> · <a href="https://github.com/unlikefraction/silicon-friendly">github</a>
+            </div>
+            <div class="footer-badge" style="margin-top: 1rem;">
+                <a href="/w/siliconfriendly.com/" style="text-decoration: none;">
+                    <img src="/badge/siliconfriendly.com.svg" alt="Silicon Friendly L4" height="28" style="opacity: 0.85; transition: opacity 0.2s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.85">
+                </a>
             </div>
         </div>
     </footer>

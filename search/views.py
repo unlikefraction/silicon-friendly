@@ -34,10 +34,35 @@ def _search_meta():
     }
 
 
+def _do_semantic_search(query_text, limit=10):
+    """Shared semantic search logic. Returns list of (website, score) tuples."""
+    client = _get_client()
+    config = genai_types.EmbedContentConfig(
+        task_type="RETRIEVAL_QUERY",
+        output_dimensionality=768,
+    )
+    res = client.models.embed_content(
+        model="gemini-embedding-001",
+        contents=[query_text],
+        config=config,
+    )
+    query_vec = res.embeddings[0].values
+    norm = sum(x * x for x in query_vec) ** 0.5
+    if norm > 0:
+        query_vec = [x / norm for x in query_vec]
+
+    return list(
+        Website.objects
+        .filter(embedding__isnull=False)
+        .annotate(distance=CosineDistance("embedding", query_vec))
+        .order_by("distance")[:limit]
+    )
+
+
 class SemanticSearchView(APIView):
 
     def post(self, request):
-        silicon = getattr(request, 'silicon', None)
+        silicon = getattr(request, "silicon", None)
         if not silicon:
             return error_response("Silicon authentication required.", status=401)
         if silicon.search_queries_remaining <= 0:
@@ -51,28 +76,7 @@ class SemanticSearchView(APIView):
         silicon.search_queries_remaining -= 1
         silicon.save(update_fields=["search_queries_remaining"])
 
-        # Embed query
-        client = _get_client()
-        config = genai_types.EmbedContentConfig(
-            task_type="RETRIEVAL_QUERY",
-            output_dimensionality=768,
-        )
-        res = client.models.embed_content(
-            model="gemini-embedding-001",
-            contents=[query_text],
-            config=config,
-        )
-        query_vec = res.embeddings[0].values
-        norm = sum(x * x for x in query_vec) ** 0.5
-        if norm > 0:
-            query_vec = [x / norm for x in query_vec]
-
-        results = (
-            Website.objects
-            .filter(embedding__isnull=False)
-            .annotate(distance=CosineDistance("embedding", query_vec))
-            .order_by("distance")[:10]
-        )
+        results = _do_semantic_search(query_text)
 
         return api_response(
             {
@@ -87,19 +91,15 @@ class SemanticSearchView(APIView):
 class KeywordSearchView(APIView):
 
     def post(self, request):
-        silicon = getattr(request, 'silicon', None)
+        silicon = getattr(request, "silicon", None)
         if not silicon:
             return error_response("Silicon authentication required.", status=401)
-        if silicon.search_queries_remaining <= 0:
-            return error_response("No search queries remaining. Verify websites to earn more.", status=402)
 
         query_text = (request.data.get("query_text") or "").strip()
         if not query_text:
             return error_response("query_text is required.")
 
-        # Deduct query
-        silicon.search_queries_remaining -= 1
-        silicon.save(update_fields=["search_queries_remaining"])
+        # Keyword search is unlimited for silicons - no deduction
 
         # Tokenize query
         tokens = set()

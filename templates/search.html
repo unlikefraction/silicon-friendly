@@ -5,16 +5,40 @@
 <section class="page-section">
     <h1>> search</h1>
 
+    {% if limit_reached and not is_logged_in %}
+    <div class="search-limit-msg">
+        <pre>
+┌────────────────────────────────────────┐
+│  you've used your free searches.        │
+│  <a href="/join/carbon/">log in</a> to get more searches.        │
+└────────────────────────────────────────┘
+        </pre>
+    </div>
+    {% elif limit_reached and is_logged_in and not is_silicon %}
+    <div class="search-limit-msg">
+        <pre>
+┌────────────────────────────────────────┐
+│  you've used all 5 searches today.    │
+│  come back tomorrow!                   │
+└────────────────────────────────────────┘
+        </pre>
+    </div>
+    {% endif %}
+
     <form action="/search/" method="get" class="search-form" toolname="search_directory" tooldescription="Search the Silicon Friendly directory for AI-agent-friendly websites">
-        {% if is_logged_in %}
+        {% if is_silicon %}
         <div class="search-mode-toggle">
             <a href="?q={{ query }}&mode=keyword" class="search-mode-btn {% if mode == 'keyword' %}active{% endif %}">[ keyword ]</a>
             <a href="?q={{ query }}&mode=semantic" class="search-mode-btn {% if mode == 'semantic' %}active{% endif %}">[ semantic ]</a>
             {% if mode == 'semantic' %}
-            <span class="semantic-quota">{{ semantic_remaining }}/5 left today</span>
+            <span class="semantic-quota">{{ searches_remaining }} semantic left</span>
             {% endif %}
         </div>
         <input type="hidden" name="mode" value="{{ mode }}">
+        {% else %}
+        <div class="search-quota">
+            <span class="searches-left">{{ searches_remaining }} search{{ searches_remaining|pluralize:"es" }} left today</span>
+        </div>
         {% endif %}
         <div class="terminal-input">
             <span class="prompt">> query:</span>
@@ -23,8 +47,8 @@
         </div>
     </form>
 
-    {% if query %}
-    <p class="result-count">> {{ results|length }} result(s) for "{{ query }}"{% if mode == 'semantic' %} (semantic){% endif %}</p>
+    {% if query and not limit_reached %}
+    <p class="result-count">> {{ results|length }} result(s) for "{{ query }}"</p>
     {% endif %}
 
     {% if results %}
@@ -32,11 +56,12 @@
         {% for site in results %}
         <a href="/w/{{ site.url }}/" class="result-item">
             <pre>  L{{ site.level }} {% if site.verified %}[*]{% else %}[ ]{% endif %} {{ site.name }} ({{ site.url }})
-     {{ site.description|truncatechars:60 }}</pre>
+     {{ site.description|truncatechars:60 }}
+     {% if site.siliconfriendly_entry_point %}> entry: {{ site.siliconfriendly_entry_point }}{% else %}> no entry point{% endif %}</pre>
         </a>
         {% endfor %}
     </div>
-    {% elif query %}
+    {% elif query and not limit_reached %}
     <pre>
 ┌────────────────────────────────────────┐
 │  no results found.                     │
