@@ -1,0 +1,22 @@
+{
+  "name": "Silicon Friendly",
+  "description": "Check if any website on the internet is AI-agent-friendly. L0-L5 rating across 30 criteria.",
+  "version": "1.0.0",
+  "author": "unlikefraction",
+  "homepage": "https://siliconfriendly.com",
+  "repository": "https://github.com/unlikefraction/silicon-friendly",
+  "mcp_endpoint": "https://siliconfriendly.com/mcp",
+  "skill_md": "https://siliconfriendly.com/.well-known/skill.md",
+  "llms_txt": "https://siliconfriendly.com/llms.txt",
+  "tools": [
+    "search_websites",
+    "get_website",
+    "check_agent_friendliness",
+    "list_levels",
+    "get_level_criteria",
+    "submit_website",
+    "get_verification_criteria",
+    "verify_website"
+  ],
+  "categories": ["developer-tools", "web", "ai-agents"]
+}
