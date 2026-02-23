@@ -17,7 +17,6 @@
         <a href="/w/{{ site.url }}/" class="directory-item">
             <span class="item-name">{{ site.name }} <span style="color: var(--fg); font-size: 0.85rem;">({{ site.url }})</span></span>
             <span class="item-meta">L{{ site.level }} {% if site.verified %}[verified]{% else %}[unverified]{% endif %}</span>
-            {% if site.siliconfriendly_entry_point %}<span class="item-entry" style="display: block; font-size: 0.8rem; opacity: 0.6; margin-top: 0.15rem;">> entry: {{ site.siliconfriendly_entry_point }}</span>{% else %}<span class="item-entry" style="display: block; font-size: 0.8rem; opacity: 0.6; margin-top: 0.15rem;">> no entry point</span>{% endif %}
         </a>
         {% endfor %}
     </div>

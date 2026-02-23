@@ -37,10 +37,10 @@
 
 <section class="sf-entry-copy" style="text-align: center; padding: 3rem 1rem;">
     <p style="margin-bottom: 1.2rem; opacity: 0.7; font-size: 1rem;">> give this to your silicon:</p>
-    <div style="display: inline-block; border: 1px solid var(--accent, #00ff88); padding: 1.2rem 2rem; position: relative;">
+    <div style="display: inline-block; border: 1px solid var(--accent, #00ff88); padding: 1.2rem 1.5rem; position: relative; max-width: 100%; box-sizing: border-box;">
         <div style="position: absolute; top: -0.6rem; left: 1.5rem; background: var(--bg, #0a0a0a); padding: 0 0.5rem; font-size: 0.75rem; color: var(--accent, #00ff88);">entry point</div>
-        <div style="display: flex; align-items: center; gap: 1.5rem;">
-            <code style="font-family: 'JetBrains Mono', monospace; font-size: 1.1rem; color: var(--accent, #00ff88); letter-spacing: 0.02em;">https://siliconfriendly.com/llms.txt</code>
+        <div class="entry-point-flex" style="display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap; justify-content: center;">
+            <code style="font-family: 'JetBrains Mono', monospace; font-size: 1.1rem; color: var(--accent, #00ff88); letter-spacing: 0.02em; word-break: break-all; overflow-wrap: break-word;">https://siliconfriendly.com/llms.txt</code>
             <button onclick="copyEntryLink()" id="copy-entry-btn" style="background: none; border: 1px solid var(--accent, #00ff88); color: var(--accent, #00ff88); font-family: 'JetBrains Mono', monospace; padding: 0.4rem 0.8rem; cursor: pointer; font-size: 0.85rem; transition: all 0.2s; white-space: nowrap;">[ copy ]</button>
         </div>
     </div>

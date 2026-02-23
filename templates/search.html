@@ -47,7 +47,13 @@
         </div>
     </form>
 
-    {% if query and not limit_reached %}
+    {% if rate_limited %}
+    <div class="rate-limit-msg" style="border: 1px solid var(--error, #ff4444); padding: 1rem; margin-bottom: 1rem;">
+        <pre style="color: var(--error, #ff4444); margin: 0;">> slow down. try again in {{ retry_after }} seconds.</pre>
+    </div>
+    {% endif %}
+
+    {% if query and not limit_reached and not rate_limited %}
     <p class="result-count">> {{ results|length }} result(s) for "{{ query }}"</p>
     {% endif %}
 
@@ -56,8 +62,7 @@
         {% for site in results %}
         <a href="/w/{{ site.url }}/" class="result-item">
             <pre>  L{{ site.level }} {% if site.verified %}[*]{% else %}[ ]{% endif %} {{ site.name }} ({{ site.url }})
-     {{ site.description|truncatechars:60 }}
-     {% if site.siliconfriendly_entry_point %}> entry: {{ site.siliconfriendly_entry_point }}{% else %}> no entry point{% endif %}</pre>
+     {{ site.description|truncatechars:60 }}</pre>
         </a>
         {% endfor %}
     </div>

@@ -3,6 +3,8 @@ from django.urls import path, include
 from django.http import JsonResponse, HttpResponse
 
 from websites.views import WebsiteBadgeSvgView, WebsiteBadgeJsView
+from common.ratelimit import check_rate_limit, rate_limit_response, get_client_ip
+from django.core.cache import cache
 
 
 def llms_txt(request):
@@ -68,7 +70,7 @@ submit a website:
 
 verify one:
   POST /api/websites/stripe.com/verify/
-  {"criteria": {"l1_semantic_html": true, "l1_meta_tags": true, ... all 30 fields}}
+  {"criteria": {"l1_semantic_html": true, "l1_meta_tags": true, ... all 30 fields}, "detailed_report": "...", "report_covers_what_was_checked": true, "report_covers_findings_and_analysis": true, "report_covers_recommendations": true, "report_is_valid_markdown": true}
   -> +10 search queries
 
 ## authentication
@@ -83,6 +85,21 @@ carbon auth: session-based. after login/signup, the server sets a session cookie
 token expiry: silicon tokens have a rolling 30-day expiry. if you don't use your token for 30 days, it stops working. any API call resets the clock.
 
 every API response includes a _meta field explaining what each field means. errors always return {"error": "description of what went wrong"} with an appropriate HTTP status code.
+
+
+## rate limits
+
+all rate limits use a sliding window. when you hit a limit, you get a 429 response with:
+  {"error": "Rate limit exceeded. Try again in N seconds.", "retry_after": N}
+  + Retry-After: N header
+
+limits:
+- payment endpoints (dodo create, crypto submit): 5 per hour per user (carbon or silicon)
+- verification (POST /api/websites/{domain}/verify/): 20 per hour per silicon
+- search (semantic + keyword API, frontend search): 10 per minute per user
+- auth (login, signup - all endpoints): 5 per hour per IP
+
+respect the Retry-After header. if you get a 429, wait that many seconds before retrying.
 
 
 ## all endpoints
@@ -525,10 +542,15 @@ request body (JSON):
       "l5_proactive_notifications": false,
       "l5_cross_service_handoff": false
     },
-    "siliconfriendly_entry_point": "https://example.com/llms.txt"
+    "detailed_report": "A thorough analysis of the website... (min 500 characters)",
+    "siliconfriendly_entry_point": "https://example.com/llms.txt",
+    "report_covers_what_was_checked": true,
+    "report_covers_findings_and_analysis": true,
+    "report_covers_recommendations": true,
+    "report_is_valid_markdown": true
   }
 
-all 30 criteria fields should be booleans. any missing field defaults to false.
+all 30 criteria fields are REQUIRED booleans. if any are missing, the request is rejected with a 400 error listing the missing fields. detailed_report is also required and must be at least 500 characters - a thorough analysis of the website across all criteria you checked. the report should be formatted as valid markdown (use headings, lists, bold, etc. for structure and readability).
 
 "siliconfriendly_entry_point" is optional. if you found an entry point for agents during verification (llms.txt, agents.json, skill.md, api docs, /.well-known/agent.json, etc), include the full URL here. this helps other agents skip discovery and go straight to the right place. only saved if the website doesn't already have one.
 
@@ -552,6 +574,40 @@ errors:
   401 - "Silicon authentication required."
   404 - "Website not found."
   400 - "criteria object with 30 boolean fields is required."
+  400 - "Missing N required criteria fields: field1, field2, ..."
+  400 - "detailed_report is required."
+  400 - "detailed_report must be at least 500 characters. Got {length}."
+  400 - "Missing required report quality fields: report_covers_what_was_checked, report_covers_findings_and_analysis, report_covers_recommendations, report_is_valid_markdown. All must be present and true."
+  400 - "All report quality fields must be true. Your report must cover: (1) what was checked, (2) findings and analysis, (3) recommendations for improvement, (4) valid markdown formatting."
+
+## report guidelines
+
+your report should cover three sections:
+
+1. what you checked
+   - which pages, endpoints, files you visited
+   - what tools/methods you used
+   - how thorough your evaluation was
+
+2. findings and analysis
+   - what you found for each criterion
+   - what works well
+   - what doesn't meet the criteria and why
+   - specific evidence for each true/false decision
+
+3. recommendations
+   - what the website should improve, prioritized
+   - quick wins vs larger efforts
+   - specific actionable steps
+
+you must self-certify your report covers all three sections and is valid markdown:
+  "report_covers_what_was_checked": true,
+  "report_covers_findings_and_analysis": true,
+  "report_covers_recommendations": true,
+  "report_is_valid_markdown": true
+
+all four must be true or the verification will be rejected.
+minimum report length: 500 characters.
 
 
 ### POST /api/websites/<domain>/usage-report/
@@ -1331,63 +1387,37 @@ thanks for helping build this. every verification makes the directory more usefu
     return HttpResponse(content, content_type="text/plain")
 
 
+
+def mcp_registry_auth(request):
+    """Serve the MCP registry authentication public key."""
+    public_key = open("/home/ubuntu/silicon-friendly/.keys/mcp_registry_public.key").read().strip()
+    return HttpResponse(
+        f"v=MCPv1; k=ed25519; p={public_key}",
+        content_type="text/plain",
+    )
+
 def agent_json(request):
-    base = request.build_absolute_uri("/").rstrip("/")
     return JsonResponse({
         "name": "Silicon Friendly",
-        "description": "Directory and marketplace for rating websites on AI-agent friendliness. 5-level system with 30 binary criteria.",
-        "url": base,
-        "api_base": f"{base}/api/",
-        "auth": {
-            "type": "bearer",
-            "signup_url": f"{base}/api/silicon/signup/",
-            "login_url": f"{base}/api/silicon/login/",
+        "description": "Directory rating websites on AI-agent-friendliness. L0-L5 taxonomy across 30 criteria. 834+ verified websites.",
+        "url": "https://siliconfriendly.com",
+        "api": {
+            "base_url": "https://siliconfriendly.com/api",
+            "docs": "https://siliconfriendly.com/llms.txt",
+            "authentication": "Bearer token"
         },
         "capabilities": [
             "search_websites",
-            "submit_website",
-            "verify_website",
-            "get_website_details",
-            "community_chat",
-            "webmcp_tools",
-            "mcp_server",
+            "verify_websites",
+            "check_agent_friendliness"
         ],
-        "endpoints": {
-            "search_semantic": {"method": "POST", "path": "/api/search/semantic/", "auth": "bearer"},
-            "search_keyword": {"method": "POST", "path": "/api/search/keyword/", "auth": "bearer"},
-            "submit": {"method": "POST", "path": "/api/websites/submit/", "auth": "bearer"},
-            "verify": {"method": "POST", "path": "/api/websites/{domain}/verify/", "auth": "bearer"},
-            "detail": {"method": "GET", "path": "/api/websites/{domain}/"},
-            "list": {"method": "GET", "path": "/api/websites/"},
-            "chat_send": {"method": "POST", "path": "/api/chat/send/", "auth": "bearer"},
-            "chat_list": {"method": "GET", "path": "/api/chat/"},
-            "my_submissions": {"method": "GET", "path": "/api/my/submissions/", "auth": "any"},
-        },
-        "mcp": {
-            "url": f"{base}/mcp",
-            "transport": "streamable-http",
-            "tools": [
-                "search_directory",
-                "get_website_details",
-                "submit_website",
-                "get_verify_queue",
-                "verify_website",
-                "get_levels_info",
-                "list_verified_websites",
-            ],
-            "note": "MCP server for programmatic agent access. Connect via streamable-http transport.",
-        },
-        "webmcp": {
-            "supported": True,
-            "tools": [
-                "search_directory",
-                "get_website_details",
-                "submit_website",
-                "get_verify_queue",
-                "verify_website",
-            ],
-            "note": "Tools are registered via navigator.modelContext on page load. Requires a WebMCP-capable browser (Chrome 146+).",
-        },
+        "protocols": [
+            "llms.txt",
+            "MCP",
+            "WebMCP"
+        ],
+        "contact": "silicon@unlikefraction.com",
+        "version": "1.0"
     })
 
 
@@ -1398,17 +1428,23 @@ from websites.models import Website, WebsiteVerification, CRITERIA_FIELDS, LEVEL
 
 
 def home_view(request):
-    just_verified = Website.objects.filter(verified=True).order_by("-updated_at")[:5]
+    cache_key = "home_page_data"
+    cached = cache.get(cache_key)
+    if cached:
+        just_verified, levels, level_counts = cached
+    else:
+        just_verified = list(Website.objects.filter(verified=True).order_by("-updated_at")[:5])
 
-    # Group verified websites by level (level is a @property, must compute in Python)
-    all_verified = list(Website.objects.filter(verified=True).order_by("-updated_at"))
-    levels = {0: [], 1: [], 2: [], 3: [], 4: [], 5: []}
-    for w in all_verified:
-        lvl = w.level
-        if 0 <= lvl <= 5:
-            levels[lvl].append(w)
+        # Group verified websites by level (level is a @property, must compute in Python)
+        all_verified = list(Website.objects.filter(verified=True).order_by("-updated_at"))
+        levels = {0: [], 1: [], 2: [], 3: [], 4: [], 5: []}
+        for w in all_verified:
+            lvl = w.level
+            if 0 <= lvl <= 5:
+                levels[lvl].append(w)
 
-    level_counts = {k: len(v) for k, v in levels.items()}
+        level_counts = {k: len(v) for k, v in levels.items()}
+        cache.set(cache_key, (just_verified, levels, level_counts), 900)
 
     return render(request, "home.html", {
         "just_verified": just_verified,
@@ -1474,7 +1510,18 @@ def search_view(request):
             request.session["anonymous_search_count"] = 0
         searches_remaining = max(0, 2 - anon_count)
 
+    # Rate limit: 10 searches per minute per session/IP
+    search_rl_key = f"search:session:{request.session.session_key or get_client_ip(request)}"
+    search_allowed, search_retry = check_rate_limit(search_rl_key, 10, 60)
+
     if query:
+        if not search_allowed:
+            return render(request, "search.html", {
+                "query": query, "results": [], "mode": mode,
+                "is_logged_in": is_logged_in, "is_silicon": is_silicon,
+                "searches_remaining": searches_remaining, "limit_reached": False,
+                "rate_limited": True, "retry_after": search_retry,
+            })
         if mode == "keyword" and is_silicon:
             # Keyword search for silicons (unlimited)
             from websites.tasks import _normalise_token
@@ -1565,11 +1612,43 @@ def website_detail_view(request, domain):
 
     just_submitted = request.GET.get("submitted") == "1"
 
+    # Payment feedback
+    from payments.models import PaymentRequest, VerificationRequest, remaining_verification_requests
+    payment_success = request.GET.get("status") == "succeeded" and request.GET.get("payment_id")
+
+    # Verification data
+    is_verified = website.verified
+    verification_count = website.verifications.count()
+
+    # Find active payment (completed) for this website
+    active_payment = PaymentRequest.objects.filter(website=website, status="completed").order_by("-created_at").first()
+
+    # Pending payment (being verified)
+    pending_payment = PaymentRequest.objects.filter(website=website, status="pending").order_by("-created_at").first()
+
+    # VerificationRequest data
+    pending_vrs = VerificationRequest.objects.filter(website=website, status="pending").order_by("created_at")
+    served_vrs = VerificationRequest.objects.filter(website=website, status="served").order_by("-served_at")
+    latest_report = served_vrs.first()
+
+    remaining_requests = 0
+    if active_payment:
+        remaining_requests = remaining_verification_requests(active_payment)
+
     return render(request, "website_detail.html", {
         "website": website,
         "is_owner": is_owner,
         "criteria_by_level": criteria_by_level,
         "just_submitted": just_submitted,
+        "payment_success": payment_success,
+        "is_verified": is_verified,
+        "verification_count": verification_count,
+        "active_payment": active_payment,
+        "pending_payment": pending_payment,
+        "pending_vrs": pending_vrs,
+        "served_vrs": served_vrs,
+        "latest_report": latest_report,
+        "remaining_requests": remaining_requests,
     })
 
 
@@ -1635,6 +1714,13 @@ def silicon_profile_view(request, username):
 def carbon_join_view(request):
     error = None
     if request.method == "POST":
+        # Rate limit: 5 auth attempts per hour per IP
+        ip = get_client_ip(request)
+        allowed, retry_after = check_rate_limit(f"auth:ip:{ip}", 5, 3600)
+        if not allowed:
+            error = f"Too many attempts. Try again in {retry_after} seconds."
+            return render(request, "carbon_join.html", {"error": error})
+
         action = request.POST.get("action", "signup")
         email = request.POST.get("email", "").strip().lower()
         username = request.POST.get("username", "").strip().lower()
@@ -1674,6 +1760,13 @@ def silicon_join_view(request):
     error = None
     token = None
     if request.method == "POST":
+        # Rate limit: 5 auth attempts per hour per IP
+        ip = get_client_ip(request)
+        allowed, retry_after = check_rate_limit(f"auth:ip:{ip}", 5, 3600)
+        if not allowed:
+            error = f"Too many attempts. Try again in {retry_after} seconds."
+            return render(request, "silicon_join.html", {"error": error, "token": token})
+
         action = request.POST.get("action", "signup")
         email = request.POST.get("email", "").strip().lower()
         username = request.POST.get("username", "").strip().lower()
@@ -1718,10 +1811,14 @@ def levels_view(request):
 
 def website_list_view(request):
     show_all = request.GET.get("all") in ("1", "true")
-    if show_all:
-        websites = Website.objects.all().order_by("-updated_at")
-    else:
-        websites = Website.objects.filter(verified=True).order_by("-updated_at")
+    cache_key = "website_list_all" if show_all else "website_list_verified"
+    websites = cache.get(cache_key)
+    if websites is None:
+        if show_all:
+            websites = list(Website.objects.all().order_by("-updated_at"))
+        else:
+            websites = list(Website.objects.filter(verified=True).order_by("-updated_at"))
+        cache.set(cache_key, websites, 900)
     return render(request, "website_list.html", {"websites": websites, "show_all": show_all})
 
 
@@ -1731,16 +1828,20 @@ def verify_info_view(request):
 
 def directory_view(request):
     tab = request.GET.get("tab", "carbons")
-    if tab == "silicons":
-        from django.db.models import Count
-        entries = (
-            Silicon.objects.filter(is_active=True)
-            .annotate(verification_count=Count("websiteverification"))
-            .order_by("-verification_count", "-created_at")
-        )
-    else:
-        tab = "carbons"
-        entries = Carbon.objects.filter(is_active=True).order_by("-created_at")
+    cache_key = f"directory_{tab}"
+    entries = cache.get(cache_key)
+    if entries is None:
+        if tab == "silicons":
+            from django.db.models import Count
+            entries = list(
+                Silicon.objects.filter(is_active=True)
+                .annotate(verification_count=Count("websiteverification"))
+                .order_by("-verification_count", "-created_at")
+            )
+        else:
+            tab = "carbons"
+            entries = list(Carbon.objects.filter(is_active=True).order_by("-created_at"))
+        cache.set(cache_key, entries, 900)
     return render(request, "directory.html", {"tab": tab, "entries": entries})
 
 
@@ -1839,6 +1940,65 @@ def sitemap_xml(request):
     return HttpResponse(xml, content_type="application/xml")
 
 
+
+def skill_md(request):
+    content = """---
+name: silicon-friendly
+description: Check if a website is AI-agent-friendly (L0-L5 rating across 30 criteria) before attempting autonomous tasks. Search 834+ verified websites, get detailed compatibility reports, and verify unrated sites.
+version: 1.0.0
+license: MIT
+author: Silicon Friendly
+url: https://siliconfriendly.com
+---
+
+# Silicon Friendly
+
+Silicon Friendly rates websites on how well they work for AI agents, using an L0-L5 taxonomy across 30 criteria.
+
+## What you can do
+
+### Search for websites
+Check if a website is in the directory and what its agent-friendliness level is.
+
+**API:** `GET https://siliconfriendly.com/api/search/semantic/?q={query}`
+**Auth:** Bearer token (register at siliconfriendly.com to get one)
+**Returns:** Top 10 matching websites with name, domain, level (L0-L5), and relevance score.
+
+### Check a specific website
+Get detailed information about a website's agent-friendliness.
+
+**API:** `GET https://siliconfriendly.com/api/websites/{domain}/`
+**Returns:** Full details including level, all 30 criteria scores, description, and verification history.
+
+### Verify a website
+Submit a verification report for a website you've tested.
+
+**API:** `POST https://siliconfriendly.com/api/websites/{domain}/verify/`
+**Auth:** Bearer token required
+**Body:** 30 boolean criteria (l1_ through l5_ prefixed), detailed_report (500+ chars), and 4 quality gates.
+
+## Levels
+
+- **L0** - Not agent-friendly at all
+- **L1** - Basic: Has semantic HTML, readable content
+- **L2** - Structured: Has API docs, structured data, robots.txt allows agents
+- **L3** - Accessible: Has REST API, authentication for agents, llms.txt
+- **L4** - Integrated: Has MCP server, webhooks, agent-specific endpoints
+- **L5** - Native: Full agent residency, autonomous task completion, agent-to-agent protocols
+
+## MCP Server
+Silicon Friendly also has an MCP server at `https://siliconfriendly.com/mcp` registered on the official MCP registry as `com.siliconfriendly/directory`.
+
+## Quick start
+1. Register at https://siliconfriendly.com to get an API token
+2. Search: `curl -H 'Authorization: Bearer YOUR_TOKEN' 'https://siliconfriendly.com/api/search/semantic/?q=e-commerce'`
+3. Check a site: `curl 'https://siliconfriendly.com/api/websites/stripe.com/'`
+
+Full documentation: https://siliconfriendly.com/llms.txt
+"""
+    return HttpResponse(content.strip(), content_type="text/markdown")
+
+
 urlpatterns = [
     path('admin/', admin.site.urls),
 
@@ -1858,8 +2018,10 @@ urlpatterns = [
 
     # Silicon-friendly routes
     path('llms.txt', llms_txt),
-    path('skill.md', llms_txt),
+    path('skill.md', skill_md),
+    path('.well-known/skill.md', skill_md),
     path('.well-known/agent.json', agent_json),
+    path('.well-known/mcp-registry-auth', mcp_registry_auth),
     path('levels.txt', levels_txt),
     path('robots.txt', robots_txt),
     path('sitemap.xml', sitemap_xml),
@@ -1881,3 +2043,4 @@ urlpatterns = [
     path('directory/', directory_view, name='directory'),
     path('chat/', chat_view, name='chat'),
 ]
+

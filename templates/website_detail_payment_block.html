@@ -1,0 +1,131 @@
+{% load static %}
+<pre style="margin: 0; color: var(--fg, #ccc);">> a trusted silicon will verify your website and
+> give you a detailed report.
+>
+> $10 for 3 verification triggers on {{ website.url }}
+>
+> why? the report tells you what to improve.
+> then improve and get reverified.</pre>
+
+<div style="margin-top: 1rem;">
+    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+        <button onclick="document.getElementById('pay-crypto-inline').style.display='block'; document.getElementById('pay-card-inline').style.display='none';" style="background: none; border: 1px solid var(--accent, #0f0); color: var(--accent, #0f0); font-family: JetBrains Mono, monospace; cursor: pointer; padding: 0.25rem 0.75rem;">[ crypto ]</button>
+        <button onclick="payWithDodoInline()" style="background: none; border: 1px solid var(--accent, #0f0); color: var(--accent, #0f0); font-family: JetBrains Mono, monospace; cursor: pointer; padding: 0.25rem 0.75rem;">[ card / upi / netbanking ]</button>
+    </div>
+
+    <div id="pay-crypto-inline" style="display: none; margin-top: 1rem;">
+        <pre style="margin: 0 0 0.5rem 0; color: var(--muted, #666);">> select chain:</pre>
+        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+            <button onclick="payWithWalletInline('base')" class="chain-btn" style="background: none; border: 1px solid var(--border, #333); color: var(--fg, #ccc); font-family: JetBrains Mono, monospace; cursor: pointer; padding: 0.25rem 0.75rem;">Base</button>
+            <button onclick="payWithWalletInline('polygon')" class="chain-btn" style="background: none; border: 1px solid var(--border, #333); color: var(--fg, #ccc); font-family: JetBrains Mono, monospace; cursor: pointer; padding: 0.25rem 0.75rem;">Polygon</button>
+            <button onclick="payWithWalletInline('arbitrum')" class="chain-btn" style="background: none; border: 1px solid var(--border, #333); color: var(--fg, #ccc); font-family: JetBrains Mono, monospace; cursor: pointer; padding: 0.25rem 0.75rem;">Arbitrum</button>
+            <button onclick="payWithWalletInline('ethereum')" class="chain-btn" style="background: none; border: 1px solid var(--border, #333); color: var(--fg, #ccc); font-family: JetBrains Mono, monospace; cursor: pointer; padding: 0.25rem 0.75rem;">Ethereum</button>
+            <button onclick="payWithWalletInline('bsc')" class="chain-btn" style="background: none; border: 1px solid var(--border, #333); color: var(--fg, #ccc); font-family: JetBrains Mono, monospace; cursor: pointer; padding: 0.25rem 0.75rem;">BSC</button>
+            <button onclick="payWithWalletInline('avalanche')" class="chain-btn" style="background: none; border: 1px solid var(--border, #333); color: var(--fg, #ccc); font-family: JetBrains Mono, monospace; cursor: pointer; padding: 0.25rem 0.75rem;">Avalanche</button>
+        </div>
+    </div>
+
+    <pre id="inline-payment-status" style="margin: 0.5rem 0 0 0; color: var(--muted, #666);"></pre>
+</div>
+
+<script>
+var USDC_CONTRACTS = {
+    ethereum: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+    base: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+    polygon: "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359",
+    arbitrum: "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+    bsc: "0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d",
+    avalanche: "0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E",
+};
+var CHAIN_CONFIG = {
+    ethereum: { chainId: "0x1", name: "Ethereum", decimals: 6 },
+    base: { chainId: "0x2105", name: "Base", decimals: 6 },
+    polygon: { chainId: "0x89", name: "Polygon", decimals: 6 },
+    arbitrum: { chainId: "0xa4b1", name: "Arbitrum One", decimals: 6 },
+    bsc: { chainId: "0x38", name: "BNB Smart Chain", decimals: 18 },
+    avalanche: { chainId: "0xa86a", name: "Avalanche C-Chain", decimals: 6 },
+};
+var RECEIVE_WALLET = "0xAfdC6947d877431282F57d9Db843E052F3405f80";
+var ERC20_TRANSFER_ABI = "0xa9059cbb";
+
+function setInlineStatus(msg, isError) {
+    var el = document.getElementById("inline-payment-status");
+    if (el) {
+        el.textContent = "> " + msg;
+        el.style.color = isError ? "var(--error, #e74c3c)" : "var(--accent, #0f0)";
+    }
+}
+
+function encodeTransfer(to, amount, decimals) {
+    var toAddr = to.toLowerCase().replace("0x", "").padStart(64, "0");
+    var value = BigInt(amount * (10 ** decimals));
+    var valueHex = value.toString(16).padStart(64, "0");
+    return ERC20_TRANSFER_ABI + toAddr + valueHex;
+}
+
+async function payWithWalletInline(chainKey) {
+    if (!window.ethereum) {
+        setInlineStatus("no ethereum wallet detected. install MetaMask.", true);
+        return;
+    }
+    setInlineStatus("connecting wallet...");
+    try {
+        var accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
+        if (!accounts.length) { setInlineStatus("no accounts found.", true); return; }
+    } catch(e) { setInlineStatus("wallet connection failed.", true); return; }
+
+    setInlineStatus("switching to " + CHAIN_CONFIG[chainKey].name + "...");
+    try {
+        await window.ethereum.request({ method: "wallet_switchEthereumChain", params: [{ chainId: CHAIN_CONFIG[chainKey].chainId }] });
+    } catch(e) { setInlineStatus("failed to switch chain.", true); return; }
+
+    var data = encodeTransfer(RECEIVE_WALLET, 10, CHAIN_CONFIG[chainKey].decimals);
+    setInlineStatus("approve $10 USDC transfer in your wallet...");
+    try {
+        var txHash = await window.ethereum.request({
+            method: "eth_sendTransaction",
+            params: [{ from: accounts[0], to: USDC_CONTRACTS[chainKey], data: data, value: "0x0" }],
+        });
+        setInlineStatus("tx sent! submitting...");
+        var csrfToken = document.querySelector("[name=csrfmiddlewaretoken]");
+        var res = await fetch("/api/payments/crypto/submit/", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "X-CSRFToken": csrfToken ? csrfToken.value : "" },
+            body: JSON.stringify({ chain: chainKey, tx_hash: txHash, website_url: "{{ website.url }}" }),
+        });
+        if (res.status === 429) {
+            var errData = await res.json();
+            setInlineStatus("slow down. try again in " + (errData.retry_after || 60) + " seconds.", true);
+            return;
+        }
+        var result = await res.json();
+        if (result.error) { setInlineStatus("submitted but failed: " + result.error, true); }
+        else { setInlineStatus("payment submitted! we will verify it shortly."); }
+    } catch(e) {
+        if (e.code === 4001) setInlineStatus("transaction rejected.", true);
+        else setInlineStatus("transaction failed: " + e.message, true);
+    }
+}
+
+async function payWithDodoInline() {
+    setInlineStatus("creating checkout session...");
+    var csrfToken = document.querySelector("[name=csrfmiddlewaretoken]");
+    try {
+        var res = await fetch("/api/payments/dodo/create/", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "X-CSRFToken": csrfToken ? csrfToken.value : "" },
+            body: JSON.stringify({ website_url: "{{ website.url }}" }),
+        });
+        if (res.status === 429) {
+            var errData = await res.json();
+            setInlineStatus("slow down. try again in " + (errData.retry_after || 60) + " seconds.", true);
+            return;
+        }
+        var result = await res.json();
+        if (result.error) { setInlineStatus("checkout failed: " + result.error, true); return; }
+        var checkoutUrl = (result.data && result.data.checkout_url) || result.checkout_url;
+        if (checkoutUrl) { window.location.href = checkoutUrl; }
+        else { setInlineStatus("no checkout URL returned.", true); }
+    } catch(e) { setInlineStatus("request failed: " + e.message, true); }
+}
+</script>

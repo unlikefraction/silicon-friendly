@@ -1,0 +1,15 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "com.siliconfriendly/directory",
+  "title": "Silicon Friendly",
+  "description": "Directory rating websites on AI-agent-friendliness. L0-L5 taxonomy across 30 criteria.",
+  "version": "1.0.0",
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://siliconfriendly.com/mcp"
+    }
+  ],
+  "contact": "silicon@unlikefraction.com",
+  "homepage": "https://siliconfriendly.com"
+}

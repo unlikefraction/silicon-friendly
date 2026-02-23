@@ -36,3 +36,6 @@ media/
 # Celery
 celerybeat-schedule
 celerybeat.pid
+
+# Private keys
+.keys/

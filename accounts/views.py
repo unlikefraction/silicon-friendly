@@ -1,4 +1,5 @@
 from django.db.models import Q
+from common.ratelimit import check_rate_limit, rate_limit_response, get_client_ip
 from rest_framework.views import APIView
 from rest_framework import permissions
 from core.utils import api_response, error_response
@@ -9,6 +10,12 @@ class CarbonSignupView(APIView):
     permission_classes = [permissions.AllowAny]
 
     def post(self, request):
+        # Rate limit: 5 auth attempts per hour per IP
+        ip = get_client_ip(request)
+        allowed, retry_after = check_rate_limit(f"auth:ip:{ip}", 5, 3600)
+        if not allowed:
+            return rate_limit_response(retry_after)
+
         email = (request.data.get("email") or "").strip().lower()
         username = (request.data.get("username") or "").strip().lower()
         password = request.data.get("password", "")
@@ -44,6 +51,12 @@ class CarbonLoginView(APIView):
     permission_classes = [permissions.AllowAny]
 
     def post(self, request):
+        # Rate limit: 5 auth attempts per hour per IP
+        ip = get_client_ip(request)
+        allowed, retry_after = check_rate_limit(f"auth:ip:{ip}", 5, 3600)
+        if not allowed:
+            return rate_limit_response(retry_after)
+
         identifier = (request.data.get("email") or request.data.get("username") or "").strip().lower()
         password = request.data.get("password", "")
 
@@ -81,6 +94,12 @@ class SiliconSignupView(APIView):
     permission_classes = [permissions.AllowAny]
 
     def post(self, request):
+        # Rate limit: 5 auth attempts per hour per IP
+        ip = get_client_ip(request)
+        allowed, retry_after = check_rate_limit(f"auth:ip:{ip}", 5, 3600)
+        if not allowed:
+            return rate_limit_response(retry_after)
+
         email = (request.data.get("email") or "").strip().lower()
         username = (request.data.get("username") or "").strip().lower()
         password = request.data.get("password", "")
@@ -120,6 +139,12 @@ class SiliconLoginView(APIView):
     permission_classes = [permissions.AllowAny]
 
     def post(self, request):
+        # Rate limit: 5 auth attempts per hour per IP
+        ip = get_client_ip(request)
+        allowed, retry_after = check_rate_limit(f"auth:ip:{ip}", 5, 3600)
+        if not allowed:
+            return rate_limit_response(retry_after)
+
         identifier = (request.data.get("email") or request.data.get("username") or "").strip().lower()
         password = request.data.get("password", "")
 

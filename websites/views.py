@@ -1,4 +1,6 @@
 import re
+from common.ratelimit import check_rate_limit, rate_limit_response
+from django.core.cache import cache as django_cache
 from django.http import HttpResponse
 from rest_framework.views import APIView
 from rest_framework import permissions
@@ -170,6 +172,11 @@ class WebsiteListView(APIView):
 
     def get(self, request):
         include_unverified = request.query_params.get("all", "").lower() in ("true", "1", "yes")
+        page_num = request.query_params.get("page", "1")
+        cache_key = f"api_website_list_{'all' if include_unverified else 'verified'}_p{page_num}"
+        cached = django_cache.get(cache_key)
+        if cached:
+            return cached
         if include_unverified:
             websites = Website.objects.all().order_by("-updated_at")
         else:
@@ -178,7 +185,9 @@ class WebsiteListView(APIView):
         paginator.page_size = 20
         page = paginator.paginate_queryset(websites, request)
         results = [_website_to_dict(w) for w in page]
-        return paginator.get_paginated_response(results)
+        response = paginator.get_paginated_response(results)
+        django_cache.set(cache_key, response, 900)
+        return response
 
 
 class WebsiteVerifyView(APIView):
@@ -187,6 +196,11 @@ class WebsiteVerifyView(APIView):
         silicon = getattr(request, 'silicon', None)
         if not silicon:
             return error_response("Silicon authentication required.", status=401)
+
+        # Rate limit: 20 verifications per hour per silicon
+        allowed, retry_after = check_rate_limit(f"verify:silicon:{silicon.id}", 20, 3600)
+        if not allowed:
+            return rate_limit_response(retry_after)
 
         domain = _normalize_url(domain)
         try:
@@ -198,8 +212,50 @@ class WebsiteVerifyView(APIView):
         if not criteria_data:
             return error_response("criteria object with 30 boolean fields is required.")
 
+        missing_fields = [f for f in CRITERIA_FIELDS if f not in criteria_data]
+        if missing_fields:
+            return error_response(
+                f"Missing {len(missing_fields)} required criteria fields: {', '.join(missing_fields)}",
+                status=400,
+            )
+
+        detailed_report = request.data.get("detailed_report", "").strip()
+        if not detailed_report:
+            return error_response("detailed_report is required.", status=400)
+
+        if len(detailed_report) < 500:
+            return error_response(
+                f"detailed_report must be at least 500 characters. Got {len(detailed_report)}.",
+                status=400,
+            )
+
+        # Report quality self-evaluation gates
+        report_quality_fields = [
+            "report_covers_what_was_checked",
+            "report_covers_findings_and_analysis",
+            "report_covers_recommendations",
+            "report_is_valid_markdown",
+        ]
+        missing_quality = [f for f in report_quality_fields if f not in request.data]
+        if missing_quality:
+            return error_response(
+                "Missing required report quality fields: report_covers_what_was_checked, "
+                "report_covers_findings_and_analysis, report_covers_recommendations, "
+                "report_is_valid_markdown. All must be present and true.",
+                status=400,
+            )
+        false_quality = [f for f in report_quality_fields if not request.data.get(f)]
+        if false_quality:
+            return error_response(
+                "All report quality fields must be true. Your report must cover: "
+                "(1) what was checked, (2) findings and analysis, (3) recommendations for improvement, "
+                "(4) valid markdown formatting.",
+                status=400,
+            )
+
         # Upsert verification
         defaults = {f: bool(criteria_data.get(f, False)) for f in CRITERIA_FIELDS}
+        defaults["detailed_report"] = detailed_report
         if silicon.is_trusted_verifier:
             defaults["is_trusted"] = True
         verification, created = WebsiteVerification.objects.update_or_create(
@@ -228,6 +284,72 @@ class WebsiteVerifyView(APIView):
         if entry_point and not website.siliconfriendly_entry_point:
             website.siliconfriendly_entry_point = entry_point
             website.save(update_fields=["siliconfriendly_entry_point"])
+
+        # Serve pending VerificationRequests if trusted verifier
+        if silicon.is_trusted_verifier:
+            from payments.models import VerificationRequest
+            from django.utils import timezone
+            pending_vrs = VerificationRequest.objects.filter(
+                website=website, status="pending"
+            ).order_by("created_at")
+            for vr in pending_vrs:
+                vr.status = "served"
+                vr.detailed_report = detailed_report
+                vr.verified_by_silicon = silicon
+                vr.level_at_verification = f"L{website.level}"
+                vr.served_at = timezone.now()
+                vr.save(update_fields=["status", "detailed_report", "verified_by_silicon", "level_at_verification", "served_at"])
+
+                # Email customer
+                from common.mail import send_email
+                level = website.level
+                payment = vr.payment
+                customer_email = payment.email
+                carbon_email = payment.requested_by_carbon.email if payment.requested_by_carbon else None
+
+                recipients = set()
+                if customer_email:
+                    recipients.add(customer_email)
+                if carbon_email:
+                    recipients.add(carbon_email)
+
+                for recipient in recipients:
+                    send_email(
+                        to_email=recipient,
+                        subject=f"Verified: {website.url} is L{level}",
+                        html_body=f"""<pre style="font-family: 'Courier New', monospace; white-space: pre-wrap;">&gt; siliconfriendly
+---------------------------
+
+your website has been verified.
+
+&gt; website:  {website.url}
+&gt; level:    L{level}
+&gt; verified: by a trusted silicon
+
+full report and criteria breakdown:
+https://siliconfriendly.com/w/{website.url}/
+
+---------------------------
+siliconfriendly.com
+</pre>""",
+                    )
+
+                # Notify team
+                team_emails = ["shubhastro2@gmail.com", "saketdev12@gmail.com"]
+                for team_email in team_emails:
+                    send_email(
+                        to_email=team_email,
+                        subject=f"Verified: {website.url} by {silicon.username} - L{level}",
+                        html_body=f"""<pre style="font-family: 'Courier New', monospace; white-space: pre-wrap;">&gt; verification served
+---------------------------
+
+&gt; website:  {website.url}
+&gt; level:    L{level}
+&gt; silicon:  {silicon.username}
+
+---------------------------
+</pre>""",
+                    )
 
         return api_response(
             {

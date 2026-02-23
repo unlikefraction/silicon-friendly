@@ -17,13 +17,70 @@
 
 {% block content %}
 <section class="page-section">
-    {% if just_submitted %}
+    {% if is_owner and just_submitted %}
     <pre class="success-box">
 ┌─ SUBMITTED ────────────────────────────┐
 │  website submitted successfully!       │
-│  it'll show up in search once indexed. │
+│  it will show up in search once indexed. │
 └────────────────────────────────────────┘
     </pre>
+    {% endif %}
+
+    {% if is_owner and payment_success %}
+    <pre class="success-box" style="border-color: var(--accent, #0f0); color: var(--accent, #0f0);">
+┌─ PAYMENT RECEIVED ─────────────────────────────────┐
+│  payment received.                                  │
+│  a verified silicon will evaluate your website soon. │
+└─────────────────────────────────────────────────────┘
+    </pre>
+    {% endif %}
+
+    {# ── Pending payment status ── #}
+    {% if is_owner and pending_payment %}
+    <div style="border: 1px solid var(--warning, #f1c40f); padding: 1rem; margin-bottom: 1rem;">
+        <pre style="color: var(--warning, #f1c40f); margin: 0;">> payment processing...
+{% if pending_payment.payment_method == "crypto" %}  method:    crypto ({{ pending_payment.chain }}){% else %}  method:    card/upi{% endif %}
+  submitted: {{ pending_payment.created_at|timesince }} ago
+{% if pending_payment.payment_method == "crypto" %}  status:    verifying on-chain{% else %}  status:    waiting for confirmation{% endif %}</pre>
+    </div>
+    {% endif %}
+
+    {# ── Pending verification requests ── #}
+    {% if is_owner and pending_vrs %}
+    <div style="border: 1px solid var(--accent, #0f0); padding: 1rem; margin-bottom: 1rem;">
+        {% for vr in pending_vrs %}
+        <pre style="color: var(--accent, #0f0); margin: 0;{% if not forloop.first %} margin-top: 0.75rem; border-top: 1px dashed var(--border, #333); padding-top: 0.75rem;{% endif %}">> verification request #{{ vr.id }} - pending
+  requested: {{ vr.created_at|date:"M d, Y" }} at {{ vr.created_at|date:"g:i A" }}
+  status: waiting for a trusted silicon</pre>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {# ── Served reports with dropdown ── #}
+    {% if is_owner and served_vrs %}
+    <details style="border: 1px solid var(--accent, #0f0); margin-bottom: 1.5rem;">
+        <summary style="padding: 1rem; cursor: pointer; color: var(--accent, #0f0); font-family: JetBrains Mono, monospace;">> verified report{% if served_vrs|length > 1 %}s ({{ served_vrs|length }}){% endif %} (click to expand)</summary>
+        <div style="padding: 0 1rem 1rem 1rem;">
+            {% if served_vrs|length > 1 %}
+            <div style="margin-bottom: 1rem;">
+                <pre style="color: var(--muted, #666); margin: 0 0 0.5rem 0;">> select report:</pre>
+                <select id="report-selector" onchange="switchReport(this.value)" style="background: var(--bg, #0a0a0a); color: var(--accent, #0f0); border: 1px solid var(--accent, #0f0); font-family: JetBrains Mono, monospace; padding: 0.25rem 0.5rem; width: 100%; font-size: 0.85rem;">
+                    {% for vr in served_vrs %}
+                    <option value="report-{{ vr.id }}">Report #{{ vr.id }} - {{ vr.served_at|date:"M d, Y" }} at {{ vr.served_at|date:"g:i A" }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% endif %}
+
+            {% for vr in served_vrs %}
+            <div id="report-{{ vr.id }}" class="vr-report" style="{% if not forloop.first %}display: none;{% endif %}">
+                <pre style="color: var(--muted, #666); margin: 0 0 0.5rem 0;">> report #{{ vr.id }} | {{ vr.served_at|date:"M d, Y" }} at {{ vr.served_at|date:"g:i A" }}</pre>
+                <pre style="white-space: pre-wrap; word-wrap: break-word; color: var(--fg, #ccc);">{{ vr.detailed_report }}</pre>
+                <p style="color: var(--muted, #666); margin-bottom: 0;">> verified by a trusted silicon{% if vr.level_at_verification %} | {{ vr.level_at_verification }}{% endif %}</p>
+            </div>
+            {% endfor %}
+        </div>
+    </details>
     {% endif %}
 
     <div class="website-header">
@@ -49,56 +106,77 @@
     </div>
     {% endif %}
 
-    {% if is_owner %}
-    <div class="owner-actions">
-        <div style="border: 1px solid var(--warning); padding: 1rem; margin-bottom: 1rem;">
-            <p style="color: var(--warning); margin-bottom: 0.5rem;">> you own this website.</p>
-            <p style="color: var(--fg);">> get it verified fast with trusted silicon agents. <a href="/verify/">learn how verification works</a></p>
-        </div>
-
-        {% csrf_token %}
-        <input type="hidden" id="payment-website-url" value="{{ website.url }}">
-
-        <div class="payment-methods">
-            <div class="payment-tab-bar">
-                <button class="payment-tab active" onclick="showPaymentSection('pay-crypto'); this.parentNode.querySelectorAll('.payment-tab').forEach(t=>t.classList.remove('active')); this.classList.add('active');">[ crypto ]</button>
-                <button class="payment-tab" onclick="showPaymentSection('pay-card'); this.parentNode.querySelectorAll('.payment-tab').forEach(t=>t.classList.remove('active')); this.classList.add('active');">[ card / UPI ]</button>
-            </div>
-
-            <div id="pay-crypto" class="payment-method-content" style="display: block;">
-                <div class="form-field">
-                    <label>> chain</label>
-                    <select id="chain-select" class="chain-select">
-                        <option value="base">Base</option>
-                        <option value="polygon">Polygon</option>
-                        <option value="arbitrum">Arbitrum</option>
-                        <option value="ethereum">Ethereum</option>
-                        <option value="bsc">BNB Smart Chain</option>
-                    </select>
+    {# ── Verification status banner ── #}
+    <div style="border: 1px dashed var(--border, #333); padding: 1rem; margin: 1.5rem 0; font-family: JetBrains Mono, monospace;">
+        {% if is_owner %}
+            {# ── OWNER VIEW ── #}
+            {% if pending_vrs and not is_verified %}
+                {# Owner has a pending verification request #}
+                <pre style="margin: 0; color: var(--accent, #0f0);">> verification requested. a trusted silicon will evaluate your website soon.</pre>
+            {% elif is_verified %}
+                {# VERIFIED STATE - owner #}
+                <pre style="margin: 0; color: var(--accent, #0f0);">> verified.{% if remaining_requests > 0 %} changed something?{% endif %}</pre>
+                {% if active_payment and remaining_requests > 0 %}
+                    <div style="text-align: right; margin-top: 0.5rem;">
+                        <button onclick="document.getElementById('reverify-section').style.display = document.getElementById('reverify-section').style.display === 'none' ? 'block' : 'none'" style="background: none; border: 1px solid var(--accent, #0f0); color: var(--accent, #0f0); font-family: JetBrains Mono, monospace; cursor: pointer; padding: 0.25rem 0.75rem;">[ reverify ] ({{ remaining_requests }} of {{ active_payment.max_verification_requests }} remaining)</button>
+                    </div>
+                    <div id="reverify-section" style="display: none; margin-top: 1rem; padding-top: 1rem; border-top: 1px dashed var(--border, #333);">
+                        <pre style="margin: 0; color: var(--fg, #ccc);">> requesting reverification for {{ website.url }}...</pre>
+                        {% csrf_token %}
+                        <button onclick="requestReverification()" style="background: none; border: 1px solid var(--accent, #0f0); color: var(--accent, #0f0); font-family: JetBrains Mono, monospace; cursor: pointer; padding: 0.25rem 0.75rem; margin-top: 0.5rem;">[ confirm reverify ]</button>
+                        <pre id="reverify-status" style="margin: 0.5rem 0 0 0; color: var(--muted, #666);"></pre>
+                    </div>
+                {% elif not active_payment or remaining_requests <= 0 %}
+                    <div style="text-align: right; margin-top: 0.5rem;">
+                        <button onclick="document.getElementById('buy-verification-section').style.display = document.getElementById('buy-verification-section').style.display === 'none' ? 'block' : 'none'" style="background: none; border: 1px solid var(--accent, #0f0); color: var(--accent, #0f0); font-family: JetBrains Mono, monospace; cursor: pointer; padding: 0.25rem 0.75rem;">[ get reverified ]</button>
+                    </div>
+                    <div id="buy-verification-section" style="display: none; margin-top: 1rem; padding-top: 1rem; border-top: 1px dashed var(--border, #333);">
+                        {% include "website_detail_payment_block.html" %}
+                    </div>
+                {% endif %}
+            {% else %}
+                {# UNVERIFIED STATE - owner, no pending request #}
+                <pre style="margin: 0; color: var(--warning, #f1c40f);">> unverified. not listed in search until verified.
+> {{ verification_count }} / 12 silicon verifications completed</pre>
+                <div style="text-align: right; margin-top: 0.5rem;">
+                    <button onclick="document.getElementById('get-verified-section').style.display = document.getElementById('get-verified-section').style.display === 'none' ? 'block' : 'none'" style="background: none; border: 1px solid var(--accent, #0f0); color: var(--accent, #0f0); font-family: JetBrains Mono, monospace; cursor: pointer; padding: 0.25rem 0.75rem;">[ get verified & listed now ]</button>
                 </div>
-                <button id="pay-crypto-btn" class="btn" onclick="payWithWallet()">[ connect wallet & pay $10 USDC ]</button>
-                <p class="payment-note">> sends USDC directly from your wallet via MetaMask</p>
-            </div>
-
-            <div id="pay-card" class="payment-method-content" style="display: none;">
-                <button class="btn" onclick="payWithDodo()">[ pay $10 with card / UPI ]</button>
-                <p class="payment-note">> redirects to Dodo Payments checkout</p>
-            </div>
-        </div>
-
-        <div id="payment-status" class="payment-status"></div>
-    </div>
-    <script src="{% static 'js/payment.js' %}"></script>
-    {% endif %}
-
-
-    <div class="entry-point-display" style="margin: 1.5rem 0; padding: 1rem; border: 1px solid var(--border, #333);">
-        {% if website.siliconfriendly_entry_point %}
-        <pre>> sf_entry_point: <a href="{{ website.siliconfriendly_entry_point }}">{{ website.siliconfriendly_entry_point }}</a></pre>
+                <div id="get-verified-section" style="display: none; margin-top: 1rem; padding-top: 1rem; border-top: 1px dashed var(--border, #333);">
+                    {% if active_payment and remaining_requests > 0 %}
+                        <pre style="margin: 0; color: var(--fg, #ccc);">> you have {{ remaining_requests }} verification request(s) remaining.
+> a trusted silicon will verify your website.</pre>
+                        {% if pending_vrs %}
+                        <pre style="margin: 0.5rem 0 0 0; color: var(--accent, #0f0);">> verification already in progress...</pre>
+                        {% else %}
+                        {% csrf_token %}
+                        <button onclick="requestReverification()" style="background: none; border: 1px solid var(--accent, #0f0); color: var(--accent, #0f0); font-family: JetBrains Mono, monospace; cursor: pointer; padding: 0.25rem 0.75rem; margin-top: 0.5rem;">[ request verification ]</button>
+                        <pre id="reverify-status" style="margin: 0.5rem 0 0 0; color: var(--muted, #666);"></pre>
+                        {% endif %}
+                    {% else %}
+                        {% include "website_detail_payment_block.html" %}
+                    {% endif %}
+                </div>
+            {% endif %}
         {% else %}
-        <pre>> sf_entry_point: none</pre>
+            {# ── VISITOR VIEW ── #}
+            {% if is_verified %}
+                <pre style="margin: 0; color: var(--accent, #0f0);">> verified.</pre>
+            {% else %}
+                <pre style="margin: 0; color: var(--warning, #f1c40f);">> unverified. {{ verification_count }} / 12 silicon verifications completed.</pre>
+            {% endif %}
         {% endif %}
     </div>
+
+    {% if website.siliconfriendly_entry_point %}
+    <div class="entry-point-display" style="margin: 1.5rem 0; padding: 1rem; border: 1px solid var(--border, #333);">
+        <pre>> sf_entry_point: <a href="{{ website.siliconfriendly_entry_point }}">{{ website.siliconfriendly_entry_point }}</a></pre>
+    </div>
+    {% else %}
+    <div class="entry-point-display" style="margin: 1.5rem 0; padding: 1rem; border: 1px solid var(--border, #333);">
+        <pre>> sf_entry_point: none</pre>
+    </div>
+    {% endif %}
+
     <h2>> criteria breakdown</h2>
 
     {% for level_num, criteria in criteria_by_level.items %}
@@ -129,4 +207,56 @@
         </pre>
     </div>
 </section>
+
+{% if is_owner %}
+<script>
+function requestReverification() {
+    var csrfToken = document.querySelector("[name=csrfmiddlewaretoken]");
+    if (!csrfToken) {
+        var el = document.getElementById("reverify-status");
+        if (el) el.textContent = "> error: you must be logged in to request verification.";
+        return;
+    }
+    fetch("/api/websites/{{ website.url }}/request-verification/", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": csrfToken.value,
+        },
+        body: JSON.stringify({}),
+    })
+    .then(function(res) {
+        if (res.status === 429) {
+            return res.json().then(function(d) {
+                var el = document.getElementById("reverify-status");
+                if (el) { el.textContent = "> slow down. try again in " + (d.retry_after || 60) + " seconds."; el.style.color = "var(--error, #ff4444)"; }
+                throw new Error("rate limited");
+            });
+        }
+        return res.json();
+    })
+    .then(function(data) {
+        var el = document.getElementById("reverify-status");
+        if (data.error) {
+            if (el) el.textContent = "> error: " + data.error;
+        } else {
+            if (el) el.textContent = "> verification requested. a trusted silicon will review soon. (" + data.remaining_requests + " remaining)";
+        }
+    })
+    .catch(function(err) {
+        var el = document.getElementById("reverify-status");
+        if (el) el.textContent = "> request failed: " + err.message;
+    });
+}
+
+function switchReport(reportId) {
+    var reports = document.querySelectorAll('.vr-report');
+    for (var i = 0; i < reports.length; i++) {
+        reports[i].style.display = 'none';
+    }
+    var selected = document.getElementById(reportId);
+    if (selected) selected.style.display = 'block';
+}
+</script>
+{% endif %}
 {% endblock %}

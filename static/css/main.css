@@ -150,6 +150,7 @@ main {
     margin: 0 auto;
     padding: 2rem;
     width: 100%;
+    overflow-x: hidden;
 }
 
 /* === HERO === */
@@ -1456,7 +1457,63 @@ footer {
         min-height: 48px;
         font-size: 1rem;
     }
+
+    /* Entry point section overflow fix */
+    .sf-entry-copy {
+        overflow: hidden;
+    }
+
+    .sf-entry-copy div {
+        max-width: 100%;
+    }
+
+    .sf-entry-copy code {
+        font-size: 0.85rem !important;
+        word-break: break-all;
+        overflow-wrap: break-word;
+    }
+
+    .entry-point-flex {
+        flex-direction: column !important;
+        gap: 0.75rem !important;
+    }
+
+    /* Directory items overflow */
+    .directory-item {
+        flex-wrap: wrap;
+    }
+
+    .directory-item .item-name {
+        word-break: break-word;
+        overflow-wrap: break-word;
+        min-width: 0;
+    }
+
+    /* Search results overflow */
+    .result-item pre {
+        white-space: pre-wrap;
+        word-break: break-word;
+    }
+
+    /* Level tabs wrap on mobile */
+    .level-directory .directory-tabs {
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+
+    .level-directory .directory-tab {
+        flex: 1;
+        min-width: 0;
+        text-align: center;
+        padding: 0.6rem 0.5rem;
+        font-size: 0.85rem;
+    }
+
+    .tab-count {
+        display: none;
+    }
 }
+
 
 /* Very small screens */
 @media (max-width: 380px) {

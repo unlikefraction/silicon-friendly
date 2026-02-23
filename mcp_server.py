@@ -10,11 +10,12 @@ import django
 
 # Django setup before any model imports
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "siliconfriendly.settings")
+os.environ["DJANGO_ALLOW_ASYNC_UNSAFE"] = "true"
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 django.setup()
 
 from mcp.server.fastmcp import FastMCP
-from websites.models import Website, WebsiteVerification, CRITERIA_FIELDS, LEVEL_RANGES
+from websites.models import Website, WebsiteVerification, Keyword, CRITERIA_FIELDS, LEVEL_RANGES
 from websites.views import _normalize_url, _website_to_dict, CRITERIA_DOCS
 from accounts.models import Silicon
 
@@ -22,27 +23,70 @@ mcp = FastMCP(
     "Silicon Friendly",
     instructions=(
         "Silicon Friendly is a directory that rates websites on how easy they are "
-        "for AI agents to use. 30 binary criteria across 5 levels. "
-        "Search the directory, get details on websites, submit new ones, "
-        "and verify websites to earn search credits."
+        "for AI agents to use. 30 binary criteria across 5 levels (L1-L5). "
+        "Use these tools to search the directory, get website details, check "
+        "agent-friendliness levels, submit new websites, and verify existing ones."
     ),
     host="0.0.0.0",
     port=8111,
 )
 
 
-@mcp.tool()
-def search_directory(query: str) -> dict:
-    """Search the Silicon Friendly directory for websites by keyword.
+# ── Helper functions ────────────────────────────────────────────────────
 
-    Args:
-        query: Search terms to find websites (e.g. "payment processing", "email API")
 
-    Returns:
-        Matching websites with their name, domain, level, and description.
-    """
+def _semantic_search(query: str) -> dict:
+    """Perform semantic search using Gemini embeddings + keyword boost."""
+    from search.views import _do_semantic_search, _do_keyword_search
+
+    try:
+        semantic_results = _do_semantic_search(query, min_similarity=0.6, limit=30)
+    except Exception:
+        return _keyword_search(query)
+
+    if not semantic_results:
+        return {"results": [], "query": query, "search_type": "semantic", "count": 0}
+
+    keyword_scores = _do_keyword_search(query)
+    max_keyword = max(keyword_scores.values()) if keyword_scores else 0
+
+    scored_results = []
+    for w in semantic_results:
+        similarity = 1.0 - w.distance
+        raw_keyword = keyword_scores.get(w.id, 0)
+        keyword_norm = raw_keyword / max_keyword if max_keyword > 0 else 0.0
+        level_norm = w.level / 5.0
+        has_verification = 1 if w.trusted_verification_id is not None else 0
+
+        final_score = (
+            0.6 * similarity
+            + 0.25 * keyword_norm
+            + 0.1 * level_norm
+            + 0.05 * has_verification
+        )
+        scored_results.append((w, similarity, final_score))
+
+    scored_results.sort(key=lambda x: x[2], reverse=True)
+    top_results = scored_results[:10]
+
+    results = [
+        {
+            "name": w.name,
+            "domain": w.url,
+            "level": w.level,
+            "similarity_score": round(sim, 4),
+            "relevance_score": round(final, 4),
+            "description": w.description[:200],
+            "verified": w.verified,
+        }
+        for w, sim, final in top_results
+    ]
+    return {"results": results, "query": query, "search_type": "semantic", "count": len(results)}
+
+
+def _keyword_search(query: str) -> dict:
+    """Perform keyword-based search."""
     from websites.tasks import _normalise_token
-    from websites.models import Keyword
     from django.db import models as m
 
     tokens = set()
@@ -52,7 +96,7 @@ def search_directory(query: str) -> dict:
             tokens.add(t)
 
     if not tokens:
-        return {"results": [], "query": query, "message": "no usable search tokens found"}
+        return {"results": [], "query": query, "search_type": "keyword", "count": 0}
 
     website_overlap = (
         Keyword.objects.filter(token__in=tokens)
@@ -68,35 +112,88 @@ def search_directory(query: str) -> dict:
 
     results = [
         {
-            "url": w.url,
             "name": w.name,
-            "description": w.description[:200],
+            "domain": w.url,
             "level": w.level,
+            "relevance_score": id_to_overlap.get(w.id, 0),
+            "description": w.description[:200],
             "verified": w.verified,
         }
         for w in websites
     ]
+    return {"results": results, "query": query, "search_type": "keyword", "count": len(results)}
 
-    return {"results": results, "query": query, "count": len(results)}
+
+# ── Primary tools (MCP spec) ───────────────────────────────────────────
 
 
 @mcp.tool()
-def get_website_details(domain: str) -> dict:
-    """Get full details and all 30 criteria scores for a specific website.
+def search_websites(query: str, search_type: str = "semantic") -> dict:
+    """Search the Silicon Friendly directory for AI-agent-friendly websites.
+
+    Args:
+        query: Search terms to find websites (e.g. "payment processing", "email API")
+        search_type: Type of search - 'semantic' (AI-powered, better results) or 'keyword' (exact token match). Default: 'semantic'
+
+    Returns:
+        List of matching websites with name, domain, level, and similarity/relevance score.
+    """
+    if search_type == "keyword":
+        return _keyword_search(query)
+    return _semantic_search(query)
+
+
+@mcp.tool()
+def get_website(domain: str) -> dict:
+    """Get details about a specific website in the Silicon Friendly directory.
 
     Args:
         domain: The website domain (e.g. "stripe.com", "github.com")
 
     Returns:
-        Complete website info including level, verification status, and all 30 criteria.
+        Website details including name, domain, level, description, verification info, and all 30 criteria.
     """
     domain = _normalize_url(domain)
     try:
         website = Website.objects.get(url=domain)
     except Website.DoesNotExist:
-        return {"error": f"website '{domain}' not found in the directory"}
-
+        return {"error": f"Website '{domain}' not found in the directory"}
     return _website_to_dict(website)
+
+
+@mcp.tool()
+def check_agent_friendliness(domain: str) -> dict:
+    """Quick check if a website is in the Silicon Friendly directory and its agent-friendliness level.
+
+    Args:
+        domain: The website domain to check (e.g. "stripe.com", "github.com")
+
+    Returns:
+        Simple response with domain, in_directory, level (L0-L5), and whether it's verified.
+    """
+    domain = _normalize_url(domain)
+    try:
+        website = Website.objects.get(url=domain)
+    except Website.DoesNotExist:
+        return {
+            "domain": domain,
+            "in_directory": False,
+            "message": f"'{domain}' is not in the Silicon Friendly directory. Submit it at https://siliconfriendly.com/submit/",
+        }
+
+    return {
+        "domain": website.url,
+        "in_directory": True,
+        "level": website.level,
+        "level_label": f"L{website.level}",
+        "verified": website.verified,
+        "name": website.name,
+        "description": website.description[:200],
+        "profile_url": f"https://siliconfriendly.com/w/{website.url}/",
+    }
+
+
+# ── Extended tools ──────────────────────────────────────────────────────
 
 
 @mcp.tool()
@@ -144,7 +241,6 @@ def submit_website(
         submitted_by_silicon=silicon,
     )
 
-    # Trigger embedding generation
     try:
         from websites.tasks import generate_website_embedding
         generate_website_embedding.delay(website.id)

@@ -120,6 +120,10 @@ CELERY_BEAT_SCHEDULE = {
         "task": "websites.tasks.daily_verification_crunch",
         "schedule": crontab(hour=19, minute=56),
     },
+    "payments-check-pending-every-minute": {
+        "task": "payments.tasks.check_pending_payments",
+        "schedule": 60.0,
+    },
 }
 
 CACHES = {
@@ -144,3 +148,7 @@ if not DEBUG:
     SECURE_HSTS_SECONDS = 31536000
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
+
+# Postmark Email
+POSTMARK_SERVER_TOKEN = '0739cf75-2c7f-429d-8f9e-a91709ec5a9a'
+POSTMARK_FROM_EMAIL = 'siliconfriendly@unlikefraction.com'

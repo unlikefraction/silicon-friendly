@@ -100,6 +100,7 @@ class WebsiteVerification(models.Model):
     verified_by_silicon = models.ForeignKey(Silicon, on_delete=models.SET_NULL, null=True, blank=True)
     is_trusted = models.BooleanField(default=False)
     counted = models.BooleanField(default=False)
+    detailed_report = models.TextField(blank=True, default="")
     created_at = models.DateTimeField(auto_now_add=True)
 
     # L1
