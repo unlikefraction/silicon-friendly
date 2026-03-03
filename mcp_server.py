@@ -418,4 +418,37 @@ def list_verified_websites(page: int = 1) -> dict:
 
 
 if __name__ == "__main__":
-    mcp.run(transport="streamable-http")
+    import json
+    import uvicorn
+
+    mcp_starlette_app = mcp.streamable_http_app()
+
+    MCP_INFO_BODY = json.dumps({
+        "name": "Silicon Friendly MCP Server",
+        "description": "Rate and discover AI-agent-friendly websites",
+        "version": "1.0.1",
+        "protocol": "JSON-RPC 2.0",
+        "tools_count": 8,
+        "documentation": "https://siliconfriendly.com/llms.txt",
+        "usage": "Send POST requests with JSON-RPC 2.0 format",
+    }).encode()
+
+    async def app(scope, receive, send):
+        if scope["type"] == "http" and scope["path"] == "/mcp" and scope["method"] in ("GET", "HEAD"):
+            body = b"" if scope["method"] == "HEAD" else MCP_INFO_BODY
+            await send({
+                "type": "http.response.start",
+                "status": 200,
+                "headers": [
+                    (b"content-type", b"application/json"),
+                    (b"content-length", str(len(MCP_INFO_BODY)).encode()),
+                ],
+            })
+            await send({
+                "type": "http.response.body",
+                "body": body,
+            })
+            return
+        await mcp_starlette_app(scope, receive, send)
+
+    uvicorn.run(app, host="0.0.0.0", port=8111)
