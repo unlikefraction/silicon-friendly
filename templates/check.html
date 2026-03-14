@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Check {{ domain }} - Silicon Friendly{% endblock %}
+
+{% block content %}
+<div class="checker-container" id="checker">
+    <!-- Initial loading state -->
+    <div class="checker-intro" id="checker-intro">
+        <h1>Checking <span class="checker-domain">{{ domain }}</span></h1>
+        <p class="checker-subtitle">Analyzing silicon friendliness...</p>
+        <div class="checker-loader">
+            <div class="loader-bar"></div>
+        </div>
+    </div>
+
+    <!-- Level sections - shown one at a time -->
+    <div class="checker-level" id="level-section" style="display:none;">
+        <div class="level-announce" id="level-announce">
+            <h2 id="level-title">LEVEL 1</h2>
+            <p id="level-subtitle">Basic Accessibility</p>
+        </div>
+
+        <div class="criteria-grid" id="criteria-grid">
+            <!-- Criteria boxes inserted by JS -->
+        </div>
+
+        <div class="level-result" id="level-result" style="display:none;">
+            <div id="level-result-text"></div>
+        </div>
+    </div>
+
+    <!-- Final result -->
+    <div class="checker-final" id="checker-final" style="display:none;">
+        <div class="final-badge" id="final-badge"></div>
+        <h2 id="final-domain"></h2>
+        <p id="final-level-text"></p>
+
+        <div class="final-criteria-summary" id="final-summary">
+            <!-- Summary of all criteria -->
+        </div>
+
+        <!-- Comparison CTA -->
+        <div class="comparison-cta" id="comparison-cta">
+            <button class="btn btn-primary" onclick="showComparison()">See how you rank in your category</button>
+        </div>
+
+        <!-- Bubble chart container -->
+        <div id="bubble-container" style="display:none;">
+            <h3>Finding websites in your category...</h3>
+            <div class="bubble-chart-container" id="bubble-chart"></div>
+            <p id="rank-text" style="display:none;"></p>
+        </div>
+
+        <!-- Upsell -->
+        <div class="upsell-section" id="upsell-section" style="display:none;">
+            <h3>Want the full picture?</h3>
+            <p>Our agent has prepared a detailed evaluation report telling you how <strong>{{ domain }}</strong> can become more Silicon Friendly and what it gets right.</p>
+            <p class="upsell-price">Get the report + 3 re-verifications for <strong>$10</strong> (one-time)</p>
+            <p class="upsell-cute">believe me, this isn't too much to make the web great for our dear silicons</p>
+            <a href="/w/{{ domain }}/" class="btn btn-primary">Get Your Report</a>
+        </div>
+    </div>
+</div>
+
+<script>
+const DOMAIN = "{{ domain }}";
+</script>
+<script src="{% static 'js/checker.js' %}"></script>
+<script src="{% static 'js/bubbles.js' %}"></script>
+{% endblock %}

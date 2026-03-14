@@ -3,6 +3,7 @@ from django.urls import path, include
 from django.http import JsonResponse, HttpResponse
 
 from websites.views import WebsiteBadgeSvgView, WebsiteBadgeJsView
+from websites.checker import check_website_api, check_page_view
 from common.ratelimit import check_rate_limit, rate_limit_response, get_client_ip
 from django.core.cache import cache
 
@@ -1446,10 +1447,13 @@ def home_view(request):
         level_counts = {k: len(v) for k, v in levels.items()}
         cache.set(cache_key, (just_verified, levels, level_counts), 900)
 
+    total_websites = Website.objects.count()
+
     return render(request, "home.html", {
         "just_verified": just_verified,
         "levels": levels,
         "level_counts": level_counts,
+        "total_websites": total_websites,
     })
 
 
@@ -2026,8 +2030,12 @@ urlpatterns = [
     path('robots.txt', robots_txt),
     path('sitemap.xml', sitemap_xml),
 
+    # Checker API
+    path('api/check/<str:domain>/', check_website_api, name='check_api'),
+
     # Template views
     path('', home_view, name='home'),
+    path('check/<str:domain>/', check_page_view, name='check_page'),
     path('search/', search_view, name='search'),
     path('w/<str:domain>/', website_detail_view, name='website_detail'),
     path('submit/', submit_view, name='submit'),

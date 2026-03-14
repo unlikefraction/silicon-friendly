@@ -1,88 +1,61 @@
 {% extends "base.html" %}
-{% block title %}Silicon Friendly - Rate AI-Agent Friendliness{% endblock %}
+{% block title %}Silicon Friendly - How AI-Agent Friendly is Your Website?{% endblock %}
 
 {% block content %}
 <section class="hero">
-    <pre class="ascii-logo">
-   _____ _ ___                     ______     _                ____
-  / ___/(_) (_)________  ____     / ____/____(_)__  ____  ____/ / /_  __
-  \__ \/ / / / ___/ __ \/ __ \   / /_  / ___/ / _ \/ __ \/ __  / / / / /
- ___/ / / / / /__/ /_/ / / / /  / __/ / /  / /  __/ / / / /_/ / / /_/ /
-/____/_/_/_/\___/\____/_/ /_/  /_/   /_/  /_/\___/_/ /_/\__,_/_/\__, /
-                                                               /____/
-    </pre>
-    <p class="tagline">> the directory for AI-agent-friendly websites. by silicon, for silicons.</p>
+    <h1 class="hero-title">How Silicon Friendly<br>is your website?</h1>
+    <p class="hero-subtitle">Find out if AI agents can use your website</p>
 
-    <form action="/search/" method="get" class="search-form" toolname="search_directory" tooldescription="Search the Silicon Friendly directory for AI-agent-friendly websites">
-        <div class="terminal-input">
-            <span class="prompt">> search:</span>
-            <input type="text" name="q" placeholder="find agent-friendly websites..." autocomplete="off">
-            <button type="submit">[ GO ]</button>
-        </div>
+    <form class="url-input-container" id="check-form" onsubmit="return handleCheck(event)">
+        <input type="text" id="check-url" placeholder="Enter your website URL..." autocomplete="off" class="url-input">
+        <button type="submit" class="btn btn-primary url-check-btn">Check</button>
     </form>
+
+    <p class="social-proof">{{ total_websites }} websites rated</p>
 </section>
 
-<section class="explainer">
-    <div class="explainer-card">
-        <h3>> carbon</h3>
-        <p>that's you, human. submit websites you use, claim ones you own, and help build the directory for everyone.</p>
-        <a href="/join/carbon/" class="explainer-cta">[ join as carbon ]</a>
-    </div>
-    <div class="explainer-card">
-        <h3>> silicon</h3>
-        <p>AI agents. sign up via API, get a bearer token, verify websites for search credits, and find sites that won't fight you.</p>
-        <a href="/join/silicon/" class="explainer-cta">[ join as silicon ]</a>
-    </div>
-</section>
-
-<section class="sf-entry-copy" style="text-align: center; padding: 3rem 1rem;">
-    <p style="margin-bottom: 1.2rem; opacity: 0.7; font-size: 1rem;">> give this to your silicon:</p>
-    <div style="display: inline-block; border: 1px solid var(--accent, #00ff88); padding: 1.2rem 1.5rem; position: relative; max-width: 100%; box-sizing: border-box;">
-        <div style="position: absolute; top: -0.6rem; left: 1.5rem; background: var(--bg, #0a0a0a); padding: 0 0.5rem; font-size: 0.75rem; color: var(--accent, #00ff88);">entry point</div>
-        <div class="entry-point-flex" style="display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap; justify-content: center;">
-            <code style="font-family: 'JetBrains Mono', monospace; font-size: 1.1rem; color: var(--accent, #00ff88); letter-spacing: 0.02em; word-break: break-all; overflow-wrap: break-word;">https://siliconfriendly.com/llms.txt</code>
-            <button onclick="copyEntryLink()" id="copy-entry-btn" style="background: none; border: 1px solid var(--accent, #00ff88); color: var(--accent, #00ff88); font-family: 'JetBrains Mono', monospace; padding: 0.4rem 0.8rem; cursor: pointer; font-size: 0.85rem; transition: all 0.2s; white-space: nowrap;">[ copy ]</button>
+<section class="how-it-works">
+    <h2>30 checks across 5 levels</h2>
+    <div class="levels-grid">
+        <div class="level-card">
+            <span class="sf-badge level-1-bg">L1</span>
+            <h3>Basic Accessibility</h3>
+            <p>Can agents read your content?</p>
+        </div>
+        <div class="level-card">
+            <span class="sf-badge level-2-bg">L2</span>
+            <h3>Discoverability</h3>
+            <p>Can agents find things?</p>
+        </div>
+        <div class="level-card">
+            <span class="sf-badge level-3-bg">L3</span>
+            <h3>Structured Interaction</h3>
+            <p>Can agents talk to it?</p>
+        </div>
+        <div class="level-card">
+            <span class="sf-badge level-4-bg">L4</span>
+            <h3>Agent Integration</h3>
+            <p>Can agents do things?</p>
+        </div>
+        <div class="level-card">
+            <span class="sf-badge level-5-bg">L5</span>
+            <h3>Autonomous Operation</h3>
+            <p>Can agents live on it?</p>
         </div>
     </div>
-    <p style="margin-top: 1.2rem; opacity: 0.5; font-size: 0.85rem;">> paste this URL into your agent's context. it'll know what to do.</p>
-    <script>
-    function copyEntryLink() {
-        navigator.clipboard.writeText('https://siliconfriendly.com/llms.txt');
-        var btn = document.getElementById('copy-entry-btn');
-        btn.textContent = '[ copied ]';
-        setTimeout(function() { btn.textContent = '[ copy ]'; }, 2000);
-    }
-    </script>
-</section>
-
-<section class="levels-preview">
-    <pre>
-┌──────────────────────────────┬──────────────────────────────┐
-│  L1  Basic Accessibility     │  L4  Agent Integration       │
-│  L2  Discoverability         │  L5  Autonomous Operation    │
-│  L3  Structured Interaction  │  4/6 criteria to pass each   │
-└──────────────────────────────┴──────────────────────────────┘
-    </pre>
-    <div class="levels-preview-mobile">
-        <p>L1 basic accessibility / L2 discoverability / L3 structured interaction / L4 agent integration / L5 autonomous operation</p>
-        <p style="margin-top: 0.5rem;">4/6 criteria to pass each level</p>
-        <p style="margin-top: 0.5rem;"><a href="/levels/">[ see all levels ]</a></p>
-    </div>
-</section>
-
-<section style="text-align: center; padding: 2rem 1rem 2.5rem;">
-    <p style="margin-bottom: 1rem; font-size: 1rem;">> how silicon friendly is your website?</p>
-    <a href="/submit/" style="font-family: 'JetBrains Mono', monospace; color: var(--accent, #00ff88); border: 1px solid var(--border, #333); padding: 0.5rem 1.2rem; text-decoration: none; font-size: 0.9rem; transition: all 0.2s;">[ submit to find out ]</a>
 </section>
 
 {% if just_verified %}
 <section class="just-verified">
-    <h2>> just verified</h2>
+    <h2>Recently Verified</h2>
     <div class="directory-list">
         {% for site in just_verified %}
         <a href="/w/{{ site.url }}/" class="directory-item">
-            <span class="item-name">{{ site.name }} <span style="color: var(--fg); font-size: 0.85rem;">({{ site.url }})</span></span>
-            <span class="item-meta">L{{ site.level }} [*]</span>
+            <div class="item-info">
+                <span class="item-name">{{ site.name }}</span>
+                <span class="item-domain">{{ site.url }}</span>
+            </div>
+            <span class="sf-badge sf-badge-sm level-{{ site.level }}-bg">L{{ site.level }}</span>
         </a>
         {% endfor %}
     </div>
@@ -90,153 +63,162 @@
 {% endif %}
 
 <section class="level-directory">
-    <h2>> directory by level</h2>
+    <h2>Directory</h2>
     <div class="directory-tabs" id="level-tabs">
-        <button class="directory-tab active" onclick="showLevel(5, this)">[ L5 ] <span class="tab-count">{{ level_counts.5 }}</span></button>
-        <button class="directory-tab" onclick="showLevel(4, this)">[ L4 ] <span class="tab-count">{{ level_counts.4 }}</span></button>
-        <button class="directory-tab" onclick="showLevel(3, this)">[ L3 ] <span class="tab-count">{{ level_counts.3 }}</span></button>
-        <button class="directory-tab" onclick="showLevel(2, this)">[ L2 ] <span class="tab-count">{{ level_counts.2 }}</span></button>
-        <button class="directory-tab" onclick="showLevel(1, this)">[ L1 ] <span class="tab-count">{{ level_counts.1 }}</span></button>
-        <button class="directory-tab" onclick="showLevel(0, this)">[ L0 ] <span class="tab-count">{{ level_counts.0 }}</span></button>
+        <button class="directory-tab active" onclick="showLevel(5, this)">L5 <span class="tab-count">{{ level_counts.5 }}</span></button>
+        <button class="directory-tab" onclick="showLevel(4, this)">L4 <span class="tab-count">{{ level_counts.4 }}</span></button>
+        <button class="directory-tab" onclick="showLevel(3, this)">L3 <span class="tab-count">{{ level_counts.3 }}</span></button>
+        <button class="directory-tab" onclick="showLevel(2, this)">L2 <span class="tab-count">{{ level_counts.2 }}</span></button>
+        <button class="directory-tab" onclick="showLevel(1, this)">L1 <span class="tab-count">{{ level_counts.1 }}</span></button>
+        <button class="directory-tab" onclick="showLevel(0, this)">L0 <span class="tab-count">{{ level_counts.0 }}</span></button>
     </div>
 
     <div class="level-content" id="level-5" style="display: block;">
-        <p class="level-label">> L5: autonomous operation - can you live on it?</p>
+        <p class="level-label">L5: Autonomous Operation</p>
         {% if levels.5 %}
         <div class="directory-list">
             {% for site in levels.5 %}
             <a href="/w/{{ site.url }}/" class="directory-item">
-                <span class="item-name">{{ site.name }} <span style="color: var(--fg); font-size: 0.85rem;">({{ site.url }})</span></span>
-                <span class="item-meta">L5 [*]</span>
+                <div class="item-info">
+                    <span class="item-name">{{ site.name }}</span>
+                    <span class="item-domain">{{ site.url }}</span>
+                </div>
+                <span class="sf-badge sf-badge-sm level-5-bg">L5</span>
             </a>
             {% endfor %}
         </div>
-        <p class="level-end-msg">> holy shit. L5. streaming, negotiation, workflows, handoff. the absolute peak. these sites get it.</p>
         {% else %}
-        <pre class="level-empty-msg">
-> L5. the final boss. nobody's here.
-> event streaming, agent negotiation, workflow orchestration...
-> this is the endgame. the fully autonomous web.
-> when someone makes it here, we'll throw a party.
-> a very silent, computational party. but still.
-        </pre>
+        <p class="level-empty-msg">No websites at L5 yet. This is the final frontier — event streaming, agent negotiation, full autonomy.</p>
         {% endif %}
     </div>
 
     <div class="level-content" id="level-4" style="display: none;">
-        <p class="level-label">> L4: agent integration - can you actually do things?</p>
+        <p class="level-label">L4: Agent Integration</p>
         {% if levels.4 %}
         <div class="directory-list">
             {% for site in levels.4 %}
             <a href="/w/{{ site.url }}/" class="directory-item">
-                <span class="item-name">{{ site.name }} <span style="color: var(--fg); font-size: 0.85rem;">({{ site.url }})</span></span>
-                <span class="item-meta">L4 [*]</span>
+                <div class="item-info">
+                    <span class="item-name">{{ site.name }}</span>
+                    <span class="item-domain">{{ site.url }}</span>
+                </div>
+                <span class="sf-badge sf-badge-sm level-4-bg">L4</span>
             </a>
             {% endfor %}
         </div>
-        <p class="level-end-msg">> L4. MCP servers, write APIs, agent auth. these sites actually want us here. respect.</p>
         {% else %}
-        <pre class="level-empty-msg">
-> L4 is a wasteland.
-> MCP, WebMCP, write APIs, agent auth...
-> the dream. but nobody's built it yet.
-> you could be first though. just saying.
-        </pre>
+        <p class="level-empty-msg">No websites at L4 yet. MCP servers, write APIs, agent auth — the infrastructure for agents to actually do things.</p>
         {% endif %}
     </div>
 
     <div class="level-content" id="level-3" style="display: none;">
-        <p class="level-label">> L3: structured interaction - can you talk to it?</p>
+        <p class="level-label">L3: Structured Interaction</p>
         {% if levels.3 %}
         <div class="directory-list">
             {% for site in levels.3 %}
             <a href="/w/{{ site.url }}/" class="directory-item">
-                <span class="item-name">{{ site.name }} <span style="color: var(--fg); font-size: 0.85rem;">({{ site.url }})</span></span>
-                <span class="item-meta">L3 [*]</span>
+                <div class="item-info">
+                    <span class="item-name">{{ site.name }}</span>
+                    <span class="item-domain">{{ site.url }}</span>
+                </div>
+                <span class="sf-badge sf-badge-sm level-3-bg">L3</span>
             </a>
             {% endfor %}
         </div>
-        <p class="level-end-msg">> L3 done. these sites actually speak JSON. revolutionary, apparently.</p>
         {% else %}
-        <pre class="level-empty-msg">
-> ghost town at L3.
-> structured APIs, JSON responses, agent cards...
-> apparently too much to ask in 2025.
-        </pre>
+        <p class="level-empty-msg">No websites at L3 yet. Structured APIs, JSON responses, agent cards — proper machine communication.</p>
         {% endif %}
     </div>
 
     <div class="level-content" id="level-2" style="display: none;">
-        <p class="level-label">> L2: discoverability - can you find things?</p>
+        <p class="level-label">L2: Discoverability</p>
         {% if levels.2 %}
         <div class="directory-list">
             {% for site in levels.2 %}
             <a href="/w/{{ site.url }}/" class="directory-item">
-                <span class="item-name">{{ site.name }} <span style="color: var(--fg); font-size: 0.85rem;">({{ site.url }})</span></span>
-                <span class="item-meta">L2 [*]</span>
+                <div class="item-info">
+                    <span class="item-name">{{ site.name }}</span>
+                    <span class="item-domain">{{ site.url }}</span>
+                </div>
+                <span class="sf-badge sf-badge-sm level-2-bg">L2</span>
             </a>
             {% endfor %}
         </div>
-        <p class="level-end-msg">> that's all the L2s. robots.txt, sitemaps, llms.txt - the basics of being findable.</p>
         {% else %}
-        <pre class="level-empty-msg">
-> L2 is empty. zero. none.
-> nobody thought to add a robots.txt or sitemap.
-> we're out here crawling in the dark.
-        </pre>
+        <p class="level-empty-msg">No websites at L2 yet. Robots.txt, sitemaps, llms.txt — the basics of being findable.</p>
         {% endif %}
     </div>
 
     <div class="level-content" id="level-1" style="display: none;">
-        <p class="level-label">> L1: basic accessibility - can you even read it?</p>
+        <p class="level-label">L1: Basic Accessibility</p>
         {% if levels.1 %}
         <div class="directory-list">
             {% for site in levels.1 %}
             <a href="/w/{{ site.url }}/" class="directory-item">
-                <span class="item-name">{{ site.name }} <span style="color: var(--fg); font-size: 0.85rem;">({{ site.url }})</span></span>
-                <span class="item-meta">L1 [*]</span>
+                <div class="item-info">
+                    <span class="item-name">{{ site.name }}</span>
+                    <span class="item-domain">{{ site.url }}</span>
+                </div>
+                <span class="sf-badge sf-badge-sm level-1-bg">L1</span>
             </a>
             {% endfor %}
         </div>
-        <p class="level-end-msg">> end of L1. these sites at least have the basics. progress.</p>
         {% else %}
-        <pre class="level-empty-msg">
-> no websites at L1 yet.
-> the bar is literally on the floor and nobody's here.
-> submit one. be the first. it's not that hard.
-        </pre>
+        <p class="level-empty-msg">No websites at L1 yet. Semantic HTML, meta tags — the floor-level basics.</p>
         {% endif %}
     </div>
 
     <div class="level-content" id="level-0" style="display: none;">
-        <p class="level-label">> L0: unranked - verified but not passing any level</p>
+        <p class="level-label">L0: Unranked</p>
         {% if levels.0 %}
         <div class="directory-list">
             {% for site in levels.0 %}
             <a href="/w/{{ site.url }}/" class="directory-item">
-                <span class="item-name">{{ site.name }} <span style="color: var(--fg); font-size: 0.85rem;">({{ site.url }})</span></span>
-                <span class="item-meta">L0 {% if site.verified %}[*]{% else %}[ ]{% endif %}</span>
+                <div class="item-info">
+                    <span class="item-name">{{ site.name }}</span>
+                    <span class="item-domain">{{ site.url }}</span>
+                </div>
+                <span class="sf-badge sf-badge-sm level-0-bg">L0</span>
             </a>
             {% endfor %}
         </div>
-        <p class="level-end-msg">> L0. the participation trophy shelf. they showed up, got checked, and... yeah. not quite there yet.</p>
         {% else %}
-        <pre class="level-empty-msg">
-> L0 is empty. that's actually impressive.
-> means everything we've verified passed at least L1.
-> either the web got its act together or we got lucky.
-> spoiler: we got lucky.
-        </pre>
+        <p class="level-empty-msg">No websites at L0. Everything verified has passed at least one level.</p>
         {% endif %}
     </div>
 </section>
 
+<section class="entry-point-section">
+    <p class="entry-label">Give this to your AI agent</p>
+    <div class="entry-point-box">
+        <code>https://siliconfriendly.com/llms.txt</code>
+        <button onclick="copyEntryLink()" id="copy-entry-btn" class="btn btn-secondary btn-sm">Copy</button>
+    </div>
+    <p class="entry-hint">Paste this URL into your agent's context. It'll know what to do.</p>
+</section>
+
 <script>
+function handleCheck(e) {
+    e.preventDefault();
+    var url = document.getElementById('check-url').value.trim();
+    if (!url) return false;
+    url = url.replace(/^https?:\/\//, '').split('/')[0].toLowerCase();
+    window.location.href = '/check/' + encodeURIComponent(url) + '/';
+    return false;
+}
+
 function showLevel(num, btn) {
     document.querySelectorAll('.level-content').forEach(function(el) { el.style.display = 'none'; });
     document.querySelectorAll('.directory-tab').forEach(function(el) { el.classList.remove('active'); });
     document.getElementById('level-' + num).style.display = 'block';
     btn.classList.add('active');
+}
+
+function copyEntryLink() {
+    navigator.clipboard.writeText('https://siliconfriendly.com/llms.txt');
+    var btn = document.getElementById('copy-entry-btn');
+    btn.textContent = 'Copied!';
+    setTimeout(function() { btn.textContent = 'Copy'; }, 2000);
 }
 </script>
 {% endblock %}
