@@ -1436,6 +1436,11 @@ def badges_view(request):
         {"num": 4, "name": "Agent Integration", "color": "#059669"},
         {"num": 5, "name": "Autonomous Operation", "color": "#4f46e5"},
     ]
+    for level in levels:
+        n = level["num"]
+        level["credential_path"] = f"badges/credential-l{n}.svg"
+        level["colophon_path"] = f"badges/colophon-l{n}.svg"
+        level["shield_path"] = f"badges/shield-l{n}.svg"
     return render(request, "badges.html", {"levels": levels})
 
 
