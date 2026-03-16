@@ -85,7 +85,7 @@ html {
 }
 
 body {
-    font-family: 'Geist', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-family: 'Geist Sans', 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     background: var(--bg);
     color: var(--fg);
     line-height: 1.6;
@@ -158,7 +158,7 @@ nav {
 .logo {
     color: var(--accent);
     font-weight: 700;
-    font-size: 1.1rem;
+    font-size: 1.25rem;
     white-space: nowrap;
     letter-spacing: -0.02em;
 }
@@ -180,6 +180,11 @@ nav {
 }
 
 .nav-right a:hover {
+    color: var(--fg-bright);
+    background: var(--surface-hover);
+}
+
+.nav-right a.active {
     color: var(--fg-bright);
     background: var(--surface-hover);
 }
@@ -215,7 +220,7 @@ nav {
     line-height: 1.2;
     border-radius: var(--radius-sm);
     transition: all var(--transition);
-    font-family: 'Inter', sans-serif;
+    font-family: inherit;
 }
 
 .theme-toggle:hover {
@@ -238,6 +243,21 @@ main {
     text-align: center;
     padding: 6rem 0 4rem;
     animation: fadeInUp 0.6s ease;
+    position: relative;
+    z-index: 1;
+}
+
+.hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(79, 70, 229, 0.06) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: -1;
 }
 
 .ascii-logo {
@@ -302,7 +322,7 @@ main {
     background: transparent;
     border: none;
     color: var(--fg-bright);
-    font-family: 'Inter', sans-serif;
+    font-family: inherit;
     font-size: 1rem;
     padding: 1rem 1.25rem;
     outline: none;
@@ -316,8 +336,8 @@ main {
 .url-input-container button {
     background: var(--accent);
     border: none;
-    color: #0a0a0a;
-    font-family: 'Inter', sans-serif;
+    color: white;
+    font-family: inherit;
     font-weight: 600;
     font-size: 0.95rem;
     padding: 1rem 2rem;
@@ -337,8 +357,9 @@ main {
 /* === SOCIAL PROOF === */
 .social-proof {
     text-align: center;
-    color: var(--fg-muted);
-    font-size: 0.85rem;
+    color: var(--fg);
+    font-size: 1.1rem;
+    font-weight: 600;
     margin-bottom: 3rem;
 }
 
@@ -352,7 +373,7 @@ main {
     border-radius: 50%;
     font-weight: 700;
     font-size: 1.1rem;
-    font-family: 'Inter', sans-serif;
+    font-family: inherit;
     letter-spacing: -0.02em;
     flex-shrink: 0;
 }
@@ -366,7 +387,7 @@ main {
     border-radius: 50%;
     font-weight: 700;
     font-size: 0.7rem;
-    font-family: 'Inter', sans-serif;
+    font-family: inherit;
     flex-shrink: 0;
 }
 
@@ -378,7 +399,7 @@ main {
     border-radius: var(--radius-pill);
     font-weight: 600;
     font-size: 0.8rem;
-    font-family: 'Inter', sans-serif;
+    font-family: inherit;
 }
 
 /* Badge level colors */
@@ -487,7 +508,7 @@ main {
     background: transparent;
     border: none;
     color: var(--fg-bright);
-    font-family: 'Inter', sans-serif;
+    font-family: inherit;
     font-size: 0.95rem;
     outline: none;
     min-width: 0;
@@ -501,7 +522,7 @@ main {
     background: var(--accent);
     border: none;
     color: #0a0a0a;
-    font-family: 'Inter', sans-serif;
+    font-family: inherit;
     font-weight: 600;
     font-size: 0.85rem;
     padding: 0.5rem 1rem;
@@ -531,7 +552,7 @@ main {
     cursor: pointer;
     background: none;
     border: none;
-    font-family: 'Inter', sans-serif;
+    font-family: inherit;
     transition: color var(--transition);
 }
 
@@ -777,7 +798,7 @@ main {
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    font-family: 'Inter', sans-serif;
+    font-family: inherit;
     font-weight: 600;
     font-size: 0.9rem;
     padding: 0.65rem 1.5rem;
@@ -850,7 +871,7 @@ main {
     background: var(--surface);
     border: 1px solid var(--border);
     color: var(--fg-bright);
-    font-family: 'Inter', sans-serif;
+    font-family: inherit;
     font-size: 0.95rem;
     padding: 0.75rem 1rem;
     outline: none;
@@ -1018,7 +1039,7 @@ main {
     background: transparent;
     border: 1px solid var(--border);
     color: var(--fg-muted);
-    font-family: 'Inter', sans-serif;
+    font-family: inherit;
     font-weight: 500;
     font-size: 0.9rem;
     padding: 0.6rem 1.25rem;
@@ -1050,7 +1071,7 @@ main {
     background: var(--bg);
     border: 1px solid var(--border);
     color: var(--fg-bright);
-    font-family: 'Inter', sans-serif;
+    font-family: inherit;
     font-size: 0.95rem;
     padding: 0.65rem 0.75rem;
     outline: none;
@@ -1160,7 +1181,7 @@ main {
     background: transparent;
     border: 1px solid var(--border);
     color: var(--fg-muted);
-    font-family: 'Inter', sans-serif;
+    font-family: inherit;
     font-weight: 500;
     font-size: 0.85rem;
     padding: 0.5rem 1.25rem;
@@ -1252,9 +1273,9 @@ main {
 }
 
 .level-card:hover {
-    border-color: rgba(0, 255, 136, 0.2);
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-sm);
+    border-color: var(--accent);
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: var(--shadow-md);
 }
 
 .level-card .sf-badge {
@@ -1782,7 +1803,7 @@ main {
     background: transparent;
     border: none;
     color: var(--fg-muted);
-    font-family: 'Inter', sans-serif;
+    font-family: inherit;
     font-size: 0.75rem;
     cursor: pointer;
     padding: 0.25rem 0.4rem;
@@ -1820,7 +1841,7 @@ main {
     background: transparent;
     border: none;
     color: var(--error);
-    font-family: 'Inter', sans-serif;
+    font-family: inherit;
     font-size: 0.8rem;
     cursor: pointer;
     flex-shrink: 0;
@@ -1939,6 +1960,21 @@ footer {
 .mb-2 { margin-bottom: 1rem; }
 .mb-3 { margin-bottom: 1.5rem; }
 .mb-4 { margin-bottom: 2rem; }
+
+/* === BADGE SHIMMER === */
+@keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
+.badge-preview img {
+    transition: transform 0.3s ease, filter 0.3s ease;
+}
+
+.badge-preview:hover img {
+    transform: scale(1.05);
+    filter: drop-shadow(0 4px 12px rgba(79, 70, 229, 0.2));
+}
 
 /* ============================================================
    RESPONSIVE - Tablet (768px)
