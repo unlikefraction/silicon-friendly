@@ -489,7 +489,7 @@ class WebsiteBadgeSvgView(APIView):
             return HttpResponse(svg, content_type="image/svg+xml")
 
         level = website.level
-        colors = {0: "#666", 1: "#c0392b", 2: "#e67e22", 3: "#f1c40f", 4: "#27ae60", 5: "#2ecc71"}
+        colors = {0: "#6B7280", 1: "#6B7280", 2: "#2563EB", 3: "#7C3AED", 4: "#059669", 5: "#4f46e5"}
         svg = _badge_svg(f"L{level}", colors.get(level, "#666"), domain, theme=theme)
         return HttpResponse(svg, content_type="image/svg+xml")
 
@@ -517,15 +517,15 @@ class WebsiteBadgeJsView(APIView):
 def _badge_svg(level_text, color, domain="", theme="dark"):
     aria = f"Silicon Friendly {level_text}" if domain else "Silicon Friendly"
     if theme == "light":
-        bg = "#f0f0f0"
-        border = "#ccc"
-        text_color = "#333"
-        label_text = "#fff" if color != "#f1c40f" else "#333"
+        bg = "#f8f7ff"
+        border = "#e5e4ef"
+        text_color = "#1a1a2e"
+        label_text = "#fff"
     else:
-        bg = "#0a0a0a"
-        border = "#333"
-        text_color = "#c0c0c0"
-        label_text = "#fff" if color != "#f1c40f" else "#111"
+        bg = "#1a1a2e"
+        border = "#2a2a3e"
+        text_color = "#e0e0e0"
+        label_text = "#fff"
     return f"""<svg xmlns="http://www.w3.org/2000/svg" width="180" height="28" role="img" aria-label="{aria}" data-domain="{domain}" data-level="{level_text}">
   <rect width="180" height="28" rx="2" fill="{bg}" stroke="{border}" stroke-width="1"/>
   <rect x="140" width="40" height="28" rx="2" fill="{color}"/>

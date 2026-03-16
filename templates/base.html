@@ -13,6 +13,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/geist@1.3.1/dist/fonts/geist-sans/style.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/main.css' %}">
     {% block schema_org %}
     <script type="application/ld+json">
@@ -26,19 +27,9 @@
     </script>
     {% endblock %}
     <script>
-    // Theme: respect system preference unless user has explicitly chosen
+    // Light theme only
     (function() {
-        var saved = localStorage.getItem('sf-theme');
-        if (saved === 'light') {
-            document.documentElement.setAttribute('data-theme', 'light');
-        } else if (saved === 'dark') {
-            // explicit dark, do nothing (dark is default)
-        } else {
-            // no preference saved - follow system
-            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
-                document.documentElement.setAttribute('data-theme', 'light');
-            }
-        }
+        document.documentElement.setAttribute('data-theme', 'light');
     })();
     </script>
     <script type="module">
@@ -165,6 +156,7 @@
             <div class="nav-right">
                 <a href="/#check">Check</a>
                 <a href="/search/">Directory</a>
+                <a href="/badges/">Badges</a>
                 <a href="/submit/">Submit</a>
                 {% if logged_in_carbon %}
                 <a href="/c/{{ logged_in_carbon.username }}/" class="nav-user">{{ logged_in_carbon.username }}</a>
@@ -172,10 +164,6 @@
                 {% else %}
                 <a href="/join/carbon/" class="btn btn-secondary" style="padding: 0.4rem 1rem; font-size: 0.85rem;">Login</a>
                 {% endif %}
-                <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme" aria-label="Toggle theme">
-                    <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-                    <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-                </button>
             </div>
         </nav>
     </header>
@@ -202,29 +190,5 @@
         </div>
     </footer>
 
-    <script>
-    function toggleTheme() {
-        var html = document.documentElement;
-        if (html.getAttribute('data-theme') === 'light') {
-            html.removeAttribute('data-theme');
-            localStorage.setItem('sf-theme', 'dark');
-        } else {
-            html.setAttribute('data-theme', 'light');
-            localStorage.setItem('sf-theme', 'light');
-        }
-        updateThemeIcon();
-    }
-    function updateThemeIcon() {
-        var isLight = document.documentElement.getAttribute('data-theme') === 'light';
-        var sun = document.querySelector('.icon-sun');
-        var moon = document.querySelector('.icon-moon');
-        if (sun && moon) {
-            sun.style.display = isLight ? 'none' : 'block';
-            moon.style.display = isLight ? 'block' : 'none';
-        }
-    }
-    // Set icon on load based on actual state
-    updateThemeIcon();
-    </script>
 </body>
 </html>

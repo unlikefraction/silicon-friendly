@@ -1428,6 +1428,17 @@ from accounts.models import Carbon, Silicon
 from websites.models import Website, WebsiteVerification, CRITERIA_FIELDS, LEVEL_RANGES, CRITERIA_FIELDS as _CF
 
 
+def badges_view(request):
+    levels = [
+        {"num": 1, "name": "Basic Accessibility", "color": "#6B7280"},
+        {"num": 2, "name": "Discoverability", "color": "#2563EB"},
+        {"num": 3, "name": "Structured Interaction", "color": "#7C3AED"},
+        {"num": 4, "name": "Agent Integration", "color": "#059669"},
+        {"num": 5, "name": "Autonomous Operation", "color": "#4f46e5"},
+    ]
+    return render(request, "badges.html", {"levels": levels})
+
+
 def home_view(request):
     cache_key = "home_page_data"
     cached = cache.get(cache_key)
@@ -2045,6 +2056,7 @@ urlpatterns = [
     path('login/', lambda request: redirect('/join/carbon/'), name='login'),
     path('join/silicon/', silicon_join_view, name='silicon_join'),
     path('logout/', logout_view, name='logout'),
+    path('badges/', badges_view, name='badges'),
     path('levels/', levels_view, name='levels'),
     path('websites/', website_list_view, name='website_list'),
     path('verify/', verify_info_view, name='verify_info'),

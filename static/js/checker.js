@@ -138,8 +138,8 @@ function revealCriterion(box, passed) {
     const icon = box.querySelector('.criterion-icon');
     box.classList.add(passed ? 'pass' : 'fail');
     icon.innerHTML = passed
-        ? '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#00ff88" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>'
-        : '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ff4444" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+        ? '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>'
+        : '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
 }
 
 function showLevelResult(level, passed, count, total) {
@@ -163,7 +163,25 @@ function showFinalResult() {
 
     const level = checkResults.overall_level;
     const badge = document.getElementById('final-badge');
-    badge.innerHTML = `<span class="sf-badge sf-badge-lg level-${level}-bg">L${level}</span>`;
+
+    if (level >= 3) {
+        // Badge unlock animation for L3+
+        const LEVEL_COLORS = {3: '#7C3AED', 4: '#059669', 5: '#4f46e5'};
+        badge.innerHTML = `
+            <div class="badge-unlock-container">
+                <div class="badge-unlock-glow" style="--glow-color: ${LEVEL_COLORS[level] || '#4f46e5'}"></div>
+                <img src="/static/badges/credential-l${level}.svg" alt="Silicon Friendly L${level}" class="badge-unlock-img">
+            </div>
+        `;
+        // Trigger the animation after a frame
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                badge.querySelector('.badge-unlock-container').classList.add('unlocked');
+            });
+        });
+    } else {
+        badge.innerHTML = `<span class="sf-badge sf-badge-lg level-${level}-bg">L${level}</span>`;
+    }
 
     document.getElementById('final-domain').textContent = DOMAIN;
 

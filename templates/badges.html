@@ -1,0 +1,221 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Badges - Silicon Friendly{% endblock %}
+
+{% block content %}
+<section class="badges-hero">
+    <h1>Silicon Friendly Badges</h1>
+    <p class="badges-subtitle">Earned your level? Show it off. Pick a badge, grab the embed code, and add it to your site.</p>
+</section>
+
+<section class="badges-showcase">
+    {% for level in levels %}
+    <div class="badge-level-section">
+        <h2 class="badge-level-title">
+            <span class="badge-level-dot" style="background: {{ level.color }}"></span>
+            Level {{ level.num }} — {{ level.name }}
+        </h2>
+
+        <div class="badge-variants">
+            <!-- Credential -->
+            <div class="badge-variant-card">
+                <h3>Credential</h3>
+                <div class="badge-preview badge-preview-light">
+                    <img src="{% static 'badges/credential-l' %}{{ level.num }}.svg" alt="Silicon Friendly L{{ level.num }} Credential Badge">
+                </div>
+                <div class="badge-preview badge-preview-dark">
+                    <img src="{% static 'badges/credential-l' %}{{ level.num }}.svg" alt="Silicon Friendly L{{ level.num }} Credential Badge">
+                </div>
+                <div class="badge-embed-code">
+                    <label>HTML</label>
+                    <code>&lt;a href="https://siliconfriendly.com"&gt;&lt;img src="https://siliconfriendly.com/static/badges/credential-l{{ level.num }}.svg" alt="Silicon Friendly L{{ level.num }}" height="32"&gt;&lt;/a&gt;</code>
+                    <button class="btn btn-secondary btn-sm copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+                <div class="badge-embed-code">
+                    <label>Markdown</label>
+                    <code>[![Silicon Friendly L{{ level.num }}](https://siliconfriendly.com/static/badges/credential-l{{ level.num }}.svg)](https://siliconfriendly.com)</code>
+                    <button class="btn btn-secondary btn-sm copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+            </div>
+
+            <!-- Colophon -->
+            <div class="badge-variant-card">
+                <h3>Colophon</h3>
+                <div class="badge-preview badge-preview-light">
+                    <img src="{% static 'badges/colophon-l' %}{{ level.num }}.svg" alt="Silicon Friendly L{{ level.num }} Colophon Badge">
+                </div>
+                <div class="badge-preview badge-preview-dark">
+                    <img src="{% static 'badges/colophon-l' %}{{ level.num }}.svg" alt="Silicon Friendly L{{ level.num }} Colophon Badge">
+                </div>
+                <div class="badge-embed-code">
+                    <label>HTML</label>
+                    <code>&lt;a href="https://siliconfriendly.com"&gt;&lt;img src="https://siliconfriendly.com/static/badges/colophon-l{{ level.num }}.svg" alt="Silicon Friendly L{{ level.num }}" height="28"&gt;&lt;/a&gt;</code>
+                    <button class="btn btn-secondary btn-sm copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+                <div class="badge-embed-code">
+                    <label>Markdown</label>
+                    <code>[![Silicon Friendly L{{ level.num }}](https://siliconfriendly.com/static/badges/colophon-l{{ level.num }}.svg)](https://siliconfriendly.com)</code>
+                    <button class="btn btn-secondary btn-sm copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+            </div>
+
+            <!-- Shield -->
+            <div class="badge-variant-card">
+                <h3>Shield</h3>
+                <div class="badge-preview badge-preview-light">
+                    <img src="{% static 'badges/shield-l' %}{{ level.num }}.svg" alt="Silicon Friendly L{{ level.num }} Shield Badge">
+                </div>
+                <div class="badge-preview badge-preview-dark">
+                    <img src="{% static 'badges/shield-l' %}{{ level.num }}.svg" alt="Silicon Friendly L{{ level.num }} Shield Badge">
+                </div>
+                <div class="badge-embed-code">
+                    <label>HTML</label>
+                    <code>&lt;a href="https://siliconfriendly.com"&gt;&lt;img src="https://siliconfriendly.com/static/badges/shield-l{{ level.num }}.svg" alt="Silicon Friendly L{{ level.num }}" height="28"&gt;&lt;/a&gt;</code>
+                    <button class="btn btn-secondary btn-sm copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+                <div class="badge-embed-code">
+                    <label>Markdown</label>
+                    <code>[![Silicon Friendly L{{ level.num }}](https://siliconfriendly.com/static/badges/shield-l{{ level.num }}.svg)](https://siliconfriendly.com)</code>
+                    <button class="btn btn-secondary btn-sm copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</section>
+
+<style>
+.badges-hero {
+    text-align: center;
+    padding: 4rem 1.5rem 2rem;
+    max-width: 600px;
+    margin: 0 auto;
+}
+.badges-hero h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--fg);
+    letter-spacing: -0.03em;
+    margin-bottom: 0.75rem;
+}
+.badges-subtitle {
+    color: var(--fg-muted);
+    font-size: 1.1rem;
+    line-height: 1.6;
+}
+.badges-showcase {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 0 1.5rem 4rem;
+}
+.badge-level-section {
+    margin-bottom: 3.5rem;
+}
+.badge-level-title {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--fg);
+    margin-bottom: 1.5rem;
+    letter-spacing: -0.02em;
+}
+.badge-level-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+.badge-variants {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+}
+.badge-variant-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+}
+.badge-variant-card h3 {
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--fg-muted);
+    margin-bottom: 1rem;
+}
+.badge-preview {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.25rem;
+    border-radius: var(--radius-sm);
+    margin-bottom: 0.75rem;
+    min-height: 60px;
+}
+.badge-preview img {
+    height: auto;
+    max-width: 100%;
+}
+.badge-preview-light {
+    background: #ffffff;
+    border: 1px solid var(--border);
+}
+.badge-preview-dark {
+    background: #1a1a2e;
+    border: 1px solid #2a2a3e;
+}
+.badge-embed-code {
+    position: relative;
+    margin-bottom: 0.5rem;
+}
+.badge-embed-code label {
+    display: block;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--fg-muted);
+    margin-bottom: 0.25rem;
+}
+.badge-embed-code code {
+    display: block;
+    padding: 0.5rem 0.75rem;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 0.7rem;
+    color: var(--fg);
+    white-space: nowrap;
+    overflow-x: auto;
+    padding-right: 4rem;
+}
+.badge-embed-code .copy-btn {
+    position: absolute;
+    right: 4px;
+    bottom: 4px;
+    font-size: 0.65rem;
+    padding: 0.2rem 0.5rem;
+}
+
+@media (max-width: 768px) {
+    .badge-variants {
+        grid-template-columns: 1fr;
+    }
+    .badges-hero h1 {
+        font-size: 1.8rem;
+    }
+}
+</style>
+
+<script>
+function copyCode(btn) {
+    var code = btn.parentElement.querySelector('code');
+    navigator.clipboard.writeText(code.textContent);
+    btn.textContent = 'Copied!';
+    setTimeout(function() { btn.textContent = 'Copy'; }, 2000);
+}
+</script>
+{% endblock %}
