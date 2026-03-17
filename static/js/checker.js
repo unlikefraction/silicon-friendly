@@ -30,18 +30,22 @@ const CRITERIA_LABELS = {
 let checkResults = null;
 
 async function startCheck() {
-    // Fetch results from API
     try {
         const res = await fetch('/api/check/' + encodeURIComponent(DOMAIN) + '/');
         checkResults = await res.json();
     } catch(e) {
-        document.getElementById('checker-intro').innerHTML = '<h1>Error</h1><p>Could not check ' + DOMAIN + '. Make sure the URL is correct.</p><a href="/" class="btn btn-primary">Try Again</a>';
+        document.getElementById('checker-intro').innerHTML =
+            '<h1 class="hero-title">error.</h1>' +
+            '<p class="hero-subtitle">could not check ' + DOMAIN + '. make sure the url is correct.</p>' +
+            '<a href="/" class="btn btn-primary" style="margin-top:2rem;">Try Again</a>';
         return;
     }
 
-    // Start the animation sequence
     await sleep(1500);
+
+    // Hide intro hero, show compact static hero + level section
     document.getElementById('checker-intro').style.display = 'none';
+    document.getElementById('checker-hero-static').style.display = 'flex';
     document.getElementById('level-section').style.display = 'block';
 
     // Run through levels
@@ -50,36 +54,35 @@ async function startCheck() {
         const levelData = checkResults.results[levelKey];
         const levelSummary = checkResults.levels[levelKey];
 
-        // Show level announcement
-        await showLevelAnnounce(level);
+        // Update section label
+        showLevelLabel(level);
 
-        // Show criteria one by one with random delays
+        // Build criteria grid
         const criteriaKeys = Object.keys(levelData);
         const grid = document.getElementById('criteria-grid');
         grid.innerHTML = '';
 
-        // Create all boxes first (hidden)
         for (let i = 0; i < criteriaKeys.length; i++) {
             const key = criteriaKeys[i];
-            const box = createCriterionBox(key, i);
-            grid.appendChild(box);
+            const row = createCriterionRow(key, i);
+            grid.appendChild(row);
         }
 
-        // Animate boxes appearing (staggered)
-        await sleep(500);
-        const boxes = grid.querySelectorAll('.criterion-box');
-        for (let i = 0; i < boxes.length; i++) {
-            boxes[i].classList.add('visible');
-            await sleep(150);
+        // Animate rows appearing
+        await sleep(400);
+        const rows = grid.querySelectorAll('.criteria-row');
+        for (let i = 0; i < rows.length; i++) {
+            rows[i].classList.add('visible');
+            await sleep(120);
         }
 
         // Reveal results one by one with random delays
         for (let i = 0; i < criteriaKeys.length; i++) {
             const key = criteriaKeys[i];
             const result = levelData[key];
-            const delay = 1000 + Math.random() * 4000; // 1-5 seconds
+            const delay = 800 + Math.random() * 3500;
             await sleep(delay);
-            revealCriterion(boxes[i], result.pass);
+            revealCriterion(rows[i], result.pass);
         }
 
         // Show level result
@@ -88,13 +91,11 @@ async function startCheck() {
         showLevelResult(level, passed, levelSummary.passed, levelSummary.total);
 
         if (!passed) {
-            // Failed this level - stop here
             await sleep(1500);
             break;
         }
 
         if (level < 3) {
-            // Passed - transition to next level
             await sleep(2000);
             document.getElementById('level-result').style.display = 'none';
         }
@@ -105,41 +106,30 @@ async function startCheck() {
     showFinalResult();
 }
 
-async function showLevelAnnounce(level) {
-    const title = document.getElementById('level-title');
-    const subtitle = document.getElementById('level-subtitle');
-    const announce = document.getElementById('level-announce');
+function showLevelLabel(level) {
+    const label = document.getElementById('level-label');
+    label.textContent = 'LEVEL ' + level + ' / ' + LEVEL_NAMES[level].toUpperCase();
 
-    title.textContent = 'LEVEL ' + level;
-    subtitle.textContent = LEVEL_NAMES[level];
-
-    announce.style.display = 'block';
-    announce.classList.remove('animate');
-    void announce.offsetWidth; // reflow
-    announce.classList.add('animate');
-
-    await sleep(1200);
+    // Reset animation
+    label.classList.remove('animate');
+    void label.offsetWidth;
+    label.classList.add('animate');
 }
 
-function createCriterionBox(key, index) {
+function createCriterionRow(key, index) {
     const div = document.createElement('div');
-    div.className = 'criterion-box';
-    div.style.animationDelay = (index * 0.1) + 's';
-    div.innerHTML = `
-        <div class="criterion-icon">
-            <div class="criterion-spinner"></div>
-        </div>
-        <div class="criterion-label">${CRITERIA_LABELS[key] || key}</div>
-    `;
+    div.className = 'criteria-row';
+    div.style.animationDelay = (index * 0.08) + 's';
+    div.innerHTML =
+        '<span class="criteria-row-label">' + (CRITERIA_LABELS[key] || key) + '</span>' +
+        '<span class="criteria-row-status"><span class="criterion-spinner"></span></span>';
     return div;
 }
 
-function revealCriterion(box, passed) {
-    const icon = box.querySelector('.criterion-icon');
-    box.classList.add(passed ? 'pass' : 'fail');
-    icon.innerHTML = passed
-        ? '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>'
-        : '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+function revealCriterion(row, passed) {
+    const status = row.querySelector('.criteria-row-status');
+    row.classList.add(passed ? 'pass' : 'fail');
+    status.textContent = passed ? 'PASS' : 'FAIL';
 }
 
 function showLevelResult(level, passed, count, total) {
@@ -147,59 +137,66 @@ function showLevelResult(level, passed, count, total) {
     const text = document.getElementById('level-result-text');
 
     if (passed) {
-        text.innerHTML = `<span class="result-pass">PASSED L${level}</span> <span class="result-score">${count}/${total}</span>`;
-        result.className = 'level-result level-passed';
+        text.innerHTML = '> LEVEL ' + level + ' PASSED — ' + count + '/' + total + ' criteria met';
+        result.className = 'checker-level-result level-passed';
     } else {
-        text.innerHTML = `<span class="result-fail">STOPPED AT L${level}</span> <span class="result-score">${count}/${total}</span>`;
-        result.className = 'level-result level-failed';
+        text.innerHTML = '> STOPPED AT LEVEL ' + level + ' — ' + count + '/' + total + ' criteria met';
+        result.className = 'checker-level-result level-failed';
     }
     result.style.display = 'block';
 }
 
 function showFinalResult() {
     document.getElementById('level-section').style.display = 'none';
+    document.getElementById('checker-hero-static').style.display = 'none';
     const final = document.getElementById('checker-final');
     final.style.display = 'block';
 
     const level = checkResults.overall_level;
+
+    // Set hero domain
+    const domainTitle = document.getElementById('final-domain-title');
+    domainTitle.innerHTML = DOMAIN + '.';
+
+    const levelNames = {0: 'Not Yet Friendly', 1: 'Basic Accessibility', 2: 'Discoverable', 3: 'Structured Interaction'};
+    document.getElementById('final-level-text').textContent = 'level ' + level + ': ' + (levelNames[level] || 'silicon friendly');
+
+    // Badge in terminal block
     const badge = document.getElementById('final-badge');
+    const resultLine = document.getElementById('final-result-line');
 
     if (level >= 3) {
-        // Badge unlock animation for L3+
-        const LEVEL_COLORS = {3: '#7C3AED', 4: '#059669', 5: '#4f46e5'};
-        badge.innerHTML = `
-            <div class="badge-unlock-container">
-                <div class="badge-unlock-glow" style="--glow-color: ${LEVEL_COLORS[level] || '#4f46e5'}"></div>
-                <img src="/static/badges/credential-l${level}.svg" alt="Silicon Friendly L${level}" class="badge-unlock-img">
-            </div>
-        `;
-        // Trigger the animation after a frame
-        requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
+        badge.innerHTML =
+            '<div class="badge-unlock-container">' +
+            '<div class="badge-unlock-glow" style="--glow-color: ' + ({3: '#7C3AED', 4: '#059669', 5: '#4f46e5'}[level] || '#4f46e5') + '"></div>' +
+            '<img src="/static/badges/credential-l' + level + '.svg" alt="Silicon Friendly L' + level + '" class="badge-unlock-img">' +
+            '</div>';
+        requestAnimationFrame(function() {
+            requestAnimationFrame(function() {
                 badge.querySelector('.badge-unlock-container').classList.add('unlocked');
             });
         });
+        resultLine.innerHTML = '> BADGE UNLOCKED: SILICON FRIENDLY L' + level;
     } else {
-        badge.innerHTML = `<span class="sf-badge sf-badge-lg level-${level}-bg">L${level}</span>`;
+        badge.innerHTML = '<span class="sf-badge sf-badge-lg level-' + level + '-bg">L' + level + '</span>';
+        resultLine.innerHTML = '> SILICON FRIENDLY LEVEL ' + level;
     }
 
-    document.getElementById('final-domain').textContent = DOMAIN;
-
-    const levelNames = {0: 'Not Yet Friendly', 1: 'Basic Accessibility', 2: 'Discoverable', 3: 'Structured Interaction'};
-    document.getElementById('final-level-text').textContent = 'Level ' + level + ': ' + (levelNames[level] || 'Silicon Friendly');
-
-    // Build summary
+    // Build summary with grid rows per level
     const summary = document.getElementById('final-summary');
     let html = '';
     for (let l = 1; l <= 3; l++) {
         const lk = 'l' + l;
         const ld = checkResults.results[lk];
-        html += `<div class="summary-level"><h4>Level ${l}</h4><div class="summary-criteria">`;
+        const ls = checkResults.levels[lk];
+        html += '<div class="summary-level-block">';
+        html += '<div class="section-label" style="margin-bottom:1rem;">LEVEL ' + l + ' / ' + LEVEL_NAMES[l].toUpperCase() + ' — ' + ls.passed + '/' + ls.total + '</div>';
+        html += '<div class="checker-criteria-grid">';
         for (const [key, val] of Object.entries(ld)) {
-            html += `<div class="summary-item ${val.pass ? 'pass' : 'fail'}">
-                <span class="criterion-check">${val.pass ? '&#10003;' : '&#10007;'}</span>
-                <span>${CRITERIA_LABELS[key] || key}</span>
-            </div>`;
+            html += '<div class="criteria-row visible ' + (val.pass ? 'pass' : 'fail') + '">' +
+                '<span class="criteria-row-label">' + (CRITERIA_LABELS[key] || key) + '</span>' +
+                '<span class="criteria-row-status">' + (val.pass ? 'PASS' : 'FAIL') + '</span>' +
+                '</div>';
         }
         html += '</div></div>';
     }
@@ -215,12 +212,10 @@ function showComparison() {
     document.getElementById('comparison-cta').style.display = 'none';
     document.getElementById('bubble-container').style.display = 'block';
 
-    // Use the bubble chart from bubbles.js
     if (typeof renderBubbleChart === 'function') {
-        // Fetch similar websites
         fetch('/api/check/' + encodeURIComponent(DOMAIN) + '/similar/')
-            .then(r => r.json())
-            .then(data => {
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
                 if (data.websites) {
                     renderBubbleChart(data.websites, DOMAIN, checkResults.overall_level);
                     document.getElementById('rank-text').style.display = 'block';
@@ -234,8 +229,7 @@ function showComparison() {
 }
 
 function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise(function(resolve) { setTimeout(resolve, ms); });
 }
 
-// Start the check when page loads
 document.addEventListener('DOMContentLoaded', startCheck);

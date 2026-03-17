@@ -3,52 +3,68 @@
 {% block title %}Check {{ domain }} - Silicon Friendly{% endblock %}
 
 {% block content %}
-<div class="checker-container" id="checker">
-    <!-- Initial loading state -->
-    <div class="checker-intro" id="checker-intro">
-        <h1>Checking <span class="checker-domain">{{ domain }}</span></h1>
-        <p class="checker-subtitle">Analyzing silicon friendliness...</p>
+<div id="checker">
+    <!-- Hero: loading state -->
+    <section class="hero checker-hero" id="checker-intro">
+        <h1 class="hero-title">checking<br><span class="checker-domain">{{ domain }}</span>.</h1>
+        <p class="hero-subtitle">analyzing silicon friendliness...</p>
         <div class="checker-loader">
             <div class="loader-bar"></div>
         </div>
-    </div>
+    </section>
 
-    <!-- Level sections - shown one at a time -->
-    <div class="checker-level" id="level-section" style="display:none;">
-        <div class="level-announce" id="level-announce">
-            <h2 id="level-title">LEVEL 1</h2>
-            <p id="level-subtitle">Basic Accessibility</p>
-        </div>
+    <!-- Hero: stays visible during level checks -->
+    <section class="hero checker-hero checker-hero-compact" id="checker-hero-static" style="display:none;">
+        <h1 class="hero-title">checking<br><span class="checker-domain">{{ domain }}</span>.</h1>
+    </section>
 
-        <div class="criteria-grid" id="criteria-grid">
-            <!-- Criteria boxes inserted by JS -->
-        </div>
+    <!-- Level sections -->
+    <div class="checker-levels-wrap" id="level-section" style="display:none;">
+        <div class="section checker-level-section">
+            <div class="section-label" id="level-label">LEVEL 1 / BASIC ACCESSIBILITY</div>
 
-        <div class="level-result" id="level-result" style="display:none;">
-            <div id="level-result-text"></div>
+            <div class="checker-criteria-grid" id="criteria-grid">
+                <!-- Criteria rows inserted by JS -->
+            </div>
+
+            <div class="checker-level-result" id="level-result" style="display:none;">
+                <div class="terminal-result-block">
+                    <span id="level-result-text"></span>
+                </div>
+            </div>
         </div>
     </div>
 
     <!-- Final result -->
-    <div class="checker-final" id="checker-final" style="display:none;">
-        <div class="final-badge" id="final-badge"></div>
-        <h2 id="final-domain"></h2>
-        <p id="final-level-text"></p>
+    <div id="checker-final" style="display:none;">
+        <section class="hero checker-hero checker-hero-compact" id="final-hero">
+            <h1 class="hero-title" id="final-domain-title"></h1>
+            <p class="hero-subtitle" id="final-level-text"></p>
+        </section>
 
-        <div class="final-criteria-summary" id="final-summary">
-            <!-- Summary of all criteria -->
-        </div>
+        <div class="section checker-final-section">
+            <div class="section-label">RESULT</div>
 
-        <!-- Comparison CTA -->
-        <div class="comparison-cta" id="comparison-cta">
-            <button class="btn btn-primary" onclick="showComparison()">See how you rank in your category</button>
-        </div>
+            <div class="terminal-result-block final-terminal" id="final-badge-block">
+                <div id="final-badge"></div>
+                <div id="final-result-line"></div>
+            </div>
 
-        <!-- Bubble chart container -->
-        <div id="bubble-container" style="display:none;">
-            <h3>Finding websites in your category...</h3>
-            <div class="bubble-chart-container" id="bubble-chart"></div>
-            <p id="rank-text" style="display:none;"></p>
+            <div class="checker-final-summary" id="final-summary">
+                <!-- Summary of all criteria -->
+            </div>
+
+            <!-- Comparison CTA -->
+            <div class="comparison-cta" id="comparison-cta" style="margin-top: 2rem;">
+                <button class="btn btn-primary" onclick="showComparison()">See how you rank in your category</button>
+            </div>
+
+            <!-- Bubble chart container -->
+            <div id="bubble-container" style="display:none;">
+                <h3>Finding websites in your category...</h3>
+                <div class="bubble-chart-container" id="bubble-chart"></div>
+                <p id="rank-text" style="display:none;"></p>
+            </div>
         </div>
 
         <!-- Upsell -->

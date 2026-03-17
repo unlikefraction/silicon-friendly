@@ -1431,38 +1431,25 @@ main {
 }
 
 /* === CHECKER PAGE === */
-.checker-container {
-    max-width: 700px;
-    margin: 0 auto;
-    padding: 4rem clamp(1rem, 4vw, 2rem);
+.checker-hero {
+    min-height: 60vh;
 }
 
-.checker-intro {
-    text-align: center;
-    padding: 3rem 0;
+.checker-hero .hero-title {
+    font-size: clamp(40px, 8vw, 100px);
 }
 
-.checker-intro h1 {
-    font-size: clamp(24px, 4vw, 40px);
-    font-weight: 800;
-    letter-spacing: -0.03em;
-    margin-bottom: 1rem;
+.checker-hero-compact {
+    min-height: auto;
+    padding-bottom: 2rem;
 }
 
 .checker-domain {
-    color: var(--fg);
     font-family: var(--font-mono);
-}
-
-.checker-subtitle {
-    color: var(--fg-muted);
-    font-family: var(--font-mono);
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.2em;
 }
 
 .checker-loader {
+    max-width: 400px;
     margin-top: 2rem;
 }
 
@@ -1489,118 +1476,104 @@ main {
     100% { left: 100%; }
 }
 
-.checker-section {
-    min-height: 60vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    padding: 3rem 0;
+/* Level section */
+.checker-levels-wrap {
+    animation: fadeIn 0.4s ease;
 }
 
-.checker-level-announce {
-    animation: fadeInUp 0.6s ease;
+.checker-level-section {
+    padding: 4rem clamp(2rem, 8vw, 10rem);
+    border-top: 1px solid var(--border);
 }
 
-.checker-level-announce h2 {
-    font-size: 2rem;
-    font-weight: 800;
-    color: var(--fg);
-    margin-bottom: 0.5rem;
-    letter-spacing: -0.02em;
+.checker-level-section .section-label.animate {
+    animation: fadeInUp 0.4s ease;
 }
 
-.checker-level-announce p {
-    color: var(--fg-muted);
-    font-family: var(--font-mono);
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.15em;
-    margin-bottom: 2rem;
-}
-
-.checker-criteria {
+/* Criteria grid - table style rows */
+.checker-criteria-grid {
     width: 100%;
-    max-width: 500px;
-    text-align: left;
+    border: 1px solid var(--border);
 }
 
-.checker-criterion {
+.criteria-row {
     display: flex;
+    justify-content: space-between;
     align-items: center;
-    gap: 0.75rem;
-    padding: 0.75rem 0;
-    margin-bottom: 0;
+    padding: 0.65rem 1rem;
     border-bottom: 1px solid var(--border);
-    background: transparent;
-    animation: criterionReveal 0.4s ease both;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    opacity: 0;
+    transform: translateX(-12px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
-.checker-criterion:nth-child(1) { animation-delay: 0.1s; }
-.checker-criterion:nth-child(2) { animation-delay: 0.2s; }
-.checker-criterion:nth-child(3) { animation-delay: 0.3s; }
-.checker-criterion:nth-child(4) { animation-delay: 0.4s; }
-.checker-criterion:nth-child(5) { animation-delay: 0.5s; }
-.checker-criterion:nth-child(6) { animation-delay: 0.6s; }
-.checker-criterion:nth-child(7) { animation-delay: 0.7s; }
-.checker-criterion:nth-child(8) { animation-delay: 0.8s; }
+.criteria-row:last-child {
+    border-bottom: none;
+}
 
-.checker-criterion .criterion-icon {
-    width: 20px;
-    height: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.75rem;
+.criteria-row.visible {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.criteria-row-label {
+    color: var(--fg);
+}
+
+.criteria-row-status {
     font-weight: 700;
-    flex-shrink: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: 11px;
+    min-width: 44px;
+    text-align: right;
 }
 
-.checker-criterion.pass .criterion-icon {
+.criteria-row.pass .criteria-row-status {
     color: var(--green);
 }
 
-.checker-criterion.fail .criterion-icon {
-    color: var(--fail);
+.criteria-row.fail .criteria-row-status {
+    color: var(--error);
 }
 
-.checker-criterion .criterion-text {
-    font-size: 0.9rem;
-    color: var(--fg);
-    font-family: var(--font-mono);
+/* Spinner inside criteria row */
+.criterion-spinner {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border: 2px solid var(--border);
+    border-top-color: var(--fg);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
 }
 
-/* Level announce & result */
-.level-announce {
-    text-align: center;
-    margin-bottom: 2rem;
+@keyframes spin {
+    to { transform: rotate(360deg); }
 }
 
-.level-announce h2 {
-    font-size: clamp(24px, 4vw, 40px);
-    font-weight: 800;
-    letter-spacing: -0.03em;
+/* Level result - terminal style */
+.checker-level-result {
+    margin-top: 1.5rem;
 }
 
-.level-announce p {
-    font-family: var(--font-mono);
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.15em;
-    color: var(--fg-muted);
-}
-
-.criteria-grid {
-    display: flex;
-    flex-direction: column;
-}
-
-.level-result {
-    text-align: center;
-    margin-top: 2rem;
+.terminal-result-block {
+    background: var(--terminal-bg);
+    color: var(--terminal-fg);
     font-family: var(--font-mono);
     font-size: 13px;
+    padding: 1rem 1.5rem;
+    letter-spacing: 0.02em;
+}
+
+.checker-level-result.level-passed .terminal-result-block {
+    color: var(--green);
+}
+
+.checker-level-result.level-failed .terminal-result-block {
+    color: var(--error);
 }
 
 /* === BADGE UNLOCK ANIMATION === */
@@ -1664,31 +1637,30 @@ main {
 }
 
 /* === CHECKER FINAL === */
-.checker-final {
-    text-align: center;
-    padding: 3rem 0;
+.checker-final-section {
+    padding: 4rem clamp(2rem, 8vw, 10rem);
+    border-top: 1px solid var(--border);
 }
 
-.checker-final h2 {
-    font-size: clamp(24px, 4vw, 40px);
-    font-weight: 800;
-    letter-spacing: -0.03em;
-    margin-bottom: 0.5rem;
+.final-terminal {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+    padding: 1.5rem 2rem;
 }
 
-.checker-final p {
-    font-family: var(--font-mono);
-    font-size: 13px;
-    color: var(--fg-muted);
+.final-terminal #final-result-line {
+    font-weight: 700;
+    letter-spacing: 0.05em;
 }
 
-.final-badge {
-    margin-bottom: 2rem;
+.checker-final-summary {
+    margin-top: 2rem;
 }
 
-.final-criteria-summary {
-    text-align: left;
-    margin: 2rem 0;
+.summary-level-block {
+    margin-bottom: 2.5rem;
 }
 
 .comparison-cta {
@@ -2446,13 +2418,18 @@ footer {
     }
 
     /* Checker */
-    .checker-section {
-        min-height: 50vh;
-        padding: 2rem 0;
+    .checker-level-section {
+        padding: 2rem 1.25rem;
     }
 
-    .checker-level-announce h2 {
-        font-size: 1.5rem;
+    .checker-final-section {
+        padding: 2rem 1.25rem;
+    }
+
+    .final-terminal {
+        flex-direction: column;
+        gap: 0.75rem;
+        padding: 1rem;
     }
 
     /* Upsell */
