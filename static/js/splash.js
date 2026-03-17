@@ -3,8 +3,10 @@
     var splash = document.getElementById('splash-screen');
     if (!splash) return;
 
-    // Only show once per session
-    if (sessionStorage.getItem('uf-splash-shown')) {
+    var isHomepage = splash.getAttribute('data-homepage') === 'true';
+
+    // Homepage: always show splash. Other pages: only once per session.
+    if (!isHomepage && sessionStorage.getItem('uf-splash-shown')) {
         splash.style.display = 'none';
         return;
     }

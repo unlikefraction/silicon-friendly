@@ -145,7 +145,7 @@
 </head>
 <body>
     <!-- Splash Screen -->
-    <div class="splash-screen" id="splash-screen">
+    <div class="splash-screen" id="splash-screen" data-homepage="{% block is_homepage %}false{% endblock %}">
         <canvas id="splash-canvas" style="position:absolute;top:0;left:0"></canvas>
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.20.0/matter.min.js"></script>
