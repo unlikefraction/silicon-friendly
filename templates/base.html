@@ -12,8 +12,7 @@
     <meta property="og:type" content="website">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/geist@1.3.1/dist/fonts/geist-sans/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/main.css' %}">
     {% block schema_org %}
     <script type="application/ld+json">
@@ -145,24 +144,31 @@
     </script>
 </head>
 <body>
+    <!-- Splash Screen -->
+    <div class="splash-screen" id="splash-screen">
+        <div class="splash-ascii" id="splash-ascii"></div>
+        <div class="splash-hint">click anywhere</div>
+    </div>
+    <script src="{% static 'js/splash.js' %}"></script>
+
     <header>
         <nav>
             <div class="nav-left">
-                <a href="/" class="logo">Silicon Friendly</a>
+                <a href="/" class="logo">silicon friendly</a>
             </div>
             <button class="nav-toggle" onclick="document.querySelector('.nav-right').classList.toggle('open')" aria-label="Menu">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
             </button>
             <div class="nav-right">
-                <a href="/#check">Check</a>
-                <a href="/search/">Directory</a>
-                <a href="/badges/">Badges</a>
-                <a href="/submit/">Submit</a>
+                <a href="/#check">check</a>
+                <a href="/search/">directory</a>
+                <a href="/badges/">badges</a>
+                <a href="/submit/">submit</a>
                 {% if logged_in_carbon %}
                 <a href="/c/{{ logged_in_carbon.username }}/" class="nav-user">{{ logged_in_carbon.username }}</a>
-                <a href="/logout/">Logout</a>
+                <a href="/logout/">logout</a>
                 {% else %}
-                <a href="/join/carbon/" class="btn btn-secondary" style="padding: 0.4rem 1rem; font-size: 0.85rem;">Login</a>
+                <a href="/join/carbon/">login</a>
                 {% endif %}
             </div>
         </nav>
@@ -175,14 +181,14 @@
     <footer>
         <div class="footer-content">
             <div class="footer-left">
-                <span class="footer-logo">Silicon Friendly</span>
-                <span class="footer-tagline">Making the web work for AI agents</span>
+                <span class="footer-logo">silicon friendly</span>
+                <span class="footer-tagline">making the web work for ai agents</span>
             </div>
             <div class="footer-links">
-                <a href="/levels/">Levels</a>
+                <a href="/levels/">levels</a>
                 <a href="/llms.txt">llms.txt</a>
                 <a href="/.well-known/agent.json">agent.json</a>
-                <a href="https://github.com/unlikefraction/silicon-friendly">GitHub</a>
+                <a href="https://github.com/unlikefraction/silicon-friendly">github</a>
             </div>
             <div class="footer-credit">
                 by <a href="https://x.com/unlikefraction">@unlikefraction</a> and silicon

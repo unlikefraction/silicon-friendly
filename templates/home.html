@@ -3,19 +3,21 @@
 
 {% block content %}
 <section class="hero">
-    <h1 class="hero-title">How Silicon Friendly is your website?</h1>
-    <p class="hero-subtitle">Find out if AI agents can use your website</p>
+    <h1 class="hero-title">silicon<br>friendly.</h1>
+    <p class="hero-subtitle">how ai-agent friendly is your website?<br>30 checks across 5 levels.</p>
 
     <form class="url-input-container" id="check-form" onsubmit="return handleCheck(event)">
-        <input type="text" id="check-url" placeholder="Enter your website URL..." autocomplete="off" class="url-input">
-        <button type="submit" class="btn btn-primary url-check-btn">Check</button>
+        <input type="text" id="check-url" placeholder="enter your website url..." autocomplete="off" class="url-input">
+        <button type="submit" class="url-check-btn">check</button>
     </form>
 
     <p class="social-proof"><strong>{{ total_websites }}</strong> websites rated</p>
 </section>
 
 <section class="how-it-works">
-    <h2>30 checks across 5 levels</h2>
+    <div class="section-label">levels</div>
+    <h2>30 checks.<br>5 levels.</h2>
+    <p>From basic HTML readability to full autonomous operation — we measure how well your site works with AI agents.</p>
     <div class="levels-grid">
         <div class="level-card">
             <span class="sf-badge level-1-bg">L1</span>
@@ -47,7 +49,8 @@
 
 {% if just_verified %}
 <section class="just-verified">
-    <h2>Recently Verified</h2>
+    <div class="section-label">recently verified</div>
+    <h2>just in.</h2>
     <div class="directory-list">
         {% for site in just_verified %}
         <a href="/w/{{ site.url }}/" class="directory-item">
@@ -63,7 +66,8 @@
 {% endif %}
 
 <section class="level-directory">
-    <h2>Directory</h2>
+    <div class="section-label">directory</div>
+    <h2>browse by level.</h2>
     <div class="directory-tabs" id="level-tabs">
         <button class="directory-tab active" onclick="showLevel(5, this)">L5 <span class="tab-count">{{ level_counts.5 }}</span></button>
         <button class="directory-tab" onclick="showLevel(4, this)">L4 <span class="tab-count">{{ level_counts.4 }}</span></button>
@@ -189,10 +193,10 @@
 </section>
 
 <section class="entry-point-section">
-    <p class="entry-label">Give this to your AI agent</p>
+    <div class="entry-label">give this to your ai agent</div>
     <div class="entry-point-box">
         <code>https://siliconfriendly.com/llms.txt</code>
-        <button onclick="copyEntryLink()" id="copy-entry-btn" class="btn btn-secondary btn-sm">Copy</button>
+        <button onclick="copyEntryLink()" id="copy-entry-btn" class="btn-sm" style="background:transparent;border:1px solid #444;color:#ede8e0;font-family:var(--font-mono);font-size:11px;text-transform:uppercase;letter-spacing:0.1em;cursor:pointer;padding:0.4rem 1rem;">copy</button>
     </div>
     <p class="entry-hint">Paste this URL into your agent's context. It'll know what to do.</p>
 </section>
@@ -217,8 +221,8 @@ function showLevel(num, btn) {
 function copyEntryLink() {
     navigator.clipboard.writeText('https://siliconfriendly.com/llms.txt');
     var btn = document.getElementById('copy-entry-btn');
-    btn.textContent = 'Copied!';
-    setTimeout(function() { btn.textContent = 'Copy'; }, 2000);
+    btn.textContent = 'copied!';
+    setTimeout(function() { btn.textContent = 'copy'; }, 2000);
 }
 </script>
 {% endblock %}
