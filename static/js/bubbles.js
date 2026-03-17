@@ -73,7 +73,7 @@ function renderBubbleChart(websites, currentDomain, currentLevel) {
     bubbles.forEach((b, i) => {
         const opacity = b.isCurrent ? 1 : 0.7;
         const strokeWidth = b.isCurrent ? 3 : 1;
-        const strokeColor = b.isCurrent ? '#00ff88' : 'rgba(255,255,255,0.1)';
+        const strokeColor = b.isCurrent ? '#5a9a6b' : 'rgba(255,255,255,0.1)';
 
         svg += `<circle cx="${b.x}" cy="${b.y}" r="${b.radius}" fill="${b.color}" opacity="${opacity}" stroke="${strokeColor}" stroke-width="${strokeWidth}"/>`;
 

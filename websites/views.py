@@ -485,12 +485,11 @@ class WebsiteBadgeSvgView(APIView):
         try:
             website = Website.objects.get(url=domain)
         except Website.DoesNotExist:
-            svg = _badge_svg("?", "#666", theme=theme)
+            svg = _badge_svg("?", domain="", theme=theme)
             return HttpResponse(svg, content_type="image/svg+xml")
 
         level = website.level
-        colors = {0: "#6B7280", 1: "#6B7280", 2: "#2563EB", 3: "#7C3AED", 4: "#059669", 5: "#4f46e5"}
-        svg = _badge_svg(f"L{level}", colors.get(level, "#666"), domain, theme=theme)
+        svg = _badge_svg(f"L{level}", domain=domain, theme=theme)
         return HttpResponse(svg, content_type="image/svg+xml")
 
 
@@ -514,22 +513,21 @@ class WebsiteBadgeJsView(APIView):
         return HttpResponse(js, content_type="application/javascript")
 
 
-def _badge_svg(level_text, color, domain="", theme="dark"):
+def _badge_svg(level_text, domain="", theme="dark"):
     aria = f"Silicon Friendly {level_text}" if domain else "Silicon Friendly"
     if theme == "light":
-        bg = "#f8f7ff"
-        border = "#e5e4ef"
-        text_color = "#1a1a2e"
-        label_text = "#fff"
+        bg = "#ede8e0"
+        border = "#1a1a1a"
+        text_color = "#1a1a1a"
+        label_opacity = "0.5"
     else:
-        bg = "#1a1a2e"
-        border = "#2a2a3e"
-        text_color = "#e0e0e0"
-        label_text = "#fff"
-    return f"""<svg xmlns="http://www.w3.org/2000/svg" width="180" height="28" role="img" aria-label="{aria}" data-domain="{domain}" data-level="{level_text}">
-  <rect width="180" height="28" rx="2" fill="{bg}" stroke="{border}" stroke-width="1"/>
-  <rect x="140" width="40" height="28" rx="2" fill="{color}"/>
-  <rect x="140" width="2" height="28" fill="{color}"/>
-  <text x="8" y="18" fill="{text_color}" font-family="'JetBrains Mono',monospace" font-size="10">[ silicon-friendly ]</text>
-  <text x="160" y="18" fill="{label_text}" font-family="'JetBrains Mono',monospace" font-size="11" font-weight="bold" text-anchor="middle">{level_text}</text>
+        bg = "#1a1a1a"
+        border = "#ede8e0"
+        text_color = "#ede8e0"
+        label_opacity = "0.7"
+    return f"""<svg xmlns="http://www.w3.org/2000/svg" width="200" height="28" role="img" aria-label="{aria}" data-domain="{domain}" data-level="{level_text}">
+  <rect width="200" height="28" fill="{bg}"/>
+  <rect x="0.5" y="0.5" width="199" height="27" fill="none" stroke="{border}" stroke-width="1" opacity="0.3"/>
+  <text x="8" y="18" fill="{text_color}" font-family="'JetBrains Mono',monospace" font-size="10" font-weight="700" letter-spacing="0.5">SILICON FRIENDLY</text>
+  <text x="192" y="18" fill="{text_color}" font-family="'JetBrains Mono',monospace" font-size="11" font-weight="700" text-anchor="end">{level_text}</text>
 </svg>"""

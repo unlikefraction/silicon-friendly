@@ -2,77 +2,78 @@
 {% block title %}Search - Silicon Friendly{% endblock %}
 
 {% block content %}
-<section class="page-section">
-    <h1>> search</h1>
+<section class="page-section" style="max-width: 720px; margin: 0 auto; padding: 2rem 1rem 4rem;">
+
+    <div class="section-label" style="margin-bottom: 1.5rem;">search</div>
 
     {% if limit_reached and not is_logged_in %}
-    <div class="search-limit-msg">
-        <pre>
-┌────────────────────────────────────────┐
-│  you've used your free searches.        │
-│  <a href="/join/carbon/">log in</a> to get more searches.        │
-└────────────────────────────────────────┘
-        </pre>
+    <div style="border: 1px solid var(--border); padding: 1.25rem; margin-bottom: 1.5rem;">
+        <p style="font-family: var(--font-mono); font-size: 13px; margin-bottom: 0.5rem;">you've used your free searches.</p>
+        <a href="/join/carbon/" style="font-family: var(--font-mono); font-size: 13px; text-decoration: underline;">log in to get more searches.</a>
     </div>
     {% elif limit_reached and is_logged_in and not is_silicon %}
-    <div class="search-limit-msg">
-        <pre>
-┌────────────────────────────────────────┐
-│  you've used all 5 searches today.    │
-│  come back tomorrow!                   │
-└────────────────────────────────────────┘
-        </pre>
+    <div style="border: 1px solid var(--border); padding: 1.25rem; margin-bottom: 1.5rem;">
+        <p style="font-family: var(--font-mono); font-size: 13px;">you've used all 5 searches today. come back tomorrow!</p>
     </div>
     {% endif %}
 
-    <form action="/search/" method="get" class="search-form" toolname="search_directory" tooldescription="Search the Silicon Friendly directory for AI-agent-friendly websites">
+    <form action="/search/" method="get" class="search-form" toolname="search_directory" tooldescription="Search the Silicon Friendly directory for AI-agent-friendly websites" style="max-width: 100%; margin-bottom: 2rem;">
         {% if is_silicon %}
-        <div class="search-mode-toggle">
-            <a href="?q={{ query }}&mode=keyword" class="search-mode-btn {% if mode == 'keyword' %}active{% endif %}">[ keyword ]</a>
-            <a href="?q={{ query }}&mode=semantic" class="search-mode-btn {% if mode == 'semantic' %}active{% endif %}">[ semantic ]</a>
+        <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.75rem;">
+            <a href="?q={{ query }}&mode=keyword" style="font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; padding: 0.4rem 0.8rem; border: 1px solid {% if mode == 'keyword' %}var(--fg){% else %}var(--border){% endif %}; color: var(--fg);">keyword</a>
+            <a href="?q={{ query }}&mode=semantic" style="font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; padding: 0.4rem 0.8rem; border: 1px solid {% if mode == 'semantic' %}var(--fg){% else %}var(--border){% endif %}; color: var(--fg);">semantic</a>
             {% if mode == 'semantic' %}
-            <span class="semantic-quota">{{ searches_remaining }} semantic left</span>
+            <span style="font-family: var(--font-mono); font-size: 11px; color: var(--fg-muted);">{{ searches_remaining }} semantic left</span>
             {% endif %}
         </div>
         <input type="hidden" name="mode" value="{{ mode }}">
         {% else %}
-        <div class="search-quota">
-            <span class="searches-left">{{ searches_remaining }} search{{ searches_remaining|pluralize:"es" }} left today</span>
+        <div style="margin-bottom: 0.5rem;">
+            <span style="font-family: var(--font-mono); font-size: 11px; color: var(--fg-muted); text-transform: uppercase; letter-spacing: 0.1em;">{{ searches_remaining }} search{{ searches_remaining|pluralize:"es" }} left today</span>
         </div>
         {% endif %}
-        <div class="terminal-input">
-            <span class="prompt">> query:</span>
-            <input type="text" name="q" value="{{ query }}" placeholder="search for websites..." autocomplete="off">
-            <button type="submit">[ > SEARCH ]</button>
+
+        <div class="url-input-container" style="max-width: 100%;">
+            <input type="text" name="q" value="{{ query }}" placeholder="search for websites..." autocomplete="off" class="url-input">
+            <button type="submit">search</button>
         </div>
     </form>
 
     {% if rate_limited %}
-    <div class="rate-limit-msg" style="border: 1px solid var(--error, #ff4444); padding: 1rem; margin-bottom: 1rem;">
-        <pre style="color: var(--error, #ff4444); margin: 0;">> slow down. try again in {{ retry_after }} seconds.</pre>
+    <div style="border: 1px solid var(--error); padding: 1rem; margin-bottom: 1.5rem;">
+        <p style="color: var(--error); font-family: var(--font-mono); font-size: 13px; margin: 0;">slow down. try again in {{ retry_after }} seconds.</p>
     </div>
     {% endif %}
 
     {% if query and not limit_reached and not rate_limited %}
-    <p class="result-count">> {{ results|length }} result(s) for "{{ query }}"</p>
+    <div class="section-label" style="margin-bottom: 1rem;">{{ results|length }} result{{ results|length|pluralize:"s" }}</div>
     {% endif %}
 
     {% if results %}
-    <div class="results-list">
+    <div style="display: flex; flex-direction: column; gap: 1px; background: var(--border); border: 1px solid var(--border);">
         {% for site in results %}
-        <a href="/w/{{ site.url }}/" class="result-item">
-            <pre>  L{{ site.level }} {% if site.verified %}[*]{% else %}[ ]{% endif %} {{ site.name }} ({{ site.url }})
-     {{ site.description|truncatechars:60 }}</pre>
+        <a href="/w/{{ site.url }}/" style="display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.25rem; background: var(--bg); text-decoration: none; color: var(--fg); transition: background 0.15s ease;">
+            <div>
+                <span style="font-weight: 600;">{{ site.name }}</span>
+                <span style="color: var(--fg-muted); font-size: 0.85rem; margin-left: 0.5rem;">{{ site.url }}</span>
+                {% if site.description %}
+                <div style="font-size: 0.82rem; color: var(--fg-muted); margin-top: 0.25rem; font-family: var(--font-mono);">{{ site.description|truncatechars:60 }}</div>
+                {% endif %}
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                {% if site.verified %}
+                <span style="font-family: var(--font-mono); font-size: 11px; color: #5a9a6b; text-transform: uppercase; letter-spacing: 0.1em;">verified</span>
+                {% endif %}
+                <span class="sf-badge sf-badge-sm level-{{ site.level }}-bg">L{{ site.level }}</span>
+            </div>
         </a>
         {% endfor %}
     </div>
     {% elif query and not limit_reached %}
-    <pre>
-┌────────────────────────────────────────┐
-│  no results found.                     │
-│  try different keywords.               │
-└────────────────────────────────────────┘
-    </pre>
+    <div style="border: 1px solid var(--border); padding: 1.5rem; color: var(--fg-muted); font-family: var(--font-mono); font-size: 13px;">
+        no results found. try different keywords.
+    </div>
     {% endif %}
+
 </section>
 {% endblock %}

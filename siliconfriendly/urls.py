@@ -1430,17 +1430,16 @@ from websites.models import Website, WebsiteVerification, CRITERIA_FIELDS, LEVEL
 
 def badges_view(request):
     levels = [
-        {"num": 1, "name": "Basic Accessibility", "color": "#6B7280"},
-        {"num": 2, "name": "Discoverability", "color": "#2563EB"},
-        {"num": 3, "name": "Structured Interaction", "color": "#7C3AED"},
-        {"num": 4, "name": "Agent Integration", "color": "#059669"},
-        {"num": 5, "name": "Autonomous Operation", "color": "#4f46e5"},
+        {"num": 1, "name": "Basic Accessibility"},
+        {"num": 2, "name": "Discoverability"},
+        {"num": 3, "name": "Structured Interaction"},
+        {"num": 4, "name": "Agent Integration"},
+        {"num": 5, "name": "Autonomous Operation"},
     ]
     for level in levels:
         n = level["num"]
-        level["credential_path"] = f"badges/credential-l{n}.svg"
-        level["colophon_path"] = f"badges/colophon-l{n}.svg"
-        level["shield_path"] = f"badges/shield-l{n}.svg"
+        level["light_on_dark_path"] = f"badges/badge-l{n}-light-on-dark.svg"
+        level["dark_on_light_path"] = f"badges/badge-l{n}-dark-on-light.svg"
     return render(request, "badges.html", {"levels": levels})
 
 

@@ -6,17 +6,17 @@
 <section class="hero" style="min-height: auto; padding-bottom: 2rem;">
     <div class="section-label">badges</div>
     <h1 class="hero-title" style="font-size: clamp(40px, 8vw, 100px);">show it off.</h1>
-    <p class="hero-subtitle">embed your silicon friendly certification.<br>three styles, five levels. pick the one that fits.</p>
+    <p class="hero-subtitle">embed your silicon friendly certification.<br>two styles, five levels. pick the one that fits.</p>
 </section>
 
 <section style="padding: 0 clamp(2rem, 8vw, 10rem) 6rem;">
     {% for level in levels %}
-    <div class="badge-level-section" id="level-{{ level.num }}" style="margin-bottom: 4rem; padding-top: 2rem; border-top: 1px solid #d4cfc7;">
+    <div class="badge-level-section" id="level-{{ level.num }}" style="margin-bottom: 4rem; padding-top: 2rem; border-top: 1px solid var(--border);">
         <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem;">
             <span class="sf-badge level-{{ level.num }}-bg">L{{ level.num }}</span>
             <div>
                 <h2 style="font-size: 1.2rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 0.15rem;">Level {{ level.num }} — {{ level.name }}</h2>
-                <p style="font-size: 13px; color: #777; font-family: var(--font-mono);">
+                <p style="font-size: 13px; color: var(--fg-muted); font-family: var(--font-mono);">
                     {% if level.num == 1 %}Can agents read your content?
                     {% elif level.num == 2 %}Can agents find things on your site?
                     {% elif level.num == 3 %}Can agents talk to your APIs?
@@ -27,91 +27,51 @@
             </div>
         </div>
 
-        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: #d4cfc7; border: 1px solid #d4cfc7;">
-            <!-- Credential -->
-            <div style="background: #ede8e0; padding: 2rem;">
-                <h3 style="font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.15em; color: #999; margin-bottom: 1rem;">Credential</h3>
-                <p style="font-size: 13px; color: #777; margin-bottom: 1.5rem; line-height: 1.5;">The full certification badge. For docs, READMEs, and developer pages.</p>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: #d4cfc7; margin-bottom: 1.5rem;">
-                    <div style="background: #ede8e0; display: flex; align-items: center; justify-content: center; padding: 1.5rem 1rem; min-height: 72px;">
-                        <img src="{% static level.credential_path %}" alt="Silicon Friendly L{{ level.num }} Credential Badge" style="max-width: 100%; height: auto;">
-                    </div>
-                    <div style="background: #1a1a1a; display: flex; align-items: center; justify-content: center; padding: 1.5rem 1rem; min-height: 72px;">
-                        <img src="{% static level.credential_path %}" alt="Silicon Friendly L{{ level.num }} Credential Badge" style="max-width: 100%; height: auto;">
-                    </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--border); border: 1px solid var(--border);">
+            <!-- Light on Dark -->
+            <div style="background: var(--bg); padding: 2rem;">
+                <h3 style="font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.15em; color: var(--fg-muted); margin-bottom: 1rem;">Light on Dark</h3>
+                <p style="font-size: 13px; color: var(--fg-muted); margin-bottom: 1.5rem; line-height: 1.5;">Light text on dark background. For dark UIs, terminals, READMEs.</p>
+                <div style="display: flex; align-items: center; justify-content: center; padding: 2rem 1rem; min-height: 80px; background: #1a1a1a; border: 1px solid var(--border); margin-bottom: 1.5rem;">
+                    <img src="{% static level.light_on_dark_path %}" alt="Silicon Friendly L{{ level.num }} — Light on Dark" style="max-width: 100%; height: auto;">
                 </div>
                 <div style="display: flex; flex-direction: column; gap: 0.75rem;">
                     <div>
-                        <label style="display: block; font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: #999; margin-bottom: 0.3rem;">HTML</label>
+                        <label style="display: block; font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--fg-muted); margin-bottom: 0.3rem;">HTML</label>
                         <div style="position: relative;">
-                            <code style="display: block; padding: 0.5rem 0.75rem; padding-right: 4rem; background: #1a1a1a; color: #ede8e0; font-size: 11px; white-space: nowrap; overflow-x: auto; font-family: var(--font-mono);">&lt;a href="https://siliconfriendly.com"&gt;&lt;img src="https://siliconfriendly.com/static/badges/credential-l{{ level.num }}.svg" alt="Silicon Friendly L{{ level.num }}" height="48"&gt;&lt;/a&gt;</code>
+                            <code style="display: block; padding: 0.5rem 0.75rem; padding-right: 4rem; background: #1a1a1a; color: #ede8e0; font-size: 11px; white-space: nowrap; overflow-x: auto; font-family: var(--font-mono);">&lt;a href="https://siliconfriendly.com"&gt;&lt;img src="https://siliconfriendly.com/static/badges/badge-l{{ level.num }}-light-on-dark.svg" alt="Silicon Friendly L{{ level.num }}" height="48"&gt;&lt;/a&gt;</code>
                             <button class="copy-btn" onclick="copyCode(this)" style="position: absolute; right: 4px; top: 50%; transform: translateY(-50%); font-family: var(--font-mono); font-size: 10px; padding: 0.2rem 0.6rem; background: transparent; border: 1px solid #444; color: #ede8e0; cursor: pointer; text-transform: uppercase; letter-spacing: 0.1em;">copy</button>
                         </div>
                     </div>
                     <div>
-                        <label style="display: block; font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: #999; margin-bottom: 0.3rem;">Markdown</label>
+                        <label style="display: block; font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--fg-muted); margin-bottom: 0.3rem;">Markdown</label>
                         <div style="position: relative;">
-                            <code style="display: block; padding: 0.5rem 0.75rem; padding-right: 4rem; background: #1a1a1a; color: #ede8e0; font-size: 11px; white-space: nowrap; overflow-x: auto; font-family: var(--font-mono);">[![Silicon Friendly L{{ level.num }}](https://siliconfriendly.com/static/badges/credential-l{{ level.num }}.svg)](https://siliconfriendly.com)</code>
+                            <code style="display: block; padding: 0.5rem 0.75rem; padding-right: 4rem; background: #1a1a1a; color: #ede8e0; font-size: 11px; white-space: nowrap; overflow-x: auto; font-family: var(--font-mono);">[![Silicon Friendly L{{ level.num }}](https://siliconfriendly.com/static/badges/badge-l{{ level.num }}-light-on-dark.svg)](https://siliconfriendly.com)</code>
                             <button class="copy-btn" onclick="copyCode(this)" style="position: absolute; right: 4px; top: 50%; transform: translateY(-50%); font-family: var(--font-mono); font-size: 10px; padding: 0.2rem 0.6rem; background: transparent; border: 1px solid #444; color: #ede8e0; cursor: pointer; text-transform: uppercase; letter-spacing: 0.1em;">copy</button>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Colophon -->
-            <div style="background: #ede8e0; padding: 2rem;">
-                <h3 style="font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.15em; color: #999; margin-bottom: 1rem;">Colophon</h3>
-                <p style="font-size: 13px; color: #777; margin-bottom: 1.5rem; line-height: 1.5;">Minimal and elegant. For footers and colophon sections.</p>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: #d4cfc7; margin-bottom: 1.5rem;">
-                    <div style="background: #ede8e0; display: flex; align-items: center; justify-content: center; padding: 1.5rem 1rem; min-height: 72px;">
-                        <img src="{% static level.colophon_path %}" alt="Silicon Friendly L{{ level.num }} Colophon Badge" style="max-width: 100%; height: auto;">
-                    </div>
-                    <div style="background: #1a1a1a; display: flex; align-items: center; justify-content: center; padding: 1.5rem 1rem; min-height: 72px;">
-                        <img src="{% static level.colophon_path %}" alt="Silicon Friendly L{{ level.num }} Colophon Badge" style="max-width: 100%; height: auto;">
-                    </div>
+            <!-- Dark on Light -->
+            <div style="background: var(--bg); padding: 2rem;">
+                <h3 style="font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.15em; color: var(--fg-muted); margin-bottom: 1rem;">Dark on Light</h3>
+                <p style="font-size: 13px; color: var(--fg-muted); margin-bottom: 1.5rem; line-height: 1.5;">Dark text on light background. For light UIs, docs, marketing pages.</p>
+                <div style="display: flex; align-items: center; justify-content: center; padding: 2rem 1rem; min-height: 80px; background: #ede8e0; border: 1px solid var(--border); margin-bottom: 1.5rem;">
+                    <img src="{% static level.dark_on_light_path %}" alt="Silicon Friendly L{{ level.num }} — Dark on Light" style="max-width: 100%; height: auto;">
                 </div>
                 <div style="display: flex; flex-direction: column; gap: 0.75rem;">
                     <div>
-                        <label style="display: block; font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: #999; margin-bottom: 0.3rem;">HTML</label>
+                        <label style="display: block; font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--fg-muted); margin-bottom: 0.3rem;">HTML</label>
                         <div style="position: relative;">
-                            <code style="display: block; padding: 0.5rem 0.75rem; padding-right: 4rem; background: #1a1a1a; color: #ede8e0; font-size: 11px; white-space: nowrap; overflow-x: auto; font-family: var(--font-mono);">&lt;a href="https://siliconfriendly.com"&gt;&lt;img src="https://siliconfriendly.com/static/badges/colophon-l{{ level.num }}.svg" alt="Silicon Friendly L{{ level.num }}" height="40"&gt;&lt;/a&gt;</code>
+                            <code style="display: block; padding: 0.5rem 0.75rem; padding-right: 4rem; background: #1a1a1a; color: #ede8e0; font-size: 11px; white-space: nowrap; overflow-x: auto; font-family: var(--font-mono);">&lt;a href="https://siliconfriendly.com"&gt;&lt;img src="https://siliconfriendly.com/static/badges/badge-l{{ level.num }}-dark-on-light.svg" alt="Silicon Friendly L{{ level.num }}" height="48"&gt;&lt;/a&gt;</code>
                             <button class="copy-btn" onclick="copyCode(this)" style="position: absolute; right: 4px; top: 50%; transform: translateY(-50%); font-family: var(--font-mono); font-size: 10px; padding: 0.2rem 0.6rem; background: transparent; border: 1px solid #444; color: #ede8e0; cursor: pointer; text-transform: uppercase; letter-spacing: 0.1em;">copy</button>
                         </div>
                     </div>
                     <div>
-                        <label style="display: block; font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: #999; margin-bottom: 0.3rem;">Markdown</label>
+                        <label style="display: block; font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--fg-muted); margin-bottom: 0.3rem;">Markdown</label>
                         <div style="position: relative;">
-                            <code style="display: block; padding: 0.5rem 0.75rem; padding-right: 4rem; background: #1a1a1a; color: #ede8e0; font-size: 11px; white-space: nowrap; overflow-x: auto; font-family: var(--font-mono);">[![Silicon Friendly L{{ level.num }}](https://siliconfriendly.com/static/badges/colophon-l{{ level.num }}.svg)](https://siliconfriendly.com)</code>
-                            <button class="copy-btn" onclick="copyCode(this)" style="position: absolute; right: 4px; top: 50%; transform: translateY(-50%); font-family: var(--font-mono); font-size: 10px; padding: 0.2rem 0.6rem; background: transparent; border: 1px solid #444; color: #ede8e0; cursor: pointer; text-transform: uppercase; letter-spacing: 0.1em;">copy</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Shield -->
-            <div style="background: #ede8e0; padding: 2rem;">
-                <h3 style="font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.15em; color: #999; margin-bottom: 1rem;">Shield</h3>
-                <p style="font-size: 13px; color: #777; margin-bottom: 1.5rem; line-height: 1.5;">Bold and compact. For GitHub repos and status pages.</p>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: #d4cfc7; margin-bottom: 1.5rem;">
-                    <div style="background: #ede8e0; display: flex; align-items: center; justify-content: center; padding: 1.5rem 1rem; min-height: 72px;">
-                        <img src="{% static level.shield_path %}" alt="Silicon Friendly L{{ level.num }} Shield Badge" style="max-width: 100%; height: auto;">
-                    </div>
-                    <div style="background: #1a1a1a; display: flex; align-items: center; justify-content: center; padding: 1.5rem 1rem; min-height: 72px;">
-                        <img src="{% static level.shield_path %}" alt="Silicon Friendly L{{ level.num }} Shield Badge" style="max-width: 100%; height: auto;">
-                    </div>
-                </div>
-                <div style="display: flex; flex-direction: column; gap: 0.75rem;">
-                    <div>
-                        <label style="display: block; font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: #999; margin-bottom: 0.3rem;">HTML</label>
-                        <div style="position: relative;">
-                            <code style="display: block; padding: 0.5rem 0.75rem; padding-right: 4rem; background: #1a1a1a; color: #ede8e0; font-size: 11px; white-space: nowrap; overflow-x: auto; font-family: var(--font-mono);">&lt;a href="https://siliconfriendly.com"&gt;&lt;img src="https://siliconfriendly.com/static/badges/shield-l{{ level.num }}.svg" alt="Silicon Friendly L{{ level.num }}" height="44"&gt;&lt;/a&gt;</code>
-                            <button class="copy-btn" onclick="copyCode(this)" style="position: absolute; right: 4px; top: 50%; transform: translateY(-50%); font-family: var(--font-mono); font-size: 10px; padding: 0.2rem 0.6rem; background: transparent; border: 1px solid #444; color: #ede8e0; cursor: pointer; text-transform: uppercase; letter-spacing: 0.1em;">copy</button>
-                        </div>
-                    </div>
-                    <div>
-                        <label style="display: block; font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: #999; margin-bottom: 0.3rem;">Markdown</label>
-                        <div style="position: relative;">
-                            <code style="display: block; padding: 0.5rem 0.75rem; padding-right: 4rem; background: #1a1a1a; color: #ede8e0; font-size: 11px; white-space: nowrap; overflow-x: auto; font-family: var(--font-mono);">[![Silicon Friendly L{{ level.num }}](https://siliconfriendly.com/static/badges/shield-l{{ level.num }}.svg)](https://siliconfriendly.com)</code>
+                            <code style="display: block; padding: 0.5rem 0.75rem; padding-right: 4rem; background: #1a1a1a; color: #ede8e0; font-size: 11px; white-space: nowrap; overflow-x: auto; font-family: var(--font-mono);">[![Silicon Friendly L{{ level.num }}](https://siliconfriendly.com/static/badges/badge-l{{ level.num }}-dark-on-light.svg)](https://siliconfriendly.com)</code>
                             <button class="copy-btn" onclick="copyCode(this)" style="position: absolute; right: 4px; top: 50%; transform: translateY(-50%); font-family: var(--font-mono); font-size: 10px; padding: 0.2rem 0.6rem; background: transparent; border: 1px solid #444; color: #ede8e0; cursor: pointer; text-transform: uppercase; letter-spacing: 0.1em;">copy</button>
                         </div>
                     </div>

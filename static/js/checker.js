@@ -168,8 +168,8 @@ function showFinalResult() {
     if (level >= 3) {
         badge.innerHTML =
             '<div class="badge-unlock-container">' +
-            '<div class="badge-unlock-glow" style="--glow-color: ' + ({3: '#7C3AED', 4: '#059669', 5: '#4f46e5'}[level] || '#4f46e5') + '"></div>' +
-            '<img src="/static/badges/credential-l' + level + '.svg" alt="Silicon Friendly L' + level + '" class="badge-unlock-img">' +
+            '<div class="badge-unlock-glow" style="--glow-color: #1a1a1a"></div>' +
+            '<img src="/static/badges/badge-l' + level + '-light-on-dark.svg" alt="Silicon Friendly L' + level + '" class="badge-unlock-img">' +
             '</div>';
         requestAnimationFrame(function() {
             requestAnimationFrame(function() {
