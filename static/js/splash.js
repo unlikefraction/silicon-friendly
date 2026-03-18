@@ -9,6 +9,21 @@
         return;
     }
 
+    var splashDone = false;
+    function dismissSplash() {
+        if (splashDone) return;
+        splashDone = true;
+        cancelAnimationFrame(rafId);
+        if (engine) { window.Matter && window.Matter.Engine.clear(engine); engine = null; }
+        splash.style.transition = "opacity 0.6s ease";
+        splash.style.opacity = "0";
+        sessionStorage.setItem('uf-splash-shown', '1');
+        setTimeout(function() { splash.style.display = 'none'; }, 600);
+    }
+
+    // Failsafe: if anything goes wrong, auto-dismiss after 15s
+    setTimeout(dismissSplash, 15000);
+
     var CHAR_SET = "@#%&8B$WMQO0Xkdpbqo*+~=:-.` ";
     var COLS = 100;
 
@@ -240,16 +255,7 @@
         nameOpacity = 0;
         await sleep(400);
 
-        cancelAnimationFrame(rafId);
-        if (engine) { window.Matter.Engine.clear(engine); engine = null; }
-
-        // Fade out splash, show site
-        splash.style.transition = "opacity 0.6s ease";
-        splash.style.opacity = "0";
-        sessionStorage.setItem('uf-splash-shown', '1');
-        setTimeout(function() {
-            splash.style.display = 'none';
-        }, 600);
+        dismissSplash();
     }
 
     // Load font then run
