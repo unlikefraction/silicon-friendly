@@ -45,29 +45,9 @@
 
 {# ── Result section ── #}
 <div class="section checker-final-section">
-    <div class="section-label">RESULT</div>
-
-    {# Terminal result block #}
-    <div class="terminal-result-block final-terminal">
-        <div>
-            {% if website.level >= 3 %}
-            <img src="{% static badge_light_on_dark %}" alt="L{{ website.level }}" style="height: 48px; width: auto;">
-            {% elif website.level >= 1 %}
-            <span class="sf-badge sf-badge-l{{ website.level }}" style="font-size: 0.9rem; padding: 0.3rem 0.65rem;">L{{ website.level }}</span>
-            {% else %}
-            <span style="display: inline-flex; align-items: center; justify-content: center; padding: 0.3rem 0.65rem; font-family: var(--font-mono); font-size: 0.9rem; font-weight: 700; color: var(--fg-muted); border: 2px dashed rgba(237,232,224,0.3);">L0</span>
-            {% endif %}
-        </div>
-        <div style="font-weight: 700; letter-spacing: 0.05em;">
-            {% if website.level >= 3 %}&gt; BADGE UNLOCKED: SILICON FRIENDLY L{{ website.level }}
-            {% elif website.level >= 1 %}&gt; SILICON FRIENDLY LEVEL {{ website.level }}
-            {% else %}&gt; NOT SILICON FRIENDLY YET
-            {% endif %}
-        </div>
-    </div>
 
     {# ── Meta: name, link, submitted by, verification ── #}
-    <div style="margin-top: 2rem; margin-bottom: 2rem;">
+    <div style="margin-bottom: 2rem;">
         {% if website.name %}
         <div style="font-family: var(--font-sans); font-weight: 700; font-size: 1.15rem; margin-bottom: 0.35rem;">{{ website.name }}</div>
         {% endif %}
