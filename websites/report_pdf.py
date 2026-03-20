@@ -7,7 +7,7 @@ from websites.tasks import CRITERIA_DOCS, LEVEL_NAMES
 def _get_competitors(website, limit=10):
     """Find similar websites using vector search."""
     from websites.models import Website
-    if not website.embedding:
+    if website.embedding is None:
         return []
     from pgvector.django import CosineDistance
     results = (
