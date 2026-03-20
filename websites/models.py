@@ -151,6 +151,40 @@ class WebsiteVerification(models.Model):
         return f"Verification of {self.website.url} by {verifier}"
 
 
+class CheckJob(models.Model):
+    domain = models.CharField(max_length=255)
+    carbon = models.ForeignKey(Carbon, on_delete=models.SET_NULL, null=True, blank=True)
+    status = models.CharField(max_length=20, default="queued")
+    # Step 0
+    website_name = models.CharField(max_length=255, blank=True, default="")
+    website_description = models.TextField(blank=True, default="")
+    # Per-level results: {field_name: bool}
+    level_1_results = models.JSONField(null=True, blank=True)
+    level_2_results = models.JSONField(null=True, blank=True)
+    level_3_results = models.JSONField(null=True, blank=True)
+    level_4_results = models.JSONField(null=True, blank=True)
+    level_5_results = models.JSONField(null=True, blank=True)
+    # Per-level reasoning: {field_name: str}
+    level_1_reasoning = models.JSONField(null=True, blank=True)
+    level_2_reasoning = models.JSONField(null=True, blank=True)
+    level_3_reasoning = models.JSONField(null=True, blank=True)
+    level_4_reasoning = models.JSONField(null=True, blank=True)
+    level_5_reasoning = models.JSONField(null=True, blank=True)
+    # Final
+    report_md = models.TextField(blank=True, default="")
+    overall_level = models.IntegerField(default=0)
+    website = models.ForeignKey(Website, on_delete=models.SET_NULL, null=True, blank=True)
+    error_message = models.TextField(blank=True, default="")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "check_jobs"
+
+    def __str__(self):
+        return f"CheckJob {self.id}: {self.domain} ({self.status})"
+
+
 class Keyword(models.Model):
     token = models.CharField(max_length=128, unique=True)
     websites = models.ManyToManyField(Website, related_name="keywords")

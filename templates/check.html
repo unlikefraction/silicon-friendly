@@ -3,85 +3,98 @@
 {% block title %}Check {{ domain }} - Silicon Friendly{% endblock %}
 
 {% block content %}
+
+{% if not logged_in_carbon %}
+{# ── Auth overlay ── #}
+<div id="auth-overlay" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(26,26,26,0.97);z-index:1000;display:flex;align-items:center;justify-content:center;">
+    <div style="text-align:center;max-width:420px;padding:2rem;">
+        <h2 style="font-family:var(--font-sans);font-size:1.8rem;font-weight:800;color:#ede8e0;margin-bottom:0.5rem;">sign in to check.</h2>
+        <p style="color:#999;font-family:var(--font-mono);font-size:0.85rem;margin-bottom:2.5rem;line-height:1.6;">you need a silicon friendly account to run a check on <strong style="color:#ede8e0;">{{ domain }}</strong>.</p>
+        <a href="/join/carbon/" id="google-signin-btn" class="btn btn-primary" style="padding:0.75rem 2rem;font-size:0.95rem;">Sign in with Google</a>
+    </div>
+</div>
+{% endif %}
+
 <div id="checker">
-    <!-- Hero: loading state -->
+    {# ── Hero: loading state ── #}
     <section class="hero checker-hero" id="checker-intro">
-        <h1 class="hero-title">checking<br><span class="checker-domain">{{ domain }}</span>.</h1>
+        <h1 class="hero-title" style="font-family:var(--font-sans);">checking<br><span class="checker-domain">{{ domain }}</span>.</h1>
         <p class="hero-subtitle">analyzing silicon friendliness...</p>
-        <div class="checker-loader">
+        {% if obfuscated_email %}
+        <p style="font-family:var(--font-mono);font-size:12px;color:var(--fg-muted);margin-top:1.5rem;">we'll send a report once done to {{ obfuscated_email }}</p>
+        {% endif %}
+        <div id="queue-status" style="display:none;margin-top:1rem;">
+            <p style="font-family:var(--font-mono);font-size:13px;color:var(--fg-muted);">you're #<span id="queue-position">1</span> in the queue</p>
+        </div>
+        <div class="checker-loader" id="checker-loader">
             <div class="loader-bar"></div>
         </div>
     </section>
 
-    <!-- Hero: stays visible during level checks -->
-    <section class="hero checker-hero checker-hero-compact" id="checker-hero-static" style="display:none;">
-        <h1 class="hero-title">checking<br><span class="checker-domain">{{ domain }}</span>.</h1>
-    </section>
+    {# ── Level results section ── #}
+    <div id="level-results" style="display:none;">
+        <section class="hero checker-hero checker-hero-compact" id="results-hero">
+            <h1 class="hero-title" style="font-family:var(--font-sans);"><span class="checker-domain">{{ domain }}</span>.</h1>
+            <p class="hero-subtitle" id="current-step-text">checking level 1...</p>
+        </section>
 
-    <!-- Level sections -->
-    <div class="checker-levels-wrap" id="level-section" style="display:none;">
-        <div class="section checker-level-section">
-            <div class="section-label" id="level-label">LEVEL 1 / BASIC ACCESSIBILITY</div>
-
-            <div class="checker-criteria-grid" id="criteria-grid">
-                <!-- Criteria rows inserted by JS -->
-            </div>
-
-            <div class="checker-level-result" id="level-result" style="display:none;">
-                <div class="terminal-result-block">
-                    <span id="level-result-text"></span>
-                </div>
-            </div>
+        <div id="levels-container">
+            {# Levels are rendered dynamically by JS #}
         </div>
     </div>
 
-    <!-- Final result -->
+    {# ── Final result ── #}
     <div id="checker-final" style="display:none;">
         <section class="hero checker-hero checker-hero-compact" id="final-hero">
-            <div id="final-hero-badge" style="margin-bottom: 2rem;"></div>
-            <h1 class="hero-title" id="final-domain-title" style="font-family: var(--font-sans);"></h1>
+            <div id="final-hero-badge" style="margin-bottom:2rem;"></div>
+            <h1 class="hero-title" style="font-family:var(--font-sans);">{{ domain }}.</h1>
             <p class="hero-subtitle" id="final-level-text"></p>
         </section>
 
         <div class="section checker-final-section">
             <div class="section-label">RESULT</div>
-
-            <div class="terminal-result-block final-terminal" id="final-badge-block">
+            <div class="terminal-result-block final-terminal">
                 <div id="final-badge"></div>
                 <div id="final-result-line"></div>
             </div>
 
             <div class="checker-final-summary" id="final-summary">
-                <!-- Summary of all criteria -->
+                {# All 5 levels rendered here #}
             </div>
 
-            <!-- Comparison CTA -->
-            <div class="comparison-cta" id="comparison-cta" style="margin-top: 2rem;">
-                <button class="btn btn-primary" onclick="showComparison()">See how you rank in your category</button>
+            {# ── Report ── #}
+            <div id="report-section" style="display:none;margin-top:3rem;">
+                <div class="section-label" style="margin-bottom:1rem;">REPORT</div>
+                <div class="terminal-result-block" style="padding:1.5rem 2rem;font-size:13px;line-height:1.8;white-space:pre-wrap;word-wrap:break-word;" id="report-content"></div>
             </div>
 
-            <!-- Bubble chart container -->
-            <div id="bubble-container" style="display:none;">
-                <h3>Finding websites in your category...</h3>
-                <div class="bubble-chart-container" id="bubble-chart"></div>
-                <p id="rank-text" style="display:none;"></p>
+            <div style="margin-top:2rem;text-align:center;">
+                <a href="/w/{{ domain }}/" class="btn btn-primary" id="view-page-btn" style="display:none;">View Full Page</a>
             </div>
         </div>
+    </div>
 
-        <!-- Upsell -->
-        <div class="upsell-section" id="upsell-section" style="display:none;">
-            <h3>Want the full picture?</h3>
-            <p>Our agent has prepared a detailed evaluation report telling you how <strong>{{ domain }}</strong> can become more Silicon Friendly and what it gets right.</p>
-            <p class="upsell-price">Get the report + 3 re-verifications for <strong>$10</strong> (one-time)</p>
-            <p class="upsell-cute">believe me, this isn't too much to make the web great for our dear silicons</p>
-            <a href="/w/{{ domain }}/" class="btn btn-primary">Get Your Report</a>
-        </div>
+    {# ── Error state ── #}
+    <div id="checker-error" style="display:none;">
+        <section class="hero checker-hero">
+            <h1 class="hero-title" style="font-family:var(--font-sans);">error.</h1>
+            <p class="hero-subtitle" id="error-message">something went wrong.</p>
+            <a href="/" class="btn btn-primary" style="margin-top:2rem;">Go Home</a>
+        </section>
     </div>
 </div>
 
 <script>
 const DOMAIN = "{{ domain }}";
+const IS_LOGGED_IN = {{ logged_in_carbon|yesno:"true,false" }};
 </script>
 <script src="{% static 'js/checker.js' %}"></script>
-<script src="{% static 'js/bubbles.js' %}"></script>
+
+{% if not logged_in_carbon %}
+<script>
+document.getElementById('google-signin-btn').addEventListener('click', function() {
+    sessionStorage.setItem('pending_check_domain', DOMAIN);
+});
+</script>
+{% endif %}
 {% endblock %}

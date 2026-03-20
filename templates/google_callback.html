@@ -31,7 +31,13 @@
     .then(function(res) { return res.json().then(function(data) { return { ok: res.ok, data: data }; }); })
     .then(function(result) {
         if (result.ok) {
-            window.location.href = '/';
+            var pendingDomain = sessionStorage.getItem('pending_check_domain');
+            if (pendingDomain) {
+                sessionStorage.removeItem('pending_check_domain');
+                window.location.href = '/check/' + encodeURIComponent(pendingDomain) + '/';
+            } else {
+                window.location.href = '/';
+            }
         } else {
             status.textContent = 'error: ' + (result.data.error || 'something went wrong.');
         }
