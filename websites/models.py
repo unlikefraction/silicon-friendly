@@ -46,6 +46,7 @@ class Website(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     embedding = VectorField(dimensions=768, null=True, blank=True)
+    page_content = models.TextField(blank=True, default="")
 
     # L1
     l1_semantic_html = models.BooleanField(default=False)

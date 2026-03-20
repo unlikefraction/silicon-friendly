@@ -544,6 +544,24 @@ def run_website_check(check_job_id):
         job.website_description = info.get("description", "")
         job.save(update_fields=["website_name", "website_description", "updated_at"])
 
+        # Create website immediately (all criteria default False)
+        website, created = Website.objects.get_or_create(
+            url=job.domain,
+            defaults={
+                "name": job.website_name,
+                "description": job.website_description,
+                "submitted_by_carbon": job.carbon,
+            },
+        )
+        if not created:
+            website.name = job.website_name
+            website.description = job.website_description
+            if job.carbon and not website.submitted_by_carbon:
+                website.submitted_by_carbon = job.carbon
+            website.save(update_fields=["name", "description", "submitted_by_carbon", "updated_at"])
+        job.website = website
+        job.save(update_fields=["website", "updated_at"])
+
         # Steps 1-5: Check each level
         all_results = {}
         for level in range(1, 6):
@@ -587,27 +605,17 @@ def run_website_check(check_job_id):
         job.save(update_fields=["status", "overall_level", "updated_at"])
         job.report_md = _run_claude(_build_report_prompt(job), timeout=240)
 
-        # Save to Website model
+        # Update Website model with check results
         job.status = "saving"
         job.save(update_fields=["status", "report_md", "updated_at"])
 
-        website, created = Website.objects.get_or_create(
-            url=job.domain,
-            defaults={"name": job.website_name, "description": job.website_description},
-        )
-        if not created:
-            website.name = job.website_name
-            website.description = job.website_description
-
+        website = job.website
         for field, value in all_results.items():
             setattr(website, field, value)
-        if job.carbon and not website.submitted_by_carbon:
-            website.submitted_by_carbon = job.carbon
         website.save()
 
-        job.website = website
         job.status = "done"
-        job.save(update_fields=["website", "status", "updated_at"])
+        job.save(update_fields=["status", "updated_at"])
 
         # Generate embedding async
         try:
