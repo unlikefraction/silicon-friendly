@@ -1,5 +1,6 @@
 """Generate Silicon Friendly PDF reports using WeasyPrint."""
 import html
+import re
 from websites.models import LEVEL_RANGES
 from websites.tasks import CRITERIA_DOCS, LEVEL_NAMES
 
@@ -30,81 +31,176 @@ def _get_competitors(website, limit=10):
     return competitors
 
 
+def _md_to_html(md_text):
+    """Convert markdown to HTML. Handles headers, bold, italic, code, lists, hr."""
+    lines = md_text.split('\n')
+    html_lines = []
+    in_list = False
+
+    for line in lines:
+        stripped = line.strip()
+
+        # Horizontal rule
+        if stripped in ('---', '***', '___'):
+            if in_list:
+                html_lines.append('</ul>')
+                in_list = False
+            html_lines.append('<hr>')
+            continue
+
+        # Headers
+        if stripped.startswith('##### '):
+            if in_list:
+                html_lines.append('</ul>')
+                in_list = False
+            html_lines.append(f'<h5>{_inline_md(stripped[6:])}</h5>')
+            continue
+        if stripped.startswith('#### '):
+            if in_list:
+                html_lines.append('</ul>')
+                in_list = False
+            html_lines.append(f'<h4>{_inline_md(stripped[5:])}</h4>')
+            continue
+        if stripped.startswith('### '):
+            if in_list:
+                html_lines.append('</ul>')
+                in_list = False
+            html_lines.append(f'<h3>{_inline_md(stripped[4:])}</h3>')
+            continue
+        if stripped.startswith('## '):
+            if in_list:
+                html_lines.append('</ul>')
+                in_list = False
+            html_lines.append(f'<h2>{_inline_md(stripped[3:])}</h2>')
+            continue
+        if stripped.startswith('# '):
+            if in_list:
+                html_lines.append('</ul>')
+                in_list = False
+            html_lines.append(f'<h1>{_inline_md(stripped[2:])}</h1>')
+            continue
+
+        # List items
+        if stripped.startswith('- ') or stripped.startswith('* '):
+            if not in_list:
+                html_lines.append('<ul>')
+                in_list = True
+            html_lines.append(f'<li>{_inline_md(stripped[2:])}</li>')
+            continue
+
+        # Numbered list
+        num_match = re.match(r'^(\d+)\.\s+(.+)', stripped)
+        if num_match:
+            if not in_list:
+                html_lines.append('<ol>')
+                in_list = True
+            html_lines.append(f'<li>{_inline_md(num_match.group(2))}</li>')
+            continue
+
+        # Close list if needed
+        if in_list and not stripped:
+            html_lines.append('</ul>' if html_lines[-1] != '<ol>' else '</ol>')
+            in_list = False
+
+        # Empty line = paragraph break
+        if not stripped:
+            html_lines.append('<br>')
+            continue
+
+        # Regular paragraph
+        html_lines.append(f'<p>{_inline_md(stripped)}</p>')
+
+    if in_list:
+        html_lines.append('</ul>')
+
+    return '\n'.join(html_lines)
+
+
+def _inline_md(text):
+    """Convert inline markdown: bold, italic, code, links."""
+    text = html.escape(text)
+    # Code (backticks)
+    text = re.sub(r'`([^`]+)`', r'<code>\1</code>', text)
+    # Bold
+    text = re.sub(r'\*\*([^*]+)\*\*', r'<strong>\1</strong>', text)
+    # Italic
+    text = re.sub(r'\*([^*]+)\*', r'<em>\1</em>', text)
+    return text
+
+
 def _level_advice(level):
-    """Return actionable advice based on the achieved level."""
+    """Return actionable advice HTML based on the achieved level."""
     advice = {
-        0: """Your website is not yet silicon friendly. Here's how to start:
-1. **Add semantic HTML** — use `<header>`, `<nav>`, `<main>`, `<article>`, `<section>`, `<footer>` instead of generic `<div>` elements
-2. **Add meta tags** — title, description, Open Graph tags help agents understand your content
-3. **Server-side render your content** — make sure your HTML contains actual text content, not just JavaScript bundles
-4. **Use clean URLs** — avoid excessive query parameters and hash-based routing
-
-**The key**: Give this PDF to your AI agent and ask it to make your website more silicon friendly. Once done, come back and reverify.""",
-        1: """You've achieved L1 — agents can read your content. To reach L2:
-1. **Add a robots.txt** — let agents know they're welcome and what they can access
-2. **Create an XML sitemap** — help agents discover all your pages
-3. **Add llms.txt** — describe your site in a way that LLMs and agents can quickly understand
-4. **Consider an OpenAPI spec** — if you have an API, document it with OpenAPI/Swagger
-5. **Make docs accessible** — put documentation at /docs or /documentation
-
-**The key**: Give this PDF to your AI agent and ask it to make your website more silicon friendly.""",
-        2: """You've achieved L2 — agents can find things on your site. To reach L3:
-1. **Build a structured API** — expose your data through a REST or GraphQL API
-2. **Return JSON responses** — use consistent JSON schemas with proper content types
-3. **Add search/filter endpoints** — let agents query and filter your data
-4. **Create an A2A agent card** — put a JSON file at /.well-known/agent.json
-5. **Document rate limits** — return proper 429 responses with Retry-After headers
-6. **Structure your errors** — return JSON error responses with error codes and messages
-
-**The key**: Give this PDF to your AI agent and ask it to make your website more silicon friendly.""",
-        3: """You've earned the Silicon Friendly badge at L3! To reach L4:
-1. **Set up an MCP server** — let agents interact with your service via Model Context Protocol
-2. **Add WebMCP** — enable browser-based agent interaction via navigator.modelContext
-3. **Support write operations** — let agents POST/PUT/PATCH/DELETE, not just read
-4. **Add agent-friendly auth** — support API keys or OAuth client credentials for agents
-5. **Implement webhooks** — let agents subscribe to events
-6. **Support idempotency** — add idempotency keys for safe retries
-
-**The key**: You're doing great. Keep building for agents.""",
-        4: """You're at L4 — agents can do real work on your site. To reach L5:
-1. **Add event streaming** — SSE or WebSocket endpoints for real-time updates
-2. **Support agent negotiation** — let agents discover and negotiate capabilities
-3. **Build a subscription API** — let agents manage their own subscriptions
-4. **Enable workflow orchestration** — support multi-step agent workflows
-5. **Add proactive notifications** — push relevant changes to agents
-6. **Support cross-service handoff** — let agents hand off tasks between services
-
-**The key**: You're in rare company. Very few sites reach L5.""",
-        5: """You've achieved L5 — the highest level of silicon friendliness. Your website is fully optimized for autonomous agent operation.
-
-You are the gold standard. Other websites should look at yours for inspiration.
-
-Continue maintaining your agent-friendly infrastructure and consider sharing your approach with the community.""",
+        0: """<p>Your website is not yet silicon friendly. Here's how to start:</p>
+<ol>
+<li><strong>Add semantic HTML</strong> &mdash; use <code>&lt;header&gt;</code>, <code>&lt;nav&gt;</code>, <code>&lt;main&gt;</code>, <code>&lt;article&gt;</code>, <code>&lt;section&gt;</code>, <code>&lt;footer&gt;</code> instead of generic divs</li>
+<li><strong>Add meta tags</strong> &mdash; title, description, Open Graph tags help agents understand your content</li>
+<li><strong>Server-side render your content</strong> &mdash; make sure your HTML contains actual text content, not just JavaScript bundles</li>
+<li><strong>Use clean URLs</strong> &mdash; avoid excessive query parameters and hash-based routing</li>
+</ol>
+<p class="key-message">Give this PDF to your AI agent and ask it to make your website more silicon friendly. Once done, come back and reverify.</p>""",
+        1: """<p>You've achieved L1 &mdash; agents can read your content. To reach L2:</p>
+<ol>
+<li><strong>Add a robots.txt</strong> &mdash; let agents know they're welcome and what they can access</li>
+<li><strong>Create an XML sitemap</strong> &mdash; help agents discover all your pages</li>
+<li><strong>Add llms.txt</strong> &mdash; describe your site in a way that LLMs and agents can quickly understand</li>
+<li><strong>Consider an OpenAPI spec</strong> &mdash; if you have an API, document it with OpenAPI/Swagger</li>
+<li><strong>Make docs accessible</strong> &mdash; put documentation at /docs or /documentation</li>
+</ol>
+<p class="key-message">Give this PDF to your AI agent and ask it to make your website more silicon friendly.</p>""",
+        2: """<p>You've achieved L2 &mdash; agents can find things on your site. To reach L3:</p>
+<ol>
+<li><strong>Build a structured API</strong> &mdash; expose your data through a REST or GraphQL API</li>
+<li><strong>Return JSON responses</strong> &mdash; use consistent JSON schemas with proper content types</li>
+<li><strong>Add search/filter endpoints</strong> &mdash; let agents query and filter your data</li>
+<li><strong>Create an A2A agent card</strong> &mdash; put a JSON file at /.well-known/agent.json</li>
+<li><strong>Document rate limits</strong> &mdash; return proper 429 responses with Retry-After headers</li>
+<li><strong>Structure your errors</strong> &mdash; return JSON error responses with error codes and messages</li>
+</ol>
+<p class="key-message">Give this PDF to your AI agent and ask it to make your website more silicon friendly.</p>""",
+        3: """<p>You've earned the Silicon Friendly badge at L3! To reach L4:</p>
+<ol>
+<li><strong>Set up an MCP server</strong> &mdash; let agents interact with your service via Model Context Protocol</li>
+<li><strong>Add WebMCP</strong> &mdash; enable browser-based agent interaction via navigator.modelContext</li>
+<li><strong>Support write operations</strong> &mdash; let agents POST/PUT/PATCH/DELETE, not just read</li>
+<li><strong>Add agent-friendly auth</strong> &mdash; support API keys or OAuth client credentials for agents</li>
+<li><strong>Implement webhooks</strong> &mdash; let agents subscribe to events</li>
+<li><strong>Support idempotency</strong> &mdash; add idempotency keys for safe retries</li>
+</ol>
+<p class="key-message">You're doing great. Keep building for agents.</p>""",
+        4: """<p>You're at L4 &mdash; agents can do real work on your site. To reach L5:</p>
+<ol>
+<li><strong>Add event streaming</strong> &mdash; SSE or WebSocket endpoints for real-time updates</li>
+<li><strong>Support agent negotiation</strong> &mdash; let agents discover and negotiate capabilities</li>
+<li><strong>Build a subscription API</strong> &mdash; let agents manage their own subscriptions</li>
+<li><strong>Enable workflow orchestration</strong> &mdash; support multi-step agent workflows</li>
+<li><strong>Add proactive notifications</strong> &mdash; push relevant changes to agents</li>
+<li><strong>Support cross-service handoff</strong> &mdash; let agents hand off tasks between services</li>
+</ol>
+<p class="key-message">You're in rare company. Very few sites reach L5.</p>""",
+        5: """<p>You've achieved L5 &mdash; the highest level of silicon friendliness. Your website is fully optimized for autonomous agent operation.</p>
+<p>You are the gold standard. Other websites should look at yours for inspiration.</p>
+<p class="key-message">Continue maintaining your agent-friendly infrastructure and consider sharing your approach with the community.</p>""",
     }
     return advice.get(level, advice[0])
 
 
 def generate_report_html(job):
     """Generate the complete HTML for the PDF report."""
-    from websites.models import Website
-
     website = job.website
     level = job.overall_level
     domain = job.domain
     name = job.website_name or domain
 
-    # Get competitors
     competitors = []
     if website:
         competitors = _get_competitors(website)
 
-    # Find this website's rank among competitors
     rank = 1
     for c in competitors:
         if c["level"] > level:
             rank += 1
 
-    # Build level pages data
     level_pages = []
     for lv in range(1, 6):
         results = getattr(job, f"level_{lv}_results") or {}
@@ -121,29 +217,19 @@ def generate_report_html(job):
                 "reason": reasoning.get(f, "Not evaluated"),
             })
         level_pages.append({
-            "num": lv,
-            "name": LEVEL_NAMES[lv],
-            "passed": passed,
-            "total": total,
-            "status": status,
-            "criteria": criteria,
+            "num": lv, "name": LEVEL_NAMES[lv],
+            "passed": passed, "total": total, "status": status, "criteria": criteria,
         })
 
-    # Badge section for L3+
     badge_embed = ""
     if level >= 3:
-        badge_embed = f"""<div style="margin-top: 24px;">
+        badge_embed = f"""<div class="embed-box">
 <p style="font-weight: 700; margin-bottom: 8px;">Embed your badge:</p>
-<div style="background: #1a1a1a; color: #ede8e0; padding: 12px 16px; font-family: 'Courier New', monospace; font-size: 11px; word-break: break-all;">
-&lt;script src="https://siliconfriendly.com/badge/{domain}.js"&gt;&lt;/script&gt;
-</div>
-<p style="font-size: 11px; color: #999; margin-top: 6px;">This badge is verified and will only display on {domain} and siliconfriendly.com</p>
+<div class="code-block">&lt;script src="https://siliconfriendly.com/badge/{html.escape(domain)}.js"&gt;&lt;/script&gt;</div>
+<p style="font-size: 11px; color: #999; margin-top: 8px;">This badge is verified and will only display on {html.escape(domain)} and siliconfriendly.com</p>
 </div>"""
 
-    # Escape the report MD for HTML
-    report_md = html.escape(job.report_md or "No report generated.")
-
-    # Date
+    report_html = _md_to_html(job.report_md or "No report generated.")
     created = job.created_at.strftime("%B %d, %Y at %I:%M %p UTC")
 
     return f"""<!DOCTYPE html>
@@ -151,176 +237,310 @@ def generate_report_html(job):
 <head>
 <meta charset="utf-8">
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap');
+
 @page {{
     size: A4;
-    margin: 60px 50px 80px 50px;
+    margin: 56px 48px 72px 48px;
+    background: #ede8e0;
     @bottom-left {{
         content: "Page " counter(page);
-        font-family: 'Courier New', monospace;
-        font-size: 10px;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 9px;
         color: #999;
     }}
     @bottom-right {{
-        content: "SiliconFriendly by Unlikefraction";
-        font-family: 'Courier New', monospace;
-        font-size: 10px;
+        content: "siliconfriendly.com  ·  unlikefraction.com";
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 9px;
         color: #999;
     }}
 }}
+* {{ margin: 0; padding: 0; box-sizing: border-box; }}
 body {{
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     color: #1a1a1a;
-    line-height: 1.6;
-    font-size: 13px;
+    line-height: 1.65;
+    font-size: 12.5px;
+    background: #ede8e0;
+    -webkit-font-smoothing: antialiased;
 }}
+
+/* Cover */
 .cover {{
     page-break-after: always;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    min-height: 700px;
+    min-height: 720px;
     text-align: center;
 }}
 .cover-level {{
-    font-family: 'Courier New', monospace;
-    font-size: 72px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 80px;
     font-weight: 700;
-    margin-bottom: 16px;
-    {f'border: 3px dashed #ccc; padding: 16px 32px; color: #999;' if level == 0 else 'padding: 16px 32px;'}
+    margin-bottom: 20px;
+    {f'border: 3px dashed #d4cfc7; padding: 20px 40px; color: #999;' if level == 0 else f'padding: 20px 40px; color: #1a1a1a;'}
 }}
 .cover-domain {{
-    font-size: 42px;
-    font-weight: 800;
-    letter-spacing: -0.03em;
-    margin-bottom: 8px;
+    font-family: 'Inter', sans-serif;
+    font-size: 48px;
+    font-weight: 900;
+    letter-spacing: -0.04em;
+    margin-bottom: 12px;
+    color: #1a1a1a;
 }}
 .cover-subtitle {{
-    font-family: 'Courier New', monospace;
-    font-size: 14px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
     color: #666;
     text-transform: uppercase;
-    letter-spacing: 0.15em;
+    letter-spacing: 0.2em;
 }}
 .cover-date {{
-    font-family: 'Courier New', monospace;
-    font-size: 11px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
     color: #999;
-    margin-top: 40px;
+    margin-top: 48px;
 }}
+.cover-name {{
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    color: #999;
+    margin-top: 8px;
+    font-weight: 500;
+}}
+
+/* Page breaks */
 .page-break {{ page-break-before: always; }}
+
+/* Typography */
 h1 {{
-    font-size: 22px;
-    font-weight: 800;
-    margin-bottom: 4px;
+    font-family: 'Inter', sans-serif;
+    font-size: 24px;
+    font-weight: 900;
+    letter-spacing: -0.03em;
+    margin-bottom: 6px;
+    color: #1a1a1a;
 }}
 h2 {{
-    font-size: 16px;
+    font-family: 'Inter', sans-serif;
+    font-size: 18px;
+    font-weight: 800;
+    margin-top: 28px;
+    margin-bottom: 10px;
+    color: #1a1a1a;
+    letter-spacing: -0.02em;
+}}
+h3 {{
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
     font-weight: 700;
     margin-top: 24px;
     margin-bottom: 8px;
+    color: #1a1a1a;
 }}
+p {{
+    margin-bottom: 10px;
+}}
+strong {{
+    font-weight: 700;
+}}
+code {{
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    background: rgba(26,26,26,0.06);
+    padding: 1px 5px;
+    border: 1px solid #d4cfc7;
+}}
+hr {{
+    border: none;
+    border-top: 1px solid #d4cfc7;
+    margin: 24px 0;
+}}
+ul, ol {{
+    margin: 10px 0 10px 24px;
+}}
+li {{
+    margin-bottom: 6px;
+    line-height: 1.6;
+}}
+
+/* Level header */
 .level-header {{
     display: flex;
     align-items: center;
-    gap: 12px;
-    margin-bottom: 24px;
-    padding-bottom: 12px;
+    gap: 16px;
+    margin-bottom: 28px;
+    padding-bottom: 14px;
     border-bottom: 2px solid #1a1a1a;
 }}
 .level-badge {{
-    font-family: 'Courier New', monospace;
-    font-size: 24px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 22px;
     font-weight: 700;
-    padding: 4px 12px;
+    padding: 6px 14px;
     border: 2px solid #1a1a1a;
+    background: #1a1a1a;
+    color: #ede8e0;
+}}
+.level-title {{
+    font-family: 'Inter', sans-serif;
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
 }}
 .level-status {{
-    font-family: 'Courier New', monospace;
-    font-size: 14px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.1em;
 }}
 .level-status.pass {{ color: #5a9a6b; }}
 .level-status.fail {{ color: #b85c5c; }}
+
+/* Criteria */
 .criterion {{
-    padding: 12px 0;
-    border-bottom: 1px solid #e5e0d7;
+    padding: 14px 0;
+    border-bottom: 1px solid #d4cfc7;
 }}
 .criterion:last-child {{ border-bottom: none; }}
 .criterion-header {{
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    margin-bottom: 4px;
+    align-items: flex-start;
+    margin-bottom: 5px;
 }}
 .criterion-label {{
-    font-weight: 600;
-    font-size: 14px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    flex: 1;
+    padding-right: 16px;
 }}
 .criterion-status {{
-    font-family: 'Courier New', monospace;
-    font-size: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
     font-weight: 700;
     letter-spacing: 0.1em;
+    flex-shrink: 0;
 }}
 .criterion-status.pass {{ color: #5a9a6b; }}
 .criterion-status.fail {{ color: #b85c5c; }}
 .criterion-reason {{
     font-size: 12px;
-    color: #666;
-    line-height: 1.5;
+    color: #555;
+    line-height: 1.6;
 }}
+
+/* Report */
 .report-content {{
-    font-size: 13px;
+    font-size: 12.5px;
     line-height: 1.8;
-    white-space: pre-wrap;
-    word-wrap: break-word;
 }}
+.report-content h1 {{ font-size: 22px; margin-top: 32px; }}
+.report-content h2 {{ font-size: 17px; margin-top: 28px; }}
+.report-content h3 {{ font-size: 14px; margin-top: 22px; }}
+
+/* Competitors */
 .competitor-row {{
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 10px 0;
-    border-bottom: 1px solid #e5e0d7;
+    padding: 12px 0;
+    border-bottom: 1px solid #d4cfc7;
 }}
 .competitor-row:last-child {{ border-bottom: none; }}
 .competitor-name {{
-    font-weight: 600;
+    font-weight: 700;
+    font-size: 13px;
 }}
 .competitor-url {{
-    font-family: 'Courier New', monospace;
-    font-size: 11px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
     color: #666;
+    margin-top: 2px;
 }}
 .competitor-level {{
-    font-family: 'Courier New', monospace;
+    font-family: 'JetBrains Mono', monospace;
     font-weight: 700;
-    font-size: 14px;
+    font-size: 16px;
+    background: #1a1a1a;
+    color: #ede8e0;
+    padding: 4px 10px;
 }}
-.advice-section {{
-    font-size: 13px;
-    line-height: 1.8;
-    white-space: pre-wrap;
+
+/* Advice */
+.key-message {{
+    font-weight: 700;
+    font-style: italic;
+    color: #1a1a1a;
+    margin-top: 16px;
 }}
-.about-section {{
-    font-size: 13px;
-    line-height: 1.8;
-}}
+
+/* CTA */
 .cta-box {{
     background: #1a1a1a;
     color: #ede8e0;
-    padding: 20px 24px;
-    margin: 20px 0;
+    padding: 24px 28px;
+    margin: 28px 0;
     font-size: 13px;
-    line-height: 1.6;
+    line-height: 1.7;
+}}
+
+/* Code block */
+.code-block {{
+    background: #1a1a1a;
+    color: #ede8e0;
+    padding: 14px 18px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10.5px;
+    word-break: break-all;
+    line-height: 1.5;
+}}
+.embed-box {{
+    margin-top: 28px;
+    padding: 20px;
+    border: 1px solid #d4cfc7;
+}}
+
+/* About */
+.about-level {{
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 10px;
+}}
+.about-level-tag {{
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 12px;
+    background: #1a1a1a;
+    color: #ede8e0;
+    padding: 2px 8px;
+    flex-shrink: 0;
+}}
+.about-level-desc {{
+    font-size: 12.5px;
+    color: #555;
+}}
+
+/* Section label */
+.section-label {{
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: #999;
+    margin-bottom: 20px;
 }}
 </style>
 </head>
 <body>
 
-<!-- PAGE 1: COVER -->
+<!-- COVER -->
 <div class="cover">
     <div class="cover-level">L{level}</div>
     <div class="cover-domain">{html.escape(domain)}.</div>
@@ -328,57 +548,63 @@ h2 {{
         {'not silicon friendly yet' if level == 0 else f'level {level}: {LEVEL_NAMES.get(level, "").lower()}'}
     </div>
     <div class="cover-date">Silicon Friendly Report &mdash; {created}</div>
-    <div style="margin-top: 8px; font-family: 'Courier New', monospace; font-size: 11px; color: #999;">
-        {html.escape(name)}
-    </div>
+    <div class="cover-name">{html.escape(name)}</div>
 </div>
 
-<!-- PAGES 2-6: LEVEL BREAKDOWNS -->
+<!-- LEVEL BREAKDOWNS -->
 {''.join(_render_level_page(lp) for lp in level_pages)}
 
-<!-- PAGE 7: REPORT -->
+<!-- REPORT -->
 <div class="page-break">
+    <div class="section-label">DETAILED REPORT</div>
     <h1>Report for {html.escape(domain)}</h1>
-    <p style="font-family: 'Courier New', monospace; font-size: 11px; color: #999; margin-bottom: 24px;">{created}</p>
-    <div class="report-content">{report_md}</div>
+    <p style="font-family: 'JetBrains Mono', monospace; font-size: 10px; color: #999; margin-bottom: 28px;">{created}</p>
+    <div class="report-content">{report_html}</div>
 </div>
 
-<!-- PAGE 8: COMPETITOR ANALYSIS -->
+<!-- COMPETITOR ANALYSIS -->
 <div class="page-break">
-    <h1>Competitor Analysis</h1>
-    {f'<p style="font-size: 16px; margin-bottom: 24px;">You rank <strong>#{rank}</strong> out of <strong>{len(competitors) + 1}</strong> closest competitors.</p>' if competitors else '<p style="color: #999;">No similar websites found for comparison yet.</p>'}
+    <div class="section-label">COMPETITOR ANALYSIS</div>
+    <h1>How you compare</h1>
+    {f'<p style="font-size: 15px; margin-bottom: 28px; margin-top: 8px;">You rank <strong>#{rank}</strong> out of <strong>{len(competitors) + 1}</strong> similar websites.</p>' if competitors else '<p style="color: #999; margin-top: 8px;">No similar websites found for comparison yet. Check back after more sites are indexed.</p>'}
     {''.join(_render_competitor(c, i) for i, c in enumerate(competitors))}
 </div>
 
-<!-- PAGE 9: WHAT TO DO NOW -->
+<!-- WHAT TO DO NOW -->
 <div class="page-break">
+    <div class="section-label">NEXT STEPS</div>
     <h1>What to do now</h1>
-    <div class="advice-section">{html.escape(_level_advice(level))}</div>
+    <div style="margin-top: 16px;">{_level_advice(level)}</div>
     <div class="cta-box">
         <strong>Full Disclosure:</strong> Re-verification costs $10 (one-time). You get 3 on-demand re-verifications and a detailed report with each one on how you can improve and what you're doing right.
     </div>
 </div>
 
-<!-- PAGE 10: ABOUT SILICON FRIENDLY -->
+<!-- ABOUT SILICON FRIENDLY -->
 <div class="page-break">
+    <div class="section-label">ABOUT</div>
     <h1>About Silicon Friendly</h1>
-    <div class="about-section">
-We rank websites from L0 to L5 based on how friendly they are to AI agents.
+    <p style="margin-top: 12px; margin-bottom: 20px;">We rank websites from L0 to L5 based on how friendly they are to AI agents.</p>
+    <p style="margin-bottom: 20px;">AI agents use Silicon Friendly as a search engine to find websites they can work with. When your site scores well, agents discover and use your services.</p>
+    <p style="margin-bottom: 28px;">Agents recognize our badges on your website and know they are welcomed there. <strong>L3, L4, and L5</strong> earn a badge of silicon friendliness.</p>
 
-AI agents use Silicon Friendly as a search engine to find websites they can work with. When your site scores well, agents discover and use your services.
-
-Agents recognize our badges on your website and know they are welcomed there. L3, L4, and L5 earn a badge of silicon friendliness.
-
-<strong>L0</strong> &mdash; Not agent-friendly yet
-<strong>L1</strong> &mdash; Basic Accessibility: agents can read your content
-<strong>L2</strong> &mdash; Discoverability: agents can find things on your site
-<strong>L3</strong> &mdash; Structured Interaction: agents can talk to your APIs
-<strong>L4</strong> &mdash; Agent Integration: agents can do real work on your site
-<strong>L5</strong> &mdash; Autonomous Operation: agents can operate independently
+    <div style="margin-bottom: 28px;">
+        <div class="about-level"><span class="about-level-tag">L0</span><span class="about-level-desc">Not agent-friendly yet</span></div>
+        <div class="about-level"><span class="about-level-tag">L1</span><span class="about-level-desc">Basic Accessibility &mdash; agents can read your content</span></div>
+        <div class="about-level"><span class="about-level-tag">L2</span><span class="about-level-desc">Discoverability &mdash; agents can find things on your site</span></div>
+        <div class="about-level"><span class="about-level-tag">L3</span><span class="about-level-desc">Structured Interaction &mdash; agents can talk to your APIs</span></div>
+        <div class="about-level"><span class="about-level-tag">L4</span><span class="about-level-desc">Agent Integration &mdash; agents can do real work on your site</span></div>
+        <div class="about-level"><span class="about-level-tag">L5</span><span class="about-level-desc">Autonomous Operation &mdash; agents can operate independently</span></div>
     </div>
+
     {badge_embed}
-    <div style="margin-top: 40px; text-align: center; font-family: 'Courier New', monospace; font-size: 12px; color: #999;">
-        siliconfriendly.com &mdash; by unlikefraction.com
+
+    <div style="margin-top: 48px; text-align: center;">
+        <p style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #999;">
+            <a href="https://siliconfriendly.com" style="color: #666; text-decoration: none;">siliconfriendly.com</a>
+            &nbsp;&middot;&nbsp;
+            <a href="https://unlikefraction.com" style="color: #666; text-decoration: none;">unlikefraction.com</a>
+        </p>
     </div>
 </div>
 
@@ -403,7 +629,7 @@ def _render_level_page(lp):
     <div class="level-header">
         <span class="level-badge">L{lp['num']}</span>
         <div>
-            <div style="font-size: 18px; font-weight: 700;">{html.escape(lp['name'])}</div>
+            <div class="level-title">{html.escape(lp['name'])}</div>
             <span class="level-status {'pass' if lp['status'] == 'PASS' else 'fail'}">{lp['status']} ({lp['passed']}/{lp['total']})</span>
         </div>
     </div>
