@@ -499,8 +499,12 @@ class WebsiteBadgeJsView(APIView):
     def get(self, request, domain):
         domain = _normalize_url(domain)
         base = env.FRONTEND_BASE_URL
+        # Badge only renders on the verified domain, www variant, or siliconfriendly.com
         js = f"""(function(){{
-  var d=document,s=d.createElement('a'),i=d.createElement('img');
+  var d=document,h=window.location.hostname.replace(/^www\\./,'');
+  var allowed=['{domain}','www.{domain}','siliconfriendly.com','www.siliconfriendly.com','localhost'];
+  if(allowed.indexOf(h)===-1&&allowed.indexOf(window.location.hostname)===-1)return;
+  var s=d.createElement('a'),i=d.createElement('img');
   var theme=window.matchMedia&&window.matchMedia('(prefers-color-scheme:light)').matches?'light':'dark';
   i.src='{base}/badge/{domain}.svg?theme='+theme;
   i.alt='Silicon Friendly Level';

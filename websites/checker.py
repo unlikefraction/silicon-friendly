@@ -1,6 +1,6 @@
 import re
 from datetime import timedelta
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
@@ -154,3 +154,19 @@ def check_status_api(request, domain):
         response["error"] = job.error_message
 
     return JsonResponse(response)
+
+
+def report_download_view(request, domain, job_id):
+    """Download PDF report for a check job."""
+    from websites.models import CheckJob
+    from websites.report_pdf import generate_pdf
+
+    try:
+        job = CheckJob.objects.get(id=job_id, status="done")
+    except CheckJob.DoesNotExist:
+        return HttpResponse("Report not found", status=404)
+
+    pdf_bytes = generate_pdf(job)
+    response = HttpResponse(pdf_bytes, content_type="application/pdf")
+    response["Content-Disposition"] = f'attachment; filename="siliconfriendly-{domain}-L{job.overall_level}.pdf"'
+    return response

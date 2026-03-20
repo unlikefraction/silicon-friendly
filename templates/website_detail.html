@@ -20,14 +20,22 @@
 {# ── Hero: badge + domain + level ── #}
 <section class="hero checker-hero checker-hero-compact">
 
-    {# Badge above the URL #}
-    <div style="margin-bottom: 2rem;">
-        {% if website.level >= 3 %}
-        <img src="{% static badge_dark_on_light %}" alt="Silicon Friendly L{{ website.level }}" style="height: 56px;">
-        {% elif website.level >= 1 %}
-        <span class="sf-badge sf-badge-l{{ website.level }}" style="font-size: 1rem; padding: 0.4rem 0.8rem;">L{{ website.level }}</span>
-        {% else %}
-        <span style="display: inline-flex; align-items: center; justify-content: center; padding: 0.4rem 0.8rem; font-family: var(--font-mono); font-size: 1rem; font-weight: 700; color: var(--fg-muted); border: 2px dashed var(--border);">L0</span>
+    {# Badge + report link #}
+    <div style="margin-bottom: 2rem; display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;">
+        <div>
+            {% if website.level >= 3 %}
+            <img src="{% static badge_dark_on_light %}" alt="Silicon Friendly L{{ website.level }}" style="height: 56px;">
+            {% elif website.level >= 1 %}
+            <span class="sf-badge sf-badge-l{{ website.level }}" style="font-size: 1rem; padding: 0.4rem 0.8rem;">L{{ website.level }}</span>
+            {% else %}
+            <span style="display: inline-flex; align-items: center; justify-content: center; padding: 0.4rem 0.8rem; font-family: var(--font-mono); font-size: 1rem; font-weight: 700; color: var(--fg-muted); border: 2px dashed var(--border);">L0</span>
+            {% endif %}
+        </div>
+        {% if is_owner and check_reports %}
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <span style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--fg-muted);">Report for {{ check_reports.0.created_at|date:"M d, Y · g:i A" }}</span>
+            <a href="/api/check/{{ website.url }}/report/{{ check_reports.0.id }}/" style="display: inline-flex; align-items: center; gap: 0.3rem; font-family: var(--font-mono); font-size: 0.8rem; color: var(--fg); text-decoration: none; padding: 0.3rem 0.7rem; border: 1px solid var(--border);">&#8595; PDF</a>
+        </div>
         {% endif %}
     </div>
 
@@ -58,7 +66,7 @@
                     <div style="font-family: var(--font-mono); font-size: 0.85rem; font-weight: 600;">L{{ report.overall_level }} Check</div>
                     <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--fg-muted);">{{ report.created_at|date:"M d, Y" }} at {{ report.created_at|date:"g:i A" }}</div>
                 </div>
-                <a href="/api/check/{{ website.url }}/report/{{ report.id }}/" style="color: var(--fg); text-decoration: none; font-size: 1.1rem; padding: 0.25rem;" title="Download report">&#8595;</a>
+                <a href="/api/check/{{ website.url }}/report/{{ report.id }}/" style="display: inline-flex; align-items: center; gap: 0.3rem; font-family: var(--font-mono); font-size: 0.75rem; color: var(--fg); text-decoration: none; padding: 0.3rem 0.6rem; border: 1px solid var(--border);" title="Download PDF">&#8595; PDF</a>
             </div>
             {% endfor %}
         </div>

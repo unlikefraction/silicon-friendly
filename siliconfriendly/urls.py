@@ -3,7 +3,7 @@ from django.urls import path, include
 from django.http import JsonResponse, HttpResponse
 
 from websites.views import WebsiteBadgeSvgView, WebsiteBadgeJsView
-from websites.checker import check_website_api, check_page_view, start_check_api, check_status_api
+from websites.checker import check_website_api, check_page_view, start_check_api, check_status_api, report_download_view
 from common.ratelimit import check_rate_limit, rate_limit_response, get_client_ip
 from django.core.cache import cache
 
@@ -2126,6 +2126,7 @@ urlpatterns = [
     path('api/check/<str:domain>/', check_website_api, name='check_api'),
     path('api/check/<str:domain>/start/', start_check_api, name='check_start'),
     path('api/check/<str:domain>/status/', check_status_api, name='check_status'),
+    path('api/check/<str:domain>/report/<int:job_id>/', report_download_view, name='report_download'),
 
     # Template views
     path('', home_view, name='home'),
