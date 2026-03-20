@@ -1660,10 +1660,17 @@ def website_detail_view(request, domain):
     if active_payment:
         remaining_requests = remaining_verification_requests(active_payment)
 
+    # Pre-compute badge paths so {% static %} gets the full filename
+    level = website.level
+    badge_dark_on_light = f"badges/badge-l{level}-dark-on-light.svg" if level >= 1 else ""
+    badge_light_on_dark = f"badges/badge-l{level}-light-on-dark.svg" if level >= 1 else ""
+
     return render(request, "website_detail.html", {
         "website": website,
         "is_owner": is_owner,
         "criteria_by_level": criteria_by_level,
+        "badge_dark_on_light": badge_dark_on_light,
+        "badge_light_on_dark": badge_light_on_dark,
         "just_submitted": just_submitted,
         "payment_success": payment_success,
         "is_verified": is_verified,
