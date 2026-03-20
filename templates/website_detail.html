@@ -23,10 +23,7 @@
     {# Badge above the URL #}
     <div style="margin-bottom: 2rem;">
         {% if website.level >= 3 %}
-        <div class="badge-unlock-container unlocked">
-            <div class="badge-unlock-glow" style="--glow-color: #1a1a1a"></div>
-            <img src="{% static badge_dark_on_light %}" alt="Silicon Friendly L{{ website.level }}" class="badge-unlock-img" style="height: 56px;">
-        </div>
+        <img src="{% static badge_dark_on_light %}" alt="Silicon Friendly L{{ website.level }}" style="height: 56px;">
         {% elif website.level >= 1 %}
         <span class="sf-badge sf-badge-l{{ website.level }}" style="font-size: 1rem; padding: 0.4rem 0.8rem;">L{{ website.level }}</span>
         {% else %}
