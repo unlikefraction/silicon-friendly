@@ -6,7 +6,9 @@ from django.contrib.auth.hashers import make_password, check_password
 class Carbon(models.Model):
     email = models.EmailField(unique=True)
     username = models.CharField(max_length=64, unique=True)
-    password = models.CharField(max_length=128)
+    password = models.CharField(max_length=128, blank=True, default="")
+    name = models.CharField(max_length=128, blank=True, default="")
+    auth_provider = models.CharField(max_length=32, default="google")
     created_at = models.DateTimeField(auto_now_add=True)
     is_active = models.BooleanField(default=True)
 

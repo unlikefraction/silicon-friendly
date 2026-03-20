@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Signing in... - Silicon Friendly{% endblock %}
+
+{% block content %}
+<section class="hero" style="min-height: 60vh; display: flex; align-items: center; justify-content: center;">
+    <div style="text-align: center;">
+        <p id="status" style="font-family: var(--font-mono); font-size: 14px; color: var(--fg-muted);">signing you in...</p>
+    </div>
+</section>
+
+<script>
+(function() {
+    var status = document.getElementById('status');
+    var hash = window.location.hash.substring(1);
+    var params = new URLSearchParams(hash);
+    var accessToken = params.get('access_token');
+
+    if (!accessToken) {
+        status.textContent = 'error: no token received from google.';
+        return;
+    }
+
+    fetch('/auth/google/complete/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken'),
+        },
+        body: JSON.stringify({ access_token: accessToken }),
+    })
+    .then(function(res) { return res.json().then(function(data) { return { ok: res.ok, data: data }; }); })
+    .then(function(result) {
+        if (result.ok) {
+            window.location.href = '/';
+        } else {
+            status.textContent = 'error: ' + (result.data.error || 'something went wrong.');
+        }
+    })
+    .catch(function() {
+        status.textContent = 'error: could not reach the server.';
+    });
+
+    function getCookie(name) {
+        var value = '; ' + document.cookie;
+        var parts = value.split('; ' + name + '=');
+        if (parts.length === 2) return parts.pop().split(';').shift();
+        return '';
+    }
+})();
+</script>
+{% endblock %}

@@ -1730,49 +1730,104 @@ def silicon_profile_view(request, username):
     return render(request, "silicon_profile.html", {"silicon": silicon, "websites": websites, "verifications": verifications})
 
 
+GOOGLE_CLIENT_ID = "814413323140-tmvrg2ad3bhe7j35h1v58v5hrkl311tg.apps.googleusercontent.com"
+GOOGLE_USERINFO_ENDPOINT = "https://www.googleapis.com/oauth2/v1/userinfo?alt=json"
+
+
+def _get_google_userinfo(access_token):
+    import requests as http_requests
+    try:
+        resp = http_requests.get(GOOGLE_USERINFO_ENDPOINT, headers={"Authorization": f"Bearer {access_token}"}, timeout=10)
+    except Exception:
+        return None
+    if resp.status_code != 200:
+        return None
+    try:
+        return resp.json()
+    except ValueError:
+        return None
+
+
 def carbon_join_view(request):
-    error = None
-    if request.method == "POST":
-        # Rate limit: 5 auth attempts per hour per IP
-        ip = get_client_ip(request)
-        allowed, retry_after = check_rate_limit(f"auth:ip:{ip}", 5, 3600)
-        if not allowed:
-            error = f"Too many attempts. Try again in {retry_after} seconds."
-            return render(request, "carbon_join.html", {"error": error})
+    """Redirect to Google OAuth."""
+    base = request.build_absolute_uri("/").rstrip("/")
+    redirect_uri = f"{base}/auth/google/callback/"
+    from urllib.parse import urlencode
+    params = urlencode({
+        "client_id": GOOGLE_CLIENT_ID,
+        "redirect_uri": redirect_uri,
+        "response_type": "token",
+        "scope": "profile email",
+        "prompt": "select_account",
+    })
+    return redirect(f"https://accounts.google.com/o/oauth2/v2/auth?{params}")
 
-        action = request.POST.get("action", "signup")
-        email = request.POST.get("email", "").strip().lower()
-        username = request.POST.get("username", "").strip().lower()
-        password = request.POST.get("password", "")
 
-        if action == "login":
-            from django.db.models import Q
-            try:
-                carbon = Carbon.objects.get(Q(email=email) | Q(username=username or email), is_active=True)
-            except Carbon.DoesNotExist:
-                error = "Invalid credentials."
-                return render(request, "carbon_join.html", {"error": error})
-            if not carbon.check_password(password):
-                error = "Invalid credentials."
-                return render(request, "carbon_join.html", {"error": error})
-            request.session["carbon_id"] = carbon.id
-            return redirect("/")
-        else:
-            password_confirm = request.POST.get("password_confirm", "")
-            if not email or not username or not password:
-                error = "All fields are required."
-            elif password != password_confirm:
-                error = "Passwords do not match."
-            elif Carbon.objects.filter(email=email).exists() or Carbon.objects.filter(username=username).exists():
-                error = "Email or username already taken."
-            else:
-                carbon = Carbon(email=email, username=username)
-                carbon.set_password(password)
-                carbon.save()
-                request.session["carbon_id"] = carbon.id
-                return redirect("/")
+def google_callback_view(request):
+    """
+    Google OAuth implicit flow callback.
+    The access_token is in the URL fragment (#), so we need a small JS page
+    to extract it and POST it to our server.
+    """
+    return render(request, "google_callback.html")
 
-    return render(request, "carbon_join.html", {"error": error})
+
+from django.views.decorators.csrf import csrf_exempt
+
+@csrf_exempt
+def google_auth_complete(request):
+    """Receives access_token from the callback JS, validates with Google, creates/logs in Carbon."""
+    if request.method != "POST":
+        return JsonResponse({"error": "POST required"}, status=405)
+
+    import json
+    try:
+        payload = json.loads(request.body or "{}")
+    except json.JSONDecodeError:
+        return JsonResponse({"error": "Invalid JSON"}, status=400)
+
+    access_token = payload.get("access_token")
+    if not access_token:
+        return JsonResponse({"error": "Missing access token"}, status=400)
+
+    google_data = _get_google_userinfo(access_token)
+    if not google_data:
+        return JsonResponse({"error": "Google token validation failed"}, status=401)
+
+    email = (google_data.get("email") or "").strip().lower()
+    name = google_data.get("name", "")
+    verified_email = google_data.get("verified_email", False)
+
+    if not email:
+        return JsonResponse({"error": "Email not found in Google response"}, status=400)
+    if not verified_email:
+        return JsonResponse({"error": "Email not verified"}, status=400)
+
+    # Username from email prefix, deduplicated
+    base_username = email.split("@")[0].lower()[:50]
+    import re
+    base_username = re.sub(r'[^a-z0-9_]', '', base_username) or "carbon"
+
+    try:
+        carbon = Carbon.objects.get(email=email)
+        if name and not carbon.name:
+            carbon.name = name
+            carbon.save(update_fields=["name"])
+    except Carbon.DoesNotExist:
+        username = base_username
+        suffix = 1
+        while Carbon.objects.filter(username=username).exists():
+            username = f"{base_username}{suffix}"
+            suffix += 1
+        carbon = Carbon.objects.create(
+            email=email,
+            username=username,
+            name=name,
+            auth_provider="google",
+        )
+
+    request.session["carbon_id"] = carbon.id
+    return JsonResponse({"ok": True, "username": carbon.username})
 
 
 def silicon_join_view(request):
@@ -2058,6 +2113,8 @@ urlpatterns = [
     path('s/<str:username>/', silicon_profile_view, name='silicon_profile'),
     path('join/carbon/', carbon_join_view, name='carbon_join'),
     path('login/', lambda request: redirect('/join/carbon/'), name='login'),
+    path('auth/google/callback/', google_callback_view, name='google_callback'),
+    path('auth/google/complete/', google_auth_complete, name='google_auth_complete'),
     path('join/silicon/', silicon_join_view, name='silicon_join'),
     path('logout/', logout_view, name='logout'),
     path('badges/', badges_view, name='badges'),
