@@ -1,4 +1,4 @@
-// Checker.js — Polling-based checker with Claude Sonnet backend
+// Checker.js — Polling-based checker with suspenseful reveal
 
 const LEVEL_NAMES = {
     1: 'Basic Accessibility',
@@ -57,6 +57,9 @@ const STATUS_MESSAGES = {
 var jobId = null;
 var pollInterval = null;
 var renderedLevels = {};
+var animatingLevel = false;
+var pendingLevels = [];
+var allData = null;
 
 function getCsrfToken() {
     var value = '; ' + document.cookie;
@@ -76,7 +79,6 @@ function startCheck() {
     .then(function(res) { return res.json(); })
     .then(function(data) {
         if (data.exists) {
-            // Already checked — redirect to website page
             window.location.href = data.url;
             return;
         }
@@ -86,7 +88,6 @@ function startCheck() {
         }
         jobId = data.job_id;
         pollInterval = setInterval(pollStatus, 3000);
-        // Also poll immediately
         pollStatus();
     })
     .catch(function() {
@@ -106,6 +107,8 @@ function pollStatus() {
             return;
         }
 
+        allData = data;
+
         // Update step text
         var stepText = STATUS_MESSAGES[data.status] || data.status;
         var stepEl = document.getElementById('current-step-text');
@@ -121,7 +124,7 @@ function pollStatus() {
             queueEl.style.display = 'none';
         }
 
-        // Show level results section once we have data beyond intro
+        // Show level results section once past intro
         if (data.status !== 'queued' && data.status !== 'fetching' && data.status !== 'step_0') {
             var intro = document.getElementById('checker-intro');
             var results = document.getElementById('level-results');
@@ -129,24 +132,27 @@ function pollStatus() {
             if (results) results.style.display = 'block';
         }
 
-        // Render completed levels
+        // Queue up completed levels for animated reveal
         for (var l = 1; l <= 5; l++) {
-            var levelData = data['level_' + l];
-            if (levelData && !renderedLevels[l]) {
-                renderLevel(l, levelData);
+            if (data['level_' + l] && !renderedLevels[l]) {
                 renderedLevels[l] = true;
+                pendingLevels.push({ level: l, data: data['level_' + l] });
             }
         }
+        processNextLevel();
 
-        // Website name/description
-        if (data.website_name && data.status !== 'queued') {
-            // Could show enrichment info here if desired
-        }
-
-        // Done
+        // Done — redirect to website page
         if (data.status === 'done') {
             clearInterval(pollInterval);
-            showFinalResult(data);
+            // Wait for any remaining animations then redirect
+            var checkRedirect = setInterval(function() {
+                if (!animatingLevel && pendingLevels.length === 0) {
+                    clearInterval(checkRedirect);
+                    if (data.website_url) {
+                        setTimeout(function() { window.location.href = data.website_url; }, 1500);
+                    }
+                }
+            }, 500);
         }
 
         // Error
@@ -155,136 +161,120 @@ function pollStatus() {
             showError(data.error || 'Check failed.');
         }
     })
-    .catch(function() {
-        // Network error, keep polling
-    });
+    .catch(function() {});
 }
 
-function renderLevel(level, levelData) {
+function processNextLevel() {
+    if (animatingLevel || pendingLevels.length === 0) return;
+    var next = pendingLevels.shift();
+    animateLevel(next.level, next.data);
+}
+
+function animateLevel(level, levelData) {
+    animatingLevel = true;
+
     var container = document.getElementById('levels-container');
+
+    // Update the step text to show current level
+    var stepEl = document.getElementById('current-step-text');
+    if (stepEl) stepEl.textContent = 'checking level ' + level + ' — ' + LEVEL_NAMES[level].toLowerCase() + '...';
+
+    // Create the level block with section label
     var block = document.createElement('div');
     block.className = 'checker-levels-wrap';
-    block.innerHTML =
-        '<div class="section checker-level-section">' +
-        '<div class="section-label">LEVEL ' + level + ' / ' + LEVEL_NAMES[level].toUpperCase() + ' — ' + levelData.passed + '/' + levelData.total + '</div>' +
-        '<div class="checker-criteria-grid">' +
-        buildCriteriaRows(levelData) +
-        '</div>' +
-        '</div>';
+    block.style.animation = 'fadeIn 0.4s ease';
+
+    var section = document.createElement('div');
+    section.className = 'section checker-level-section';
+
+    var label = document.createElement('div');
+    label.className = 'section-label';
+    label.textContent = 'LEVEL ' + level + ' / ' + LEVEL_NAMES[level].toUpperCase();
+    section.appendChild(label);
+
+    var grid = document.createElement('div');
+    grid.className = 'checker-criteria-grid';
+    section.appendChild(grid);
+
+    block.appendChild(section);
     container.appendChild(block);
 
-    // Animate rows
-    var rows = block.querySelectorAll('.criteria-row');
-    rows.forEach(function(row, i) {
-        setTimeout(function() {
-            row.classList.add('visible');
-        }, i * 80);
+    // Get the criteria keys and shuffle order for suspense
+    var keys = Object.keys(levelData.results);
+    var shuffled = keys.slice().sort(function() { return Math.random() - 0.5; });
+
+    // First: add all rows with spinners
+    var rows = [];
+    shuffled.forEach(function(key) {
+        var row = document.createElement('div');
+        row.className = 'criteria-row';
+        row.innerHTML =
+            '<span class="criteria-row-label">' + (CRITERIA_LABELS[key] || key) + '</span>' +
+            '<span class="criteria-row-status"><span class="criterion-spinner"></span></span>';
+        grid.appendChild(row);
+        rows.push({ el: row, key: key, pass: levelData.results[key] });
     });
-}
 
-function buildCriteriaRows(levelData) {
-    var html = '';
-    var results = levelData.results;
-    var reasoning = levelData.reasoning || {};
-
-    for (var key in results) {
-        var passed = results[key];
-        var reason = reasoning[key] || '';
-        var label = CRITERIA_LABELS[key] || key;
-        html += '<div class="criteria-row ' + (passed ? 'pass' : 'fail') + '">' +
-            '<div>' +
-            '<span class="criteria-row-label">' + label + '</span>' +
-            (reason ? '<div style="font-size:11px;color:var(--fg-muted);margin-top:2px;font-weight:400;max-width:500px;">' + escapeHtml(reason) + '</div>' : '') +
-            '</div>' +
-            '<span class="criteria-row-status">' + (passed ? 'PASS' : 'FAIL') + '</span>' +
-            '</div>';
+    // Animate rows appearing
+    var rowIndex = 0;
+    function showNextRow() {
+        if (rowIndex >= rows.length) {
+            // All rows visible, now reveal results one by one
+            revealResults();
+            return;
+        }
+        rows[rowIndex].el.classList.add('visible');
+        rowIndex++;
+        setTimeout(showNextRow, 80);
     }
-    return html;
-}
+    setTimeout(showNextRow, 200);
 
-function escapeHtml(text) {
-    var div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-}
+    // Reveal pass/fail one at a time with random delays
+    function revealResults() {
+        var revealIndex = 0;
+        function revealNext() {
+            if (revealIndex >= rows.length) {
+                // All revealed — show level summary
+                var passed = 0;
+                rows.forEach(function(r) { if (r.pass) passed++; });
+                label.textContent = 'LEVEL ' + level + ' / ' + LEVEL_NAMES[level].toUpperCase() + ' — ' + passed + '/' + rows.length;
 
-function showFinalResult(data) {
-    document.getElementById('level-results').style.display = 'none';
-    document.getElementById('checker-final').style.display = 'block';
+                // Show level result terminal block
+                var resultBlock = document.createElement('div');
+                resultBlock.className = 'checker-level-result ' + (passed >= 4 ? 'level-passed' : 'level-failed');
+                resultBlock.innerHTML = '<div class="terminal-result-block"><span>> LEVEL ' + level + (passed >= 4 ? ' PASSED' : ' FAILED') + ' — ' + passed + '/' + rows.length + ' criteria met</span></div>';
+                section.appendChild(resultBlock);
 
-    var level = data.overall_level;
-
-    // Hero badge
-    var heroBadge = document.getElementById('final-hero-badge');
-    if (level >= 3) {
-        heroBadge.innerHTML = '<img src="/static/badges/badge-l' + level + '-dark-on-light.svg" alt="Silicon Friendly L' + level + '" style="height:56px;">';
-    } else if (level >= 1) {
-        heroBadge.innerHTML = '<span class="sf-badge sf-badge-l' + level + '" style="font-size:1rem;padding:0.4rem 0.8rem;">L' + level + '</span>';
-    } else {
-        heroBadge.innerHTML = '<span style="display:inline-flex;align-items:center;justify-content:center;padding:0.4rem 0.8rem;font-family:var(--font-mono);font-size:1rem;font-weight:700;color:var(--fg-muted);border:2px dashed var(--border);">L0</span>';
-    }
-
-    // Level text
-    if (level === 0) {
-        document.getElementById('final-level-text').textContent = 'L0 \u2014 not silicon friendly yet';
-    } else {
-        document.getElementById('final-level-text').textContent = 'level ' + level + ': ' + (LEVEL_NAMES[level] || '').toLowerCase();
-    }
-
-    // Terminal block
-    var badge = document.getElementById('final-badge');
-    var resultLine = document.getElementById('final-result-line');
-    if (level >= 3) {
-        badge.innerHTML = '<img src="/static/badges/badge-l' + level + '-light-on-dark.svg" alt="L' + level + '" style="height:48px;width:auto;">';
-        resultLine.innerHTML = '> BADGE UNLOCKED: SILICON FRIENDLY L' + level;
-    } else if (level >= 1) {
-        badge.innerHTML = '<span class="sf-badge sf-badge-l' + level + '" style="font-size:0.9rem;padding:0.3rem 0.65rem;">L' + level + '</span>';
-        resultLine.innerHTML = '> SILICON FRIENDLY LEVEL ' + level;
-    } else {
-        badge.innerHTML = '<span style="display:inline-flex;align-items:center;justify-content:center;padding:0.3rem 0.65rem;font-family:var(--font-mono);font-size:0.9rem;font-weight:700;color:var(--fg-muted);border:2px dashed rgba(237,232,224,0.3);">L0</span>';
-        resultLine.innerHTML = '> NOT SILICON FRIENDLY YET';
-    }
-
-    // Summary
-    var summary = document.getElementById('final-summary');
-    var html = '';
-    for (var l = 1; l <= 5; l++) {
-        var ld = data['level_' + l];
-        if (!ld) continue;
-        html += '<div class="summary-level-block">';
-        html += '<div class="section-label" style="margin-bottom:1rem;">LEVEL ' + l + ' / ' + LEVEL_NAMES[l].toUpperCase() + ' — ' + ld.passed + '/' + ld.total + '</div>';
-        html += '<div class="checker-criteria-grid">';
-        html += buildCriteriaRows(ld);
-        html += '</div></div>';
-    }
-    summary.innerHTML = html;
-
-    // Make all rows visible immediately in final summary
-    summary.querySelectorAll('.criteria-row').forEach(function(r) { r.classList.add('visible'); });
-
-    // Report
-    if (data.report_md) {
-        document.getElementById('report-section').style.display = 'block';
-        document.getElementById('report-content').textContent = data.report_md;
-    }
-
-    // View page button
-    if (data.website_url) {
-        var btn = document.getElementById('view-page-btn');
-        btn.href = data.website_url;
-        btn.style.display = 'inline-flex';
+                animatingLevel = false;
+                // Process next level after a brief pause
+                setTimeout(processNextLevel, 800);
+                return;
+            }
+            var r = rows[revealIndex];
+            var status = r.el.querySelector('.criteria-row-status');
+            r.el.classList.add(r.pass ? 'pass' : 'fail');
+            status.textContent = r.pass ? 'PASS' : 'FAIL';
+            revealIndex++;
+            var delay = 2000 + Math.random() * 6000; // 2-8 seconds
+            setTimeout(revealNext, delay);
+        }
+        revealNext();
     }
 }
 
 function showError(message) {
-    document.getElementById('checker-intro').style.display = 'none';
-    document.getElementById('level-results').style.display = 'none';
-    document.getElementById('checker-final').style.display = 'none';
-    document.getElementById('checker-error').style.display = 'block';
-    document.getElementById('error-message').textContent = message;
+    var intro = document.getElementById('checker-intro');
+    var results = document.getElementById('level-results');
+    var final = document.getElementById('checker-final');
+    var error = document.getElementById('checker-error');
+    if (intro) intro.style.display = 'none';
+    if (results) results.style.display = 'none';
+    if (final) final.style.display = 'none';
+    if (error) error.style.display = 'block';
+    var msg = document.getElementById('error-message');
+    if (msg) msg.textContent = message;
 }
 
-// Start on page load (only if logged in)
 document.addEventListener('DOMContentLoaded', function() {
     if (IS_LOGGED_IN) {
         startCheck();

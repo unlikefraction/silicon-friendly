@@ -1665,6 +1665,14 @@ def website_detail_view(request, domain):
     badge_dark_on_light = f"badges/badge-l{level}-dark-on-light.svg" if level >= 1 else ""
     badge_light_on_dark = f"badges/badge-l{level}-light-on-dark.svg" if level >= 1 else ""
 
+    # Check reports (from CheckJob) for owners
+    from websites.models import CheckJob
+    check_reports = []
+    if is_owner:
+        check_reports = list(CheckJob.objects.filter(
+            website=website, status="done", report_md__gt=""
+        ).order_by("-created_at").values("id", "created_at", "overall_level", "report_md"))
+
     return render(request, "website_detail.html", {
         "website": website,
         "is_owner": is_owner,
@@ -1681,6 +1689,7 @@ def website_detail_view(request, domain):
         "served_vrs": served_vrs,
         "latest_report": latest_report,
         "remaining_requests": remaining_requests,
+        "check_reports": check_reports,
     })
 
 

@@ -43,9 +43,31 @@
     </p>
 </section>
 
+{# ── Reports dropdown (owner only) ── #}
+{% if is_owner and check_reports %}
+<div class="section checker-final-section" style="padding-bottom: 0;">
+    <details style="border: 1px solid var(--border); overflow: hidden;">
+        <summary style="padding: 1rem 1.25rem; cursor: pointer; font-family: var(--font-mono); font-size: 0.85rem; font-weight: 600; background: var(--surface); list-style: none; color: var(--fg); letter-spacing: 0.05em; text-transform: uppercase; display: flex; align-items: center; justify-content: space-between;">
+            <span>Reports ({{ check_reports|length }})</span>
+            <span style="font-size: 0.75rem; color: var(--fg-muted); font-weight: 400; text-transform: none;">click to expand</span>
+        </summary>
+        <div style="padding: 0;">
+            {% for report in check_reports %}
+            <div style="padding: 1rem 1.25rem; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between;">
+                <div>
+                    <div style="font-family: var(--font-mono); font-size: 0.85rem; font-weight: 600;">L{{ report.overall_level }} Check</div>
+                    <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--fg-muted);">{{ report.created_at|date:"M d, Y" }} at {{ report.created_at|date:"g:i A" }}</div>
+                </div>
+                <a href="/api/check/{{ website.url }}/report/{{ report.id }}/" style="color: var(--fg); text-decoration: none; font-size: 1.1rem; padding: 0.25rem;" title="Download report">&#8595;</a>
+            </div>
+            {% endfor %}
+        </div>
+    </details>
+</div>
+{% endif %}
+
 {# ── Result section ── #}
 <div class="section checker-final-section">
-
 
     {# ── Description ── #}
     {% if website.description %}
