@@ -88,7 +88,7 @@
 const DOMAIN = "{{ domain }}";
 const IS_LOGGED_IN = {{ logged_in_carbon|yesno:"true,false" }};
 </script>
-<script src="{% static 'js/checker.js' %}"></script>
+<script src="{% static 'js/checker.js' %}?v=2"></script>
 
 {% if not logged_in_carbon %}
 <script>
