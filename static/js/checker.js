@@ -154,32 +154,49 @@ function showFinalResult() {
 
     const level = checkResults.overall_level;
 
+    // Hero badge (above domain)
+    const heroBadge = document.getElementById('final-hero-badge');
+    if (level >= 3) {
+        heroBadge.innerHTML =
+            '<div class="badge-unlock-container">' +
+            '<div class="badge-unlock-glow" style="--glow-color: #1a1a1a"></div>' +
+            '<img src="/static/badges/badge-l' + level + '-dark-on-light.svg" alt="Silicon Friendly L' + level + '" class="badge-unlock-img" style="height: 56px;">' +
+            '</div>';
+        requestAnimationFrame(function() {
+            requestAnimationFrame(function() {
+                heroBadge.querySelector('.badge-unlock-container').classList.add('unlocked');
+            });
+        });
+    } else if (level >= 1) {
+        heroBadge.innerHTML = '<span class="sf-badge sf-badge-l' + level + '" style="font-size: 1rem; padding: 0.4rem 0.8rem;">L' + level + '</span>';
+    } else {
+        heroBadge.innerHTML = '<span style="display: inline-flex; align-items: center; justify-content: center; padding: 0.4rem 0.8rem; font-family: var(--font-mono); font-size: 1rem; font-weight: 700; color: var(--fg-muted); border: 2px dashed var(--border);">L0</span>';
+    }
+
     // Set hero domain
     const domainTitle = document.getElementById('final-domain-title');
     domainTitle.innerHTML = DOMAIN + '.';
 
-    const levelNames = {0: 'Not Yet Friendly', 1: 'Basic Accessibility', 2: 'Discoverable', 3: 'Structured Interaction'};
-    document.getElementById('final-level-text').textContent = 'level ' + level + ': ' + (levelNames[level] || 'silicon friendly');
+    const levelNames = {0: 'not silicon friendly yet', 1: 'basic accessibility', 2: 'discoverable', 3: 'structured interaction'};
+    if (level === 0) {
+        document.getElementById('final-level-text').textContent = 'L0 \u2014 not silicon friendly yet';
+    } else {
+        document.getElementById('final-level-text').textContent = 'level ' + level + ': ' + (levelNames[level] || 'silicon friendly');
+    }
 
     // Badge in terminal block
     const badge = document.getElementById('final-badge');
     const resultLine = document.getElementById('final-result-line');
 
     if (level >= 3) {
-        badge.innerHTML =
-            '<div class="badge-unlock-container">' +
-            '<div class="badge-unlock-glow" style="--glow-color: #1a1a1a"></div>' +
-            '<img src="/static/badges/badge-l' + level + '-light-on-dark.svg" alt="Silicon Friendly L' + level + '" class="badge-unlock-img">' +
-            '</div>';
-        requestAnimationFrame(function() {
-            requestAnimationFrame(function() {
-                badge.querySelector('.badge-unlock-container').classList.add('unlocked');
-            });
-        });
+        badge.innerHTML = '<img src="/static/badges/badge-l' + level + '-light-on-dark.svg" alt="L' + level + '" style="height: 48px; width: auto;">';
         resultLine.innerHTML = '> BADGE UNLOCKED: SILICON FRIENDLY L' + level;
-    } else {
-        badge.innerHTML = '<span class="sf-badge sf-badge-lg level-' + level + '-bg">L' + level + '</span>';
+    } else if (level >= 1) {
+        badge.innerHTML = '<span class="sf-badge sf-badge-l' + level + '" style="font-size: 0.9rem; padding: 0.3rem 0.65rem;">L' + level + '</span>';
         resultLine.innerHTML = '> SILICON FRIENDLY LEVEL ' + level;
+    } else {
+        badge.innerHTML = '<span style="display: inline-flex; align-items: center; justify-content: center; padding: 0.3rem 0.65rem; font-family: var(--font-mono); font-size: 0.9rem; font-weight: 700; color: var(--fg-muted); border: 2px dashed rgba(237,232,224,0.3);">L0</span>';
+        resultLine.innerHTML = '> NOT SILICON FRIENDLY YET';
     }
 
     // Build summary with grid rows per level

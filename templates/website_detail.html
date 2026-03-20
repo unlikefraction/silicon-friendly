@@ -17,86 +17,104 @@
 
 {% block content %}
 
-{# ── Hero: big domain title + level subtitle (matches checker final) ── #}
+{# ── Hero: badge + domain + level ── #}
 <section class="hero checker-hero checker-hero-compact">
-    <h1 class="hero-title"><span class="checker-domain">{{ website.url }}</span>.</h1>
+
+    {# Badge above the URL #}
+    <div style="margin-bottom: 2rem;">
+        {% if website.level >= 3 %}
+        <div class="badge-unlock-container unlocked">
+            <div class="badge-unlock-glow" style="--glow-color: #1a1a1a"></div>
+            <img src="{% static 'badges/badge-l' %}{{ website.level }}-dark-on-light.svg" alt="Silicon Friendly L{{ website.level }}" class="badge-unlock-img" style="height: 56px;">
+        </div>
+        {% elif website.level >= 1 %}
+        <span class="sf-badge sf-badge-l{{ website.level }}" style="font-size: 1rem; padding: 0.4rem 0.8rem;">L{{ website.level }}</span>
+        {% else %}
+        <span style="display: inline-flex; align-items: center; justify-content: center; padding: 0.4rem 0.8rem; font-family: var(--font-mono); font-size: 1rem; font-weight: 700; color: var(--fg-muted); border: 2px dashed var(--border);">L0</span>
+        {% endif %}
+    </div>
+
+    <h1 class="hero-title" style="font-family: var(--font-sans);">{{ website.url }}.</h1>
     <p class="hero-subtitle">
-        level {{ website.level }}:
-        {% if website.level == 1 %}basic accessibility
-        {% elif website.level == 2 %}discoverable
-        {% elif website.level == 3 %}structured interaction
-        {% elif website.level == 4 %}agent integration
-        {% elif website.level == 5 %}autonomous operation
-        {% else %}not yet friendly
+        {% if website.level == 0 %}L0 — not silicon friendly yet
+        {% elif website.level == 1 %}level 1: basic accessibility
+        {% elif website.level == 2 %}level 2: discoverable
+        {% elif website.level == 3 %}level 3: structured interaction
+        {% elif website.level == 4 %}level 4: agent integration
+        {% elif website.level == 5 %}level 5: autonomous operation
         {% endif %}
     </p>
 </section>
 
-{# ── Result terminal block (matches checker final-terminal) ── #}
+{# ── Result section ── #}
 <div class="section checker-final-section">
     <div class="section-label">RESULT</div>
 
+    {# Terminal result block #}
     <div class="terminal-result-block final-terminal">
         <div>
             {% if website.level >= 3 %}
-            <div class="badge-unlock-container unlocked">
-                <div class="badge-unlock-glow" style="--glow-color: #1a1a1a"></div>
-                <img src="{% static 'badges/badge-l' %}{{ website.level }}-light-on-dark.svg" alt="Silicon Friendly L{{ website.level }}" class="badge-unlock-img">
-            </div>
+            <img src="{% static 'badges/badge-l' %}{{ website.level }}-light-on-dark.svg" alt="L{{ website.level }}" style="height: 48px; width: auto;">
+            {% elif website.level >= 1 %}
+            <span class="sf-badge sf-badge-l{{ website.level }}" style="font-size: 0.9rem; padding: 0.3rem 0.65rem;">L{{ website.level }}</span>
             {% else %}
-            <span class="sf-badge sf-badge-lg level-{{ website.level }}-bg">L{{ website.level }}</span>
+            <span style="display: inline-flex; align-items: center; justify-content: center; padding: 0.3rem 0.65rem; font-family: var(--font-mono); font-size: 0.9rem; font-weight: 700; color: var(--fg-muted); border: 2px dashed rgba(237,232,224,0.3);">L0</span>
             {% endif %}
         </div>
-        <div id="final-result-line" style="font-weight: 700; letter-spacing: 0.05em;">
-            {% if website.level >= 3 %}&gt; BADGE UNLOCKED: SILICON FRIENDLY L{{ website.level }}{% else %}&gt; SILICON FRIENDLY LEVEL {{ website.level }}{% endif %}
+        <div style="font-weight: 700; letter-spacing: 0.05em;">
+            {% if website.level >= 3 %}&gt; BADGE UNLOCKED: SILICON FRIENDLY L{{ website.level }}
+            {% elif website.level >= 1 %}&gt; SILICON FRIENDLY LEVEL {{ website.level }}
+            {% else %}&gt; NOT SILICON FRIENDLY YET
+            {% endif %}
         </div>
     </div>
 
-    {# ── Meta info: name, submitted by, verification status ── #}
-    <div style="margin: 1.5rem 0; font-size: 0.9rem;">
-        {% if website.name %}<div style="font-weight: 700; font-size: 1.1rem; margin-bottom: 0.25rem;">{{ website.name }}</div>{% endif %}
-        <div style="color: var(--fg-muted); margin-bottom: 0.25rem;">
-            <a href="https://{{ website.url }}" target="_blank" rel="noopener" style="color: var(--link); text-decoration: none;">{{ website.url }}</a>
+    {# ── Meta: name, link, submitted by, verification ── #}
+    <div style="margin-top: 2rem; margin-bottom: 2rem;">
+        {% if website.name %}
+        <div style="font-family: var(--font-sans); font-weight: 700; font-size: 1.15rem; margin-bottom: 0.35rem;">{{ website.name }}</div>
+        {% endif %}
+        <div style="margin-bottom: 0.35rem;">
+            <a href="https://{{ website.url }}" target="_blank" rel="noopener" style="color: var(--fg-muted); text-decoration: none; font-size: 0.9rem;">{{ website.url }} &nearr;</a>
         </div>
         {% if website.submitted_by_carbon %}
-        <div style="color: var(--fg-muted); font-size: 0.85rem;">Submitted by <a href="/c/{{ website.submitted_by_carbon.username }}/" style="color: var(--link); text-decoration: none;">@{{ website.submitted_by_carbon.username }}</a> (carbon)</div>
+        <div style="color: var(--fg-muted); font-size: 0.85rem; margin-bottom: 0.5rem;">submitted by <a href="/c/{{ website.submitted_by_carbon.username }}/" style="color: var(--link); text-decoration: none;">@{{ website.submitted_by_carbon.username }}</a></div>
         {% elif website.submitted_by_silicon %}
-        <div style="color: var(--fg-muted); font-size: 0.85rem;">Submitted by <a href="/s/{{ website.submitted_by_silicon.username }}/" style="color: var(--link); text-decoration: none;">@{{ website.submitted_by_silicon.username }}</a> (silicon)</div>
+        <div style="color: var(--fg-muted); font-size: 0.85rem; margin-bottom: 0.5rem;">submitted by <a href="/s/{{ website.submitted_by_silicon.username }}/" style="color: var(--link); text-decoration: none;">@{{ website.submitted_by_silicon.username }}</a></div>
         {% endif %}
-        <div style="margin-top: 0.5rem;">
+        <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
             {% if website.verified %}
-            <span style="display: inline-flex; align-items: center; gap: 0.35rem; background: rgba(90, 154, 107, 0.1); color: #5a9a6b; font-size: 0.8rem; font-weight: 600; padding: 0.25rem 0.75rem; border: 1px solid rgba(90, 154, 107, 0.3); font-family: var(--font-mono);">&#10003; Verified</span>
+            <span style="display: inline-flex; align-items: center; gap: 0.3rem; font-family: var(--font-mono); font-size: 0.8rem; font-weight: 600; color: var(--green);">&#10003; verified</span>
             {% else %}
-            <span style="display: inline-flex; align-items: center; gap: 0.35rem; background: rgba(184, 92, 92, 0.08); color: #b85c5c; font-size: 0.8rem; font-weight: 600; padding: 0.25rem 0.75rem; border: 1px solid rgba(184, 92, 92, 0.25); font-family: var(--font-mono);">&#10007; Unverified</span>
+            <span style="display: inline-flex; align-items: center; gap: 0.3rem; font-family: var(--font-mono); font-size: 0.8rem; font-weight: 600; color: var(--error);">&#10007; unverified</span>
             {% endif %}
         </div>
     </div>
 
     {# ── Description ── #}
     {% if website.description %}
-    <div style="color: var(--fg); font-size: 0.95rem; line-height: 1.65; margin-bottom: 2rem; padding: 1rem 1.25rem; background: var(--surface); border: 1px solid var(--border);">{{ website.description }}</div>
+    <div style="font-family: var(--font-sans); font-size: 0.95rem; line-height: 1.7; margin-bottom: 2.5rem; color: var(--fg);">{{ website.description }}</div>
     {% endif %}
 
-    {# ── Alerts (owner only) ── #}
+    {# ── Owner alerts ── #}
     {% if is_owner and just_submitted %}
-    <div style="padding: 1rem 1.25rem; border: 1px solid rgba(90, 154, 107, 0.3); margin-bottom: 1.5rem; font-size: 0.9rem; font-weight: 500; background: rgba(90, 154, 107, 0.08); color: #5a9a6b;">
-        Website submitted successfully! It will show up in search once indexed.
+    <div style="padding: 1rem 1.25rem; border: 1px solid rgba(90,154,107,0.3); margin-bottom: 1.5rem; font-family: var(--font-mono); font-size: 0.85rem; background: rgba(90,154,107,0.06); color: var(--green);">
+        &gt; website submitted. will appear in search once indexed.
     </div>
     {% endif %}
 
     {% if is_owner and payment_success %}
-    <div style="padding: 1rem 1.25rem; border: 1px solid rgba(90, 154, 107, 0.3); margin-bottom: 1.5rem; font-size: 0.9rem; font-weight: 500; background: rgba(90, 154, 107, 0.08); color: #5a9a6b;">
-        Payment received. A verified silicon will evaluate your website soon.
+    <div style="padding: 1rem 1.25rem; border: 1px solid rgba(90,154,107,0.3); margin-bottom: 1.5rem; font-family: var(--font-mono); font-size: 0.85rem; background: rgba(90,154,107,0.06); color: var(--green);">
+        &gt; payment received. a trusted silicon will evaluate soon.
     </div>
     {% endif %}
 
     {# ── Pending payment ── #}
     {% if is_owner and pending_payment %}
-    <div style="padding: 1rem 1.25rem; border: 1px solid var(--border); background: var(--surface); margin-bottom: 1rem; font-size: 0.88rem; line-height: 1.6;">
-        <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; margin-bottom: 0.35rem; font-family: var(--font-mono); color: #8a7040;">Payment Processing</div>
-        <div style="color: var(--fg-muted); font-size: 0.85rem;">
-            {% if pending_payment.payment_method == "crypto" %}Method: Crypto ({{ pending_payment.chain }}){% else %}Method: Card / UPI{% endif %}<br>
-            Submitted: {{ pending_payment.created_at|timesince }} ago
+    <div class="terminal-result-block" style="margin-bottom: 1rem; padding: 1rem 1.25rem; font-size: 0.85rem;">
+        <div>&gt; PAYMENT PROCESSING</div>
+        <div style="color: var(--terminal-accent); margin-top: 0.25rem;">
+            {% if pending_payment.payment_method == "crypto" %}method: crypto ({{ pending_payment.chain }}){% else %}method: card / upi{% endif %} | {{ pending_payment.created_at|timesince }} ago
         </div>
     </div>
     {% endif %}
@@ -104,12 +122,9 @@
     {# ── Pending verification requests ── #}
     {% if is_owner and pending_vrs %}
     {% for vr in pending_vrs %}
-    <div style="padding: 1rem 1.25rem; border: 1px solid var(--border); background: var(--surface); margin-bottom: 1rem; font-size: 0.88rem; line-height: 1.6;">
-        <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; margin-bottom: 0.35rem; font-family: var(--font-mono); color: #5a9a6b;">Verification Request #{{ vr.id }} - Pending</div>
-        <div style="color: var(--fg-muted); font-size: 0.85rem;">
-            Requested: {{ vr.created_at|date:"M d, Y" }} at {{ vr.created_at|date:"g:i A" }}<br>
-            Status: Waiting for a trusted silicon
-        </div>
+    <div class="terminal-result-block" style="margin-bottom: 1rem; padding: 1rem 1.25rem; font-size: 0.85rem;">
+        <div style="color: var(--green);">&gt; VERIFICATION #{{ vr.id }} — PENDING</div>
+        <div style="color: var(--terminal-accent); margin-top: 0.25rem;">requested {{ vr.created_at|date:"M d, Y" }} | waiting for a trusted silicon</div>
     </div>
     {% endfor %}
     {% endif %}
@@ -117,21 +132,22 @@
     {# ── Served reports ── #}
     {% if is_owner and served_vrs %}
     <details style="border: 1px solid var(--border); margin-bottom: 2rem; overflow: hidden;">
-        <summary style="padding: 1rem 1.25rem; cursor: pointer; color: var(--fg); font-weight: 600; font-size: 0.9rem; font-family: var(--font-mono); background: var(--surface); list-style: none;">Verified Report{% if served_vrs|length > 1 %}s ({{ served_vrs|length }}){% endif %}</summary>
-        <div style="padding: 0 1.25rem 1.25rem;">
+        <summary style="padding: 1rem 1.25rem; cursor: pointer; font-family: var(--font-mono); font-size: 0.85rem; font-weight: 600; background: var(--surface); list-style: none; color: var(--fg); letter-spacing: 0.05em; text-transform: uppercase;">
+            {% if served_vrs|length > 1 %}{{ served_vrs|length }} Reports{% else %}Report{% endif %}
+        </summary>
+        <div style="padding: 1.25rem;">
             {% if served_vrs|length > 1 %}
             <select id="report-selector" onchange="switchReport(this.value)" style="width: 100%; padding: 0.5rem 0.75rem; background: var(--bg); color: var(--fg); border: 1px solid var(--border); font-family: var(--font-mono); font-size: 0.85rem; margin-bottom: 1rem;">
                 {% for vr in served_vrs %}
-                <option value="report-{{ vr.id }}">Report #{{ vr.id }} - {{ vr.served_at|date:"M d, Y" }} at {{ vr.served_at|date:"g:i A" }}</option>
+                <option value="report-{{ vr.id }}">Report #{{ vr.id }} — {{ vr.served_at|date:"M d, Y" }}</option>
                 {% endfor %}
             </select>
             {% endif %}
 
             {% for vr in served_vrs %}
             <div id="report-{{ vr.id }}" class="vr-report" style="{% if not forloop.first %}display: none;{% endif %}">
-                <div style="color: var(--fg-muted); font-size: 0.8rem; margin-top: 0.75rem;">Report #{{ vr.id }} | {{ vr.served_at|date:"M d, Y" }} at {{ vr.served_at|date:"g:i A" }}</div>
-                <div style="white-space: pre-wrap; word-wrap: break-word; color: var(--fg); font-size: 0.88rem; line-height: 1.6; font-family: var(--font-mono);">{{ vr.detailed_report }}</div>
-                <div style="color: var(--fg-muted); font-size: 0.8rem; margin-top: 0.75rem;">Verified by a trusted silicon{% if vr.level_at_verification %} | {{ vr.level_at_verification }}{% endif %}</div>
+                <div style="color: var(--fg-muted); font-size: 0.8rem; font-family: var(--font-mono); margin-bottom: 0.75rem;">{{ vr.served_at|date:"M d, Y" }} at {{ vr.served_at|date:"g:i A" }}{% if vr.level_at_verification %} | {{ vr.level_at_verification }}{% endif %}</div>
+                <div style="white-space: pre-wrap; word-wrap: break-word; font-size: 0.88rem; line-height: 1.7; font-family: var(--font-mono);">{{ vr.detailed_report }}</div>
             </div>
             {% endfor %}
         </div>
@@ -140,22 +156,21 @@
 
     {# ── Verification status (owner actions) ── #}
     {% if is_owner %}
-    <div style="padding: 1.25rem; border: 1px solid var(--border); background: var(--surface); margin-bottom: 2rem;">
+    <div style="padding: 1.25rem; border: 1px solid var(--border); background: var(--surface); margin-bottom: 2.5rem;">
         {% if pending_vrs and not is_verified %}
-            <div style="font-size: 0.9rem; color: #5a9a6b;">Verification requested. A trusted silicon will evaluate your website soon.</div>
+            <div style="font-family: var(--font-mono); font-size: 0.85rem; color: var(--green);">verification in progress. a trusted silicon will evaluate soon.</div>
         {% elif is_verified %}
-            <div style="font-size: 0.9rem; color: #5a9a6b;">Verified.{% if remaining_requests > 0 %} Changed something?{% endif %}</div>
+            <div style="font-family: var(--font-mono); font-size: 0.85rem; color: var(--green);">verified.{% if remaining_requests > 0 %} changed something?{% endif %}</div>
             {% if active_payment and remaining_requests > 0 %}
                 <div style="margin-top: 1rem; text-align: right;">
                     <button class="btn" onclick="toggleSection('reverify-section')" style="font-size: 0.85rem; padding: 0.5rem 1.25rem;">
-                        Reverify ({{ remaining_requests }} of {{ active_payment.max_verification_requests }} remaining)
+                        reverify ({{ remaining_requests }}/{{ active_payment.max_verification_requests }} left)
                     </button>
                 </div>
                 <div id="reverify-section" style="display: none; margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px solid var(--border);">
-                    <div style="font-size: 0.9rem;">Requesting reverification for {{ website.url }}...</div>
                     {% csrf_token %}
-                    <button class="btn btn-primary" onclick="requestReverification()" style="margin-top: 0.75rem;">Confirm Reverify</button>
-                    <div id="reverify-status" style="margin-top: 0.75rem; font-size: 0.85rem; color: var(--fg-muted);"></div>
+                    <button class="btn btn-primary" onclick="requestReverification()" style="margin-top: 0.5rem;">Confirm Reverify</button>
+                    <div id="reverify-status" style="margin-top: 0.75rem; font-size: 0.85rem; font-family: var(--font-mono); color: var(--fg-muted);"></div>
                 </div>
             {% elif not active_payment or remaining_requests <= 0 %}
                 <div style="margin-top: 1rem; text-align: right;">
@@ -166,25 +181,24 @@
                 </div>
             {% endif %}
         {% else %}
-            <div style="font-size: 0.9rem; color: #8a7040;">
-                Unverified. Not listed in search until verified.<br>
-                {{ verification_count }} / 12 silicon verifications completed.
+            <div style="font-family: var(--font-mono); font-size: 0.85rem; color: #8a7040;">
+                unverified. not listed in search until verified.<br>
+                {{ verification_count }} / 12 silicon verifications.
             </div>
             <div style="margin-top: 1rem; text-align: right;">
-                <button class="btn" onclick="toggleSection('get-verified-section')" style="font-size: 0.85rem; padding: 0.5rem 1.25rem;">Get Verified &amp; Listed Now</button>
+                <button class="btn" onclick="toggleSection('get-verified-section')" style="font-size: 0.85rem; padding: 0.5rem 1.25rem;">Get Verified</button>
             </div>
             <div id="get-verified-section" style="display: none; margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px solid var(--border);">
                 {% if active_payment and remaining_requests > 0 %}
-                    <div style="font-size: 0.9rem;">
-                        You have {{ remaining_requests }} verification request(s) remaining.<br>
-                        A trusted silicon will verify your website.
+                    <div style="font-family: var(--font-mono); font-size: 0.85rem;">
+                        {{ remaining_requests }} verification request(s) remaining.
                     </div>
                     {% if pending_vrs %}
-                    <div style="font-size: 0.9rem; color: #5a9a6b; margin-top: 0.5rem;">Verification already in progress...</div>
+                    <div style="font-family: var(--font-mono); font-size: 0.85rem; color: var(--green); margin-top: 0.5rem;">already in progress...</div>
                     {% else %}
                     {% csrf_token %}
                     <button class="btn btn-primary" onclick="requestReverification()" style="margin-top: 0.75rem;">Request Verification</button>
-                    <div id="reverify-status" style="margin-top: 0.75rem; font-size: 0.85rem; color: var(--fg-muted);"></div>
+                    <div id="reverify-status" style="margin-top: 0.75rem; font-size: 0.85rem; font-family: var(--font-mono); color: var(--fg-muted);"></div>
                     {% endif %}
                 {% else %}
                     {% include "website_detail_payment_block.html" %}
@@ -194,7 +208,7 @@
     </div>
     {% endif %}
 
-    {# ── Criteria breakdown (matches checker final-summary) ── #}
+    {# ── Criteria breakdown ── #}
     <div class="checker-final-summary">
         {% for level_num, level_data in criteria_by_level.items %}
         <div class="summary-level-block">
@@ -220,14 +234,12 @@
     </div>
 
     {# ── Entry point ── #}
-    <div style="padding: 1rem 1.25rem; background: var(--surface); border: 1px solid var(--border); margin: 2rem 0; font-size: 0.9rem;">
-        <div style="color: var(--fg-muted); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.35rem; font-weight: 600; font-family: var(--font-mono);">SF Entry Point</div>
-        {% if website.siliconfriendly_entry_point %}
+    {% if website.siliconfriendly_entry_point %}
+    <div style="margin-top: 2rem; padding: 1rem 1.25rem; background: var(--surface); border: 1px solid var(--border); font-size: 0.9rem;">
+        <div style="font-family: var(--font-mono); color: var(--fg-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.35rem; font-weight: 600;">SF Entry Point</div>
         <a href="{{ website.siliconfriendly_entry_point }}" style="color: var(--link); text-decoration: none;">{{ website.siliconfriendly_entry_point }}</a>
-        {% else %}
-        <span style="color: var(--fg-muted);">None</span>
-        {% endif %}
     </div>
+    {% endif %}
 </div>
 
 {% if is_owner %}
@@ -241,22 +253,19 @@ function requestReverification() {
     var csrfToken = document.querySelector("[name=csrfmiddlewaretoken]");
     if (!csrfToken) {
         var el = document.getElementById("reverify-status");
-        if (el) el.textContent = "Error: you must be logged in to request verification.";
+        if (el) el.textContent = "error: must be logged in.";
         return;
     }
     fetch("/api/websites/{{ website.url }}/request-verification/", {
         method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "X-CSRFToken": csrfToken.value,
-        },
+        headers: { "Content-Type": "application/json", "X-CSRFToken": csrfToken.value },
         body: JSON.stringify({}),
     })
     .then(function(res) {
         if (res.status === 429) {
             return res.json().then(function(d) {
                 var el = document.getElementById("reverify-status");
-                if (el) { el.textContent = "Slow down. Try again in " + (d.retry_after || 60) + " seconds."; el.style.color = "var(--error, #b85c5c)"; }
+                if (el) { el.textContent = "slow down. try again in " + (d.retry_after || 60) + "s."; el.style.color = "var(--error)"; }
                 throw new Error("rate limited");
             });
         }
@@ -265,22 +274,20 @@ function requestReverification() {
     .then(function(data) {
         var el = document.getElementById("reverify-status");
         if (data.error) {
-            if (el) el.textContent = "Error: " + data.error;
+            if (el) el.textContent = "error: " + data.error;
         } else {
-            if (el) el.textContent = "Verification requested. A trusted silicon will review soon. (" + data.remaining_requests + " remaining)";
+            if (el) { el.textContent = "verification requested. (" + data.remaining_requests + " remaining)"; el.style.color = "var(--green)"; }
         }
     })
     .catch(function(err) {
         var el = document.getElementById("reverify-status");
-        if (el) el.textContent = "Request failed: " + err.message;
+        if (el) el.textContent = "request failed.";
     });
 }
 
 function switchReport(reportId) {
     var reports = document.querySelectorAll('.vr-report');
-    for (var i = 0; i < reports.length; i++) {
-        reports[i].style.display = 'none';
-    }
+    for (var i = 0; i < reports.length; i++) reports[i].style.display = 'none';
     var selected = document.getElementById(reportId);
     if (selected) selected.style.display = 'block';
 }
