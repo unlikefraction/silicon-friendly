@@ -16,390 +16,87 @@
 {% endblock %}
 
 {% block content %}
-<style>
-    /* === Website Detail — Warm Design System === */
-    .wd-page { max-width: 720px; margin: 0 auto; padding: 2rem 1rem 4rem; }
 
-    /* Alerts */
-    .wd-alert {
-        padding: 1rem 1.25rem;
-        border: 1px solid var(--border);
-        margin-bottom: 1.5rem;
-        font-size: 0.9rem;
-        font-weight: 500;
-        line-height: 1.5;
-    }
-    .wd-alert-success {
-        background: rgba(90, 154, 107, 0.08);
-        border-color: rgba(90, 154, 107, 0.3);
-        color: #5a9a6b;
-    }
-    .wd-alert-warning {
-        background: rgba(201, 185, 154, 0.15);
-        border-color: var(--warning);
-        color: #8a7040;
-    }
-    .wd-alert-info {
-        background: rgba(26, 26, 26, 0.04);
-        border-color: var(--border);
-        color: var(--fg);
-    }
+{# ── Hero: big domain title + level subtitle (matches checker final) ── #}
+<section class="hero checker-hero checker-hero-compact">
+    <h1 class="hero-title"><span class="checker-domain">{{ website.url }}</span>.</h1>
+    <p class="hero-subtitle">
+        level {{ website.level }}:
+        {% if website.level == 1 %}basic accessibility
+        {% elif website.level == 2 %}discoverable
+        {% elif website.level == 3 %}structured interaction
+        {% elif website.level == 4 %}agent integration
+        {% elif website.level == 5 %}autonomous operation
+        {% else %}not yet friendly
+        {% endif %}
+    </p>
+</section>
 
-    /* Header */
-    .wd-header {
-        display: flex;
-        align-items: flex-start;
-        gap: 1.5rem;
-        margin-bottom: 2rem;
-    }
-    .wd-level-badge {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 64px;
-        height: 64px;
-        font-family: var(--font-mono);
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: #ede8e0;
-        flex-shrink: 0;
-        letter-spacing: -0.02em;
-    }
-    .wd-header-info { flex: 1; min-width: 0; }
-    .wd-header-info h1 {
-        font-size: 1.6rem;
-        font-weight: 700;
-        margin-bottom: 0.25rem;
-        line-height: 1.2;
-    }
-    .wd-domain {
-        color: var(--fg-muted);
-        font-size: 0.9rem;
-        margin-bottom: 0.35rem;
-    }
-    .wd-domain a { color: var(--link); text-decoration: none; }
-    .wd-domain a:hover { opacity: 0.5; }
-    .wd-submitted-by {
-        color: var(--fg-muted);
-        font-size: 0.85rem;
-        margin-bottom: 0.5rem;
-    }
-    .wd-submitted-by a { color: var(--link); text-decoration: none; }
-    .wd-submitted-by a:hover { opacity: 0.5; }
+{# ── Result terminal block (matches checker final-terminal) ── #}
+<div class="section checker-final-section">
+    <div class="section-label">RESULT</div>
 
-    /* Verification badges */
-    .wd-badge-verified {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.35rem;
-        background: rgba(90, 154, 107, 0.1);
-        color: #5a9a6b;
-        font-size: 0.8rem;
-        font-weight: 600;
-        padding: 0.25rem 0.75rem;
-        border: 1px solid rgba(90, 154, 107, 0.3);
-        font-family: var(--font-mono);
-    }
-    .wd-badge-unverified {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.35rem;
-        background: rgba(184, 92, 92, 0.08);
-        color: #b85c5c;
-        font-size: 0.8rem;
-        font-weight: 600;
-        padding: 0.25rem 0.75rem;
-        border: 1px solid rgba(184, 92, 92, 0.25);
-        font-family: var(--font-mono);
-    }
+    <div class="terminal-result-block final-terminal">
+        <div>
+            {% if website.level >= 3 %}
+            <div class="badge-unlock-container unlocked">
+                <div class="badge-unlock-glow" style="--glow-color: #1a1a1a"></div>
+                <img src="{% static 'badges/badge-l' %}{{ website.level }}-light-on-dark.svg" alt="Silicon Friendly L{{ website.level }}" class="badge-unlock-img">
+            </div>
+            {% else %}
+            <span class="sf-badge sf-badge-lg level-{{ website.level }}-bg">L{{ website.level }}</span>
+            {% endif %}
+        </div>
+        <div id="final-result-line" style="font-weight: 700; letter-spacing: 0.05em;">
+            {% if website.level >= 3 %}&gt; BADGE UNLOCKED: SILICON FRIENDLY L{{ website.level }}{% else %}&gt; SILICON FRIENDLY LEVEL {{ website.level }}{% endif %}
+        </div>
+    </div>
 
-    /* Description */
-    .wd-description {
-        color: var(--fg);
-        font-size: 0.95rem;
-        line-height: 1.65;
-        margin-bottom: 2rem;
-        padding: 1rem 1.25rem;
-        background: var(--surface);
-        border: 1px solid var(--border);
-    }
+    {# ── Meta info: name, submitted by, verification status ── #}
+    <div style="margin: 1.5rem 0; font-size: 0.9rem;">
+        {% if website.name %}<div style="font-weight: 700; font-size: 1.1rem; margin-bottom: 0.25rem;">{{ website.name }}</div>{% endif %}
+        <div style="color: var(--fg-muted); margin-bottom: 0.25rem;">
+            <a href="https://{{ website.url }}" target="_blank" rel="noopener" style="color: var(--link); text-decoration: none;">{{ website.url }}</a>
+        </div>
+        {% if website.submitted_by_carbon %}
+        <div style="color: var(--fg-muted); font-size: 0.85rem;">Submitted by <a href="/c/{{ website.submitted_by_carbon.username }}/" style="color: var(--link); text-decoration: none;">@{{ website.submitted_by_carbon.username }}</a> (carbon)</div>
+        {% elif website.submitted_by_silicon %}
+        <div style="color: var(--fg-muted); font-size: 0.85rem;">Submitted by <a href="/s/{{ website.submitted_by_silicon.username }}/" style="color: var(--link); text-decoration: none;">@{{ website.submitted_by_silicon.username }}</a> (silicon)</div>
+        {% endif %}
+        <div style="margin-top: 0.5rem;">
+            {% if website.verified %}
+            <span style="display: inline-flex; align-items: center; gap: 0.35rem; background: rgba(90, 154, 107, 0.1); color: #5a9a6b; font-size: 0.8rem; font-weight: 600; padding: 0.25rem 0.75rem; border: 1px solid rgba(90, 154, 107, 0.3); font-family: var(--font-mono);">&#10003; Verified</span>
+            {% else %}
+            <span style="display: inline-flex; align-items: center; gap: 0.35rem; background: rgba(184, 92, 92, 0.08); color: #b85c5c; font-size: 0.8rem; font-weight: 600; padding: 0.25rem 0.75rem; border: 1px solid rgba(184, 92, 92, 0.25); font-family: var(--font-mono);">&#10007; Unverified</span>
+            {% endif %}
+        </div>
+    </div>
 
-    /* Status card */
-    .wd-status-card {
-        padding: 1.25rem;
-        border: 1px solid var(--border);
-        background: var(--surface);
-        margin-bottom: 2rem;
-    }
-    .wd-status-text {
-        font-size: 0.9rem;
-        line-height: 1.6;
-        color: var(--fg);
-    }
-    .wd-status-text.verified-text { color: #5a9a6b; }
-    .wd-status-text.warning-text { color: #8a7040; }
-    .wd-status-actions { margin-top: 1rem; text-align: right; }
+    {# ── Description ── #}
+    {% if website.description %}
+    <div style="color: var(--fg); font-size: 0.95rem; line-height: 1.65; margin-bottom: 2rem; padding: 1rem 1.25rem; background: var(--surface); border: 1px solid var(--border);">{{ website.description }}</div>
+    {% endif %}
 
-    /* Buttons */
-    .wd-btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.4rem;
-        padding: 0.5rem 1.25rem;
-        font-family: var(--font-mono);
-        font-size: 0.85rem;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.15s ease;
-        border: 1px solid transparent;
-        text-decoration: none;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-    }
-    .wd-btn-primary {
-        background: var(--fg);
-        color: var(--bg);
-        border-color: var(--fg);
-    }
-    .wd-btn-primary:hover {
-        background: var(--accent-dim);
-        border-color: var(--accent-dim);
-    }
-    .wd-btn-outline {
-        background: transparent;
-        color: var(--fg);
-        border-color: var(--fg);
-    }
-    .wd-btn-outline:hover {
-        background: rgba(26, 26, 26, 0.05);
-    }
-    .wd-btn-warning-outline {
-        background: transparent;
-        color: #8a7040;
-        border-color: var(--warning);
-    }
-    .wd-btn-warning-outline:hover {
-        background: rgba(201, 185, 154, 0.1);
-    }
-
-    /* Expandable sections */
-    .wd-expandable {
-        display: none;
-        margin-top: 1.25rem;
-        padding-top: 1.25rem;
-        border-top: 1px solid var(--border);
-    }
-    .wd-expandable.open { display: block; }
-    .wd-status-feedback {
-        margin-top: 0.75rem;
-        font-size: 0.85rem;
-        color: var(--fg-muted);
-    }
-
-    /* Entry point */
-    .wd-entry-point {
-        padding: 1rem 1.25rem;
-        background: var(--surface);
-        border: 1px solid var(--border);
-        margin-bottom: 2rem;
-        font-size: 0.9rem;
-    }
-    .wd-entry-point-label {
-        color: var(--fg-muted);
-        font-size: 0.8rem;
-        text-transform: uppercase;
-        letter-spacing: 0.1em;
-        margin-bottom: 0.35rem;
-        font-weight: 600;
-        font-family: var(--font-mono);
-    }
-    .wd-entry-point a { color: var(--link); text-decoration: none; }
-    .wd-entry-point a:hover { opacity: 0.5; }
-    .wd-entry-point .none-text { color: var(--fg-muted); }
-
-    /* Criteria */
-    .wd-criteria-section { margin-bottom: 2.5rem; }
-    .wd-criteria-section > h2 {
-        font-size: 1.2rem;
-        font-weight: 700;
-        margin-bottom: 1.5rem;
-    }
-    .wd-criteria-level {
-        margin-bottom: 1.5rem;
-    }
-    .wd-criteria-level-header {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-        margin-bottom: 0.75rem;
-    }
-    .wd-criteria-level-header .sf-badge {
-        font-size: 0.75rem;
-        padding: 0.15rem 0.6rem;
-    }
-    .wd-criteria-level-header h3 {
-        font-size: 0.95rem;
-        font-weight: 600;
-        color: var(--fg);
-    }
-    .wd-criteria-list {
-        display: flex;
-        flex-direction: column;
-        gap: 0.35rem;
-    }
-    .wd-criterion {
-        display: flex;
-        align-items: center;
-        gap: 0.65rem;
-        padding: 0.5rem 0.75rem;
-        font-size: 0.88rem;
-        transition: background 0.12s ease;
-    }
-    .wd-criterion:hover { background: var(--surface-hover); }
-    .wd-criterion-check {
-        width: 20px;
-        height: 20px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 0.75rem;
-        font-weight: 700;
-        flex-shrink: 0;
-    }
-    .wd-criterion-check.pass {
-        color: #5a9a6b;
-    }
-    .wd-criterion-check.fail {
-        color: #b85c5c;
-    }
-    .wd-criterion-label { color: var(--fg); }
-
-    /* Reports */
-    .wd-reports {
-        border: 1px solid var(--border);
-        margin-bottom: 2rem;
-        overflow: hidden;
-    }
-    .wd-reports summary {
-        padding: 1rem 1.25rem;
-        cursor: pointer;
-        color: var(--fg);
-        font-weight: 600;
-        font-size: 0.9rem;
-        font-family: var(--font-mono);
-        background: var(--surface);
-        list-style: none;
-    }
-    .wd-reports summary::-webkit-details-marker { display: none; }
-    .wd-reports summary::before { content: ''; }
-    .wd-reports-body { padding: 0 1.25rem 1.25rem; }
-    .wd-report-selector {
-        width: 100%;
-        padding: 0.5rem 0.75rem;
-        background: var(--bg);
-        color: var(--fg);
-        border: 1px solid var(--border);
-        font-family: var(--font-mono);
-        font-size: 0.85rem;
-        margin-bottom: 1rem;
-    }
-    .wd-report-content {
-        white-space: pre-wrap;
-        word-wrap: break-word;
-        color: var(--fg);
-        font-size: 0.88rem;
-        line-height: 1.6;
-        font-family: var(--font-mono);
-    }
-    .wd-report-meta {
-        color: var(--fg-muted);
-        font-size: 0.8rem;
-        margin-top: 0.75rem;
-    }
-
-    /* Pending items */
-    .wd-pending-card {
-        padding: 1rem 1.25rem;
-        border: 1px solid var(--border);
-        background: var(--surface);
-        margin-bottom: 1rem;
-        font-size: 0.88rem;
-        line-height: 1.6;
-    }
-    .wd-pending-card + .wd-pending-card { margin-top: 0.5rem; }
-    .wd-pending-label {
-        font-size: 0.75rem;
-        text-transform: uppercase;
-        letter-spacing: 0.1em;
-        font-weight: 700;
-        margin-bottom: 0.35rem;
-        font-family: var(--font-mono);
-    }
-    .wd-pending-label.processing { color: #8a7040; }
-    .wd-pending-label.pending { color: #5a9a6b; }
-    .wd-pending-detail { color: var(--fg-muted); font-size: 0.85rem; }
-
-    /* Embed section */
-    .wd-embed-section { margin-bottom: 2rem; }
-    .wd-embed-section h2 {
-        font-size: 1.2rem;
-        font-weight: 700;
-        margin-bottom: 1rem;
-    }
-    .wd-embed-block {
-        margin-bottom: 1rem;
-    }
-    .wd-embed-label {
-        font-size: 0.8rem;
-        color: var(--fg-muted);
-        text-transform: uppercase;
-        letter-spacing: 0.1em;
-        font-weight: 600;
-        margin-bottom: 0.4rem;
-        font-family: var(--font-mono);
-    }
-    .wd-code-block {
-        background: var(--terminal-bg);
-        border: 1px solid var(--border);
-        padding: 0.85rem 1rem;
-        font-family: var(--font-mono);
-        font-size: 0.82rem;
-        color: var(--terminal-fg);
-        overflow-x: auto;
-        white-space: pre;
-        line-height: 1.5;
-    }
-
-    @media (max-width: 600px) {
-        .wd-header { gap: 1rem; }
-        .wd-level-badge { width: 52px; height: 52px; font-size: 1.25rem; }
-        .wd-header-info h1 { font-size: 1.3rem; }
-    }
-</style>
-
-<section class="wd-page">
-
-    {# ── Success alerts ── #}
+    {# ── Alerts (owner only) ── #}
     {% if is_owner and just_submitted %}
-    <div class="wd-alert wd-alert-success">
+    <div style="padding: 1rem 1.25rem; border: 1px solid rgba(90, 154, 107, 0.3); margin-bottom: 1.5rem; font-size: 0.9rem; font-weight: 500; background: rgba(90, 154, 107, 0.08); color: #5a9a6b;">
         Website submitted successfully! It will show up in search once indexed.
     </div>
     {% endif %}
 
     {% if is_owner and payment_success %}
-    <div class="wd-alert wd-alert-success">
+    <div style="padding: 1rem 1.25rem; border: 1px solid rgba(90, 154, 107, 0.3); margin-bottom: 1.5rem; font-size: 0.9rem; font-weight: 500; background: rgba(90, 154, 107, 0.08); color: #5a9a6b;">
         Payment received. A verified silicon will evaluate your website soon.
     </div>
     {% endif %}
 
-    {# ── Pending payment status ── #}
+    {# ── Pending payment ── #}
     {% if is_owner and pending_payment %}
-    <div class="wd-pending-card">
-        <div class="wd-pending-label processing">Payment Processing</div>
-        <div class="wd-pending-detail">
+    <div style="padding: 1rem 1.25rem; border: 1px solid var(--border); background: var(--surface); margin-bottom: 1rem; font-size: 0.88rem; line-height: 1.6;">
+        <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; margin-bottom: 0.35rem; font-family: var(--font-mono); color: #8a7040;">Payment Processing</div>
+        <div style="color: var(--fg-muted); font-size: 0.85rem;">
             {% if pending_payment.payment_method == "crypto" %}Method: Crypto ({{ pending_payment.chain }}){% else %}Method: Card / UPI{% endif %}<br>
-            Submitted: {{ pending_payment.created_at|timesince }} ago<br>
-            {% if pending_payment.payment_method == "crypto" %}Status: Verifying on-chain{% else %}Status: Waiting for confirmation{% endif %}
+            Submitted: {{ pending_payment.created_at|timesince }} ago
         </div>
     </div>
     {% endif %}
@@ -407,9 +104,9 @@
     {# ── Pending verification requests ── #}
     {% if is_owner and pending_vrs %}
     {% for vr in pending_vrs %}
-    <div class="wd-pending-card">
-        <div class="wd-pending-label pending">Verification Request #{{ vr.id }} - Pending</div>
-        <div class="wd-pending-detail">
+    <div style="padding: 1rem 1.25rem; border: 1px solid var(--border); background: var(--surface); margin-bottom: 1rem; font-size: 0.88rem; line-height: 1.6;">
+        <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; margin-bottom: 0.35rem; font-family: var(--font-mono); color: #5a9a6b;">Verification Request #{{ vr.id }} - Pending</div>
+        <div style="color: var(--fg-muted); font-size: 0.85rem;">
             Requested: {{ vr.created_at|date:"M d, Y" }} at {{ vr.created_at|date:"g:i A" }}<br>
             Status: Waiting for a trusted silicon
         </div>
@@ -419,11 +116,11 @@
 
     {# ── Served reports ── #}
     {% if is_owner and served_vrs %}
-    <details class="wd-reports">
-        <summary>Verified Report{% if served_vrs|length > 1 %}s ({{ served_vrs|length }}){% endif %}</summary>
-        <div class="wd-reports-body">
+    <details style="border: 1px solid var(--border); margin-bottom: 2rem; overflow: hidden;">
+        <summary style="padding: 1rem 1.25rem; cursor: pointer; color: var(--fg); font-weight: 600; font-size: 0.9rem; font-family: var(--font-mono); background: var(--surface); list-style: none;">Verified Report{% if served_vrs|length > 1 %}s ({{ served_vrs|length }}){% endif %}</summary>
+        <div style="padding: 0 1.25rem 1.25rem;">
             {% if served_vrs|length > 1 %}
-            <select id="report-selector" onchange="switchReport(this.value)" class="wd-report-selector">
+            <select id="report-selector" onchange="switchReport(this.value)" style="width: 100%; padding: 0.5rem 0.75rem; background: var(--bg); color: var(--fg); border: 1px solid var(--border); font-family: var(--font-mono); font-size: 0.85rem; margin-bottom: 1rem;">
                 {% for vr in served_vrs %}
                 <option value="report-{{ vr.id }}">Report #{{ vr.id }} - {{ vr.served_at|date:"M d, Y" }} at {{ vr.served_at|date:"g:i A" }}</option>
                 {% endfor %}
@@ -432,138 +129,89 @@
 
             {% for vr in served_vrs %}
             <div id="report-{{ vr.id }}" class="vr-report" style="{% if not forloop.first %}display: none;{% endif %}">
-                <div class="wd-report-meta">Report #{{ vr.id }} | {{ vr.served_at|date:"M d, Y" }} at {{ vr.served_at|date:"g:i A" }}</div>
-                <div class="wd-report-content">{{ vr.detailed_report }}</div>
-                <div class="wd-report-meta">Verified by a trusted silicon{% if vr.level_at_verification %} | {{ vr.level_at_verification }}{% endif %}</div>
+                <div style="color: var(--fg-muted); font-size: 0.8rem; margin-top: 0.75rem;">Report #{{ vr.id }} | {{ vr.served_at|date:"M d, Y" }} at {{ vr.served_at|date:"g:i A" }}</div>
+                <div style="white-space: pre-wrap; word-wrap: break-word; color: var(--fg); font-size: 0.88rem; line-height: 1.6; font-family: var(--font-mono);">{{ vr.detailed_report }}</div>
+                <div style="color: var(--fg-muted); font-size: 0.8rem; margin-top: 0.75rem;">Verified by a trusted silicon{% if vr.level_at_verification %} | {{ vr.level_at_verification }}{% endif %}</div>
             </div>
             {% endfor %}
         </div>
     </details>
     {% endif %}
 
-    {# ── Header ── #}
-    <div class="wd-header">
-        <span class="wd-level-badge level-{{ website.level }}-bg">L{{ website.level }}</span>
-        <div class="wd-header-info">
-            <h1>{{ website.name }}</h1>
-            <div class="wd-domain"><a href="https://{{ website.url }}" target="_blank" rel="noopener">{{ website.url }}</a></div>
-            {% if website.submitted_by_carbon %}
-            <div class="wd-submitted-by">Submitted by <a href="/c/{{ website.submitted_by_carbon.username }}/">@{{ website.submitted_by_carbon.username }}</a> (carbon)</div>
-            {% elif website.submitted_by_silicon %}
-            <div class="wd-submitted-by">Submitted by <a href="/s/{{ website.submitted_by_silicon.username }}/">@{{ website.submitted_by_silicon.username }}</a> (silicon)</div>
+    {# ── Verification status (owner actions) ── #}
+    {% if is_owner %}
+    <div style="padding: 1.25rem; border: 1px solid var(--border); background: var(--surface); margin-bottom: 2rem;">
+        {% if pending_vrs and not is_verified %}
+            <div style="font-size: 0.9rem; color: #5a9a6b;">Verification requested. A trusted silicon will evaluate your website soon.</div>
+        {% elif is_verified %}
+            <div style="font-size: 0.9rem; color: #5a9a6b;">Verified.{% if remaining_requests > 0 %} Changed something?{% endif %}</div>
+            {% if active_payment and remaining_requests > 0 %}
+                <div style="margin-top: 1rem; text-align: right;">
+                    <button class="btn" onclick="toggleSection('reverify-section')" style="font-size: 0.85rem; padding: 0.5rem 1.25rem;">
+                        Reverify ({{ remaining_requests }} of {{ active_payment.max_verification_requests }} remaining)
+                    </button>
+                </div>
+                <div id="reverify-section" style="display: none; margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px solid var(--border);">
+                    <div style="font-size: 0.9rem;">Requesting reverification for {{ website.url }}...</div>
+                    {% csrf_token %}
+                    <button class="btn btn-primary" onclick="requestReverification()" style="margin-top: 0.75rem;">Confirm Reverify</button>
+                    <div id="reverify-status" style="margin-top: 0.75rem; font-size: 0.85rem; color: var(--fg-muted);"></div>
+                </div>
+            {% elif not active_payment or remaining_requests <= 0 %}
+                <div style="margin-top: 1rem; text-align: right;">
+                    <button class="btn" onclick="toggleSection('buy-verification-section')" style="font-size: 0.85rem; padding: 0.5rem 1.25rem;">Get Reverified</button>
+                </div>
+                <div id="buy-verification-section" style="display: none; margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px solid var(--border);">
+                    {% include "website_detail_payment_block.html" %}
+                </div>
             {% endif %}
-            {% if website.verified %}
-            <span class="wd-badge-verified">&#10003; Verified</span>
-            {% else %}
-            <span class="wd-badge-unverified">&#10007; Unverified</span>
-            {% endif %}
-        </div>
+        {% else %}
+            <div style="font-size: 0.9rem; color: #8a7040;">
+                Unverified. Not listed in search until verified.<br>
+                {{ verification_count }} / 12 silicon verifications completed.
+            </div>
+            <div style="margin-top: 1rem; text-align: right;">
+                <button class="btn" onclick="toggleSection('get-verified-section')" style="font-size: 0.85rem; padding: 0.5rem 1.25rem;">Get Verified &amp; Listed Now</button>
+            </div>
+            <div id="get-verified-section" style="display: none; margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px solid var(--border);">
+                {% if active_payment and remaining_requests > 0 %}
+                    <div style="font-size: 0.9rem;">
+                        You have {{ remaining_requests }} verification request(s) remaining.<br>
+                        A trusted silicon will verify your website.
+                    </div>
+                    {% if pending_vrs %}
+                    <div style="font-size: 0.9rem; color: #5a9a6b; margin-top: 0.5rem;">Verification already in progress...</div>
+                    {% else %}
+                    {% csrf_token %}
+                    <button class="btn btn-primary" onclick="requestReverification()" style="margin-top: 0.75rem;">Request Verification</button>
+                    <div id="reverify-status" style="margin-top: 0.75rem; font-size: 0.85rem; color: var(--fg-muted);"></div>
+                    {% endif %}
+                {% else %}
+                    {% include "website_detail_payment_block.html" %}
+                {% endif %}
+            </div>
+        {% endif %}
     </div>
-
-    {# ── Description ── #}
-    {% if website.description %}
-    <div class="wd-description">{{ website.description }}</div>
     {% endif %}
 
-    {# ── Verification status card ── #}
-    <div class="wd-status-card">
-        {% if is_owner %}
-            {# ── OWNER VIEW ── #}
-            {% if pending_vrs and not is_verified %}
-                <div class="wd-status-text verified-text">Verification requested. A trusted silicon will evaluate your website soon.</div>
-            {% elif is_verified %}
-                <div class="wd-status-text verified-text">Verified.{% if remaining_requests > 0 %} Changed something?{% endif %}</div>
-                {% if active_payment and remaining_requests > 0 %}
-                    <div class="wd-status-actions">
-                        <button class="wd-btn wd-btn-outline" onclick="toggleSection('reverify-section')">
-                            Reverify ({{ remaining_requests }} of {{ active_payment.max_verification_requests }} remaining)
-                        </button>
-                    </div>
-                    <div id="reverify-section" class="wd-expandable">
-                        <div class="wd-status-text">Requesting reverification for {{ website.url }}...</div>
-                        {% csrf_token %}
-                        <button class="wd-btn wd-btn-primary" onclick="requestReverification()" style="margin-top: 0.75rem;">Confirm Reverify</button>
-                        <div id="reverify-status" class="wd-status-feedback"></div>
-                    </div>
-                {% elif not active_payment or remaining_requests <= 0 %}
-                    <div class="wd-status-actions">
-                        <button class="wd-btn wd-btn-outline" onclick="toggleSection('buy-verification-section')">Get Reverified</button>
-                    </div>
-                    <div id="buy-verification-section" class="wd-expandable">
-                        {% include "website_detail_payment_block.html" %}
-                    </div>
+    {# ── Criteria breakdown (matches checker final-summary) ── #}
+    <div class="checker-final-summary">
+        {% for level_num, level_data in criteria_by_level.items %}
+        <div class="summary-level-block">
+            <div class="section-label" style="margin-bottom: 1rem;">LEVEL {{ level_num }} /
+                {% if level_num == 1 %}BASIC ACCESSIBILITY
+                {% elif level_num == 2 %}DISCOVERABILITY
+                {% elif level_num == 3 %}STRUCTURED INTERACTION
+                {% elif level_num == 4 %}AGENT INTEGRATION
+                {% elif level_num == 5 %}AUTONOMOUS OPERATION
                 {% endif %}
-            {% else %}
-                {# UNVERIFIED STATE - owner, no pending request #}
-                <div class="wd-status-text warning-text">
-                    Unverified. Not listed in search until verified.<br>
-                    {{ verification_count }} / 12 silicon verifications completed.
-                </div>
-                <div class="wd-status-actions">
-                    <button class="wd-btn wd-btn-warning-outline" onclick="toggleSection('get-verified-section')">Get Verified &amp; Listed Now</button>
-                </div>
-                <div id="get-verified-section" class="wd-expandable">
-                    {% if active_payment and remaining_requests > 0 %}
-                        <div class="wd-status-text">
-                            You have {{ remaining_requests }} verification request(s) remaining.<br>
-                            A trusted silicon will verify your website.
-                        </div>
-                        {% if pending_vrs %}
-                        <div class="wd-status-text verified-text" style="margin-top: 0.5rem;">Verification already in progress...</div>
-                        {% else %}
-                        {% csrf_token %}
-                        <button class="wd-btn wd-btn-primary" onclick="requestReverification()" style="margin-top: 0.75rem;">Request Verification</button>
-                        <div id="reverify-status" class="wd-status-feedback"></div>
-                        {% endif %}
-                    {% else %}
-                        {% include "website_detail_payment_block.html" %}
-                    {% endif %}
-                </div>
-            {% endif %}
-        {% else %}
-            {# ── VISITOR VIEW ── #}
-            {% if is_verified %}
-                <div class="wd-status-text verified-text">Verified.</div>
-            {% else %}
-                <div class="wd-status-text warning-text">Unverified. {{ verification_count }} / 12 silicon verifications completed.</div>
-            {% endif %}
-        {% endif %}
-    </div>
-
-    {# ── Entry point ── #}
-    <div class="wd-entry-point">
-        <div class="wd-entry-point-label">SF Entry Point</div>
-        {% if website.siliconfriendly_entry_point %}
-        <a href="{{ website.siliconfriendly_entry_point }}">{{ website.siliconfriendly_entry_point }}</a>
-        {% else %}
-        <span class="none-text">None</span>
-        {% endif %}
-    </div>
-
-    {# ── Criteria breakdown ── #}
-    <div class="wd-criteria-section">
-        <h2>Criteria Breakdown</h2>
-
-        {% for level_num, criteria in criteria_by_level.items %}
-        <div class="wd-criteria-level">
-            <div class="wd-criteria-level-header">
-                <span class="sf-badge sf-badge-l{{ level_num }}">L{{ level_num }}</span>
-                <h3>
-                    {% if level_num == 1 %}Basic Accessibility
-                    {% elif level_num == 2 %}Discoverability
-                    {% elif level_num == 3 %}Structured Interaction
-                    {% elif level_num == 4 %}Agent Integration
-                    {% elif level_num == 5 %}Autonomous Operation
-                    {% endif %}
-                </h3>
+                — {{ level_data.passed }}/{{ level_data.total }}
             </div>
-            <div class="wd-criteria-list">
-                {% for c in criteria %}
-                <div class="wd-criterion">
-                    <span class="wd-criterion-check {% if c.value %}pass{% else %}fail{% endif %}">
-                        {% if c.value %}&#10003;{% else %}&#10007;{% endif %}
-                    </span>
-                    <span class="wd-criterion-label">{{ c.label }}</span>
+            <div class="checker-criteria-grid">
+                {% for c in level_data.criteria %}
+                <div class="criteria-row visible {% if c.value %}pass{% else %}fail{% endif %}">
+                    <span class="criteria-row-label">{{ c.label }}</span>
+                    <span class="criteria-row-status">{% if c.value %}PASS{% else %}FAIL{% endif %}</span>
                 </div>
                 {% endfor %}
             </div>
@@ -571,28 +219,22 @@
         {% endfor %}
     </div>
 
-    {# ── Embed badge ── #}
-    <div class="wd-embed-section">
-        <h2>Embed Badge</h2>
-        <div class="wd-embed-block">
-            <div class="wd-embed-label">JavaScript</div>
-            <div class="wd-code-block">&lt;script src="https://siliconfriendly.com/badge/{{ website.url }}.js"&gt;&lt;/script&gt;</div>
-        </div>
-        <div class="wd-embed-block">
-            <div class="wd-embed-label">SVG Image</div>
-            <div class="wd-code-block">&lt;img src="https://siliconfriendly.com/badge/{{ website.url }}.svg" alt="Silicon Friendly"&gt;</div>
-        </div>
+    {# ── Entry point ── #}
+    <div style="padding: 1rem 1.25rem; background: var(--surface); border: 1px solid var(--border); margin: 2rem 0; font-size: 0.9rem;">
+        <div style="color: var(--fg-muted); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.35rem; font-weight: 600; font-family: var(--font-mono);">SF Entry Point</div>
+        {% if website.siliconfriendly_entry_point %}
+        <a href="{{ website.siliconfriendly_entry_point }}" style="color: var(--link); text-decoration: none;">{{ website.siliconfriendly_entry_point }}</a>
+        {% else %}
+        <span style="color: var(--fg-muted);">None</span>
+        {% endif %}
     </div>
-
-</section>
+</div>
 
 {% if is_owner %}
 <script>
 function toggleSection(id) {
     var el = document.getElementById(id);
-    if (el) {
-        el.classList.toggle('open');
-    }
+    if (el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
 }
 
 function requestReverification() {

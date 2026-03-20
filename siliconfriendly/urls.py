@@ -1624,10 +1624,16 @@ def website_detail_view(request, domain):
     from websites.views import CRITERIA_DOCS
     for level_num in range(1, 6):
         fields = LEVEL_RANGES[level_num]
-        criteria_by_level[level_num] = [
+        criteria = [
             {"field": f, "label": CRITERIA_DOCS.get(f, f), "value": getattr(website, f)}
             for f in fields
         ]
+        passed = sum(1 for c in criteria if c["value"])
+        criteria_by_level[level_num] = {
+            "criteria": criteria,
+            "passed": passed,
+            "total": len(criteria),
+        }
 
     just_submitted = request.GET.get("submitted") == "1"
 
