@@ -1617,7 +1617,7 @@ def website_detail_view(request, domain):
 
     carbon_id = request.session.get("carbon_id")
     is_owner = False
-    if carbon_id and website.submitted_by_carbon_id == carbon_id and website.is_my_website:
+    if carbon_id and website.submitted_by_carbon_id == carbon_id:
         is_owner = True
 
     criteria_by_level = {}

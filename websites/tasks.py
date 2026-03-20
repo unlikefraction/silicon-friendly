@@ -612,6 +612,7 @@ def run_website_check(check_job_id):
         website = job.website
         for field, value in all_results.items():
             setattr(website, field, value)
+        website.verified = True
         website.save()
 
         job.status = "done"
