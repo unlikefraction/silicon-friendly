@@ -112,17 +112,21 @@ function pollStatus() {
         if (stepEl) stepEl.textContent = stepText;
 
         // Queue position
-        if (data.status === 'queued' && data.queue_position) {
-            document.getElementById('queue-status').style.display = 'block';
-            document.getElementById('queue-position').textContent = data.queue_position;
-        } else {
-            document.getElementById('queue-status').style.display = 'none';
+        var queueEl = document.getElementById('queue-status');
+        var queuePosEl = document.getElementById('queue-position');
+        if (data.status === 'queued' && data.queue_position && queueEl) {
+            queueEl.style.display = 'block';
+            if (queuePosEl) queuePosEl.textContent = data.queue_position;
+        } else if (queueEl) {
+            queueEl.style.display = 'none';
         }
 
         // Show level results section once we have data beyond intro
         if (data.status !== 'queued' && data.status !== 'fetching' && data.status !== 'step_0') {
-            document.getElementById('checker-intro').style.display = 'none';
-            document.getElementById('level-results').style.display = 'block';
+            var intro = document.getElementById('checker-intro');
+            var results = document.getElementById('level-results');
+            if (intro) intro.style.display = 'none';
+            if (results) results.style.display = 'block';
         }
 
         // Render completed levels
