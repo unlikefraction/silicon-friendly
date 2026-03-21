@@ -493,10 +493,10 @@ li {{
 }}
 .competitor-self {{
     background: #1a1a1a;
-    padding: 14px 16px;
-    margin: 2px -16px;
+    padding: 16px 18px;
+    margin: 4px 0;
     border-bottom: none;
-    display: block;
+    overflow: visible;
 }}
 .competitor-self .competitor-name {{
     color: #ede8e0;
