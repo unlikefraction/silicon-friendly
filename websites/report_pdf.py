@@ -497,8 +497,17 @@ li {{
     padding: 16px 18px;
     margin: 4px 0;
     border-bottom: none;
-    overflow: visible;
-    page-break-inside: auto;
+    page-break-before: auto;
+    page-break-inside: avoid;
+}}
+.competitor-self-desc {{
+    color: #bbb;
+    font-size: 11px;
+    margin-top: 4px;
+    line-height: 1.6;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    white-space: normal;
 }}
 .competitor-self .competitor-name {{
     color: #ede8e0;
@@ -741,7 +750,7 @@ def _render_competitor(c, index):
         <span class="competitor-name" style="color: #ede8e0;">{index + 1}. {html.escape(c['name'])} <span class="you-tag">YOU</span></span>
     </div>
     <div class="competitor-url" style="color: #999;">{html.escape(c['url'])}</div>
-    <div style="color: #bbb; font-size: 11px; margin-top: 4px; line-height: 1.5;">{html.escape(c['description'])}</div>
+    <div class="competitor-self-desc">{html.escape(c['description'])}</div>
 </div>"""
     return f"""<div class="competitor-row">
     <div>
