@@ -471,6 +471,7 @@ li {{
     align-items: center;
     padding: 12px 0;
     border-bottom: 1px solid #d4cfc7;
+    page-break-inside: avoid;
 }}
 .competitor-row:last-child {{ border-bottom: none; }}
 .competitor-name {{
@@ -497,6 +498,7 @@ li {{
     margin: 4px 0;
     border-bottom: none;
     overflow: visible;
+    page-break-inside: auto;
 }}
 .competitor-self .competitor-name {{
     color: #ede8e0;
