@@ -54,7 +54,7 @@
 {# ── Reports dropdown (owner only) ── #}
 {% if is_owner and check_reports %}
 <div class="section checker-final-section" style="padding-bottom: 2rem;">
-    <details style="border: 1px solid var(--border); overflow: hidden;">
+    <details style="border: 1px solid var(--border); border-bottom: none; overflow: hidden;">
         <summary style="padding: 1rem 1.25rem; cursor: pointer; font-family: var(--font-mono); font-size: 0.85rem; font-weight: 600; background: var(--surface); list-style: none; color: var(--fg); letter-spacing: 0.05em; text-transform: uppercase; display: flex; align-items: center; justify-content: space-between;">
             <span>Reports ({{ check_reports|length }})</span>
             <span style="font-size: 0.75rem; color: var(--fg-muted); font-weight: 400; text-transform: none;">click to expand</span>
