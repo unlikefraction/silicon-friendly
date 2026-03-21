@@ -1639,7 +1639,6 @@ main {
 /* === CHECKER FINAL === */
 .checker-final-section {
     padding: 4rem clamp(2rem, 8vw, 10rem);
-    border-top: 1px solid var(--border);
 }
 
 .final-terminal {
