@@ -5,7 +5,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Silicon Friendly{% endblock %}</title>
-    <link rel="icon" type="image/svg+xml" href="{% static 'favicon.svg' %}">
+    <link rel="icon" type="image/svg+xml" href="{% static 'sf-new-logo-light.svg' %}" media="(prefers-color-scheme: light)">
+    <link rel="icon" type="image/svg+xml" href="{% static 'sf-new-logo-dark.svg' %}" media="(prefers-color-scheme: dark)">
+    <link rel="icon" type="image/svg+xml" href="{% static 'sf-new-logo-light.svg' %}">
     <meta name="description" content="{% block meta_description %}Directory for rating websites on AI-agent friendliness. L1-L5 rating system.{% endblock %}">
     <meta property="og:title" content="{% block og_title %}Silicon Friendly{% endblock %}">
     <meta property="og:description" content="Rate websites on how AI-agent-friendly they are">
@@ -160,10 +162,9 @@
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
             </button>
             <div class="nav-right">
-                <a href="/#check">check</a>
-                <a href="/search/">directory</a>
+                <a href="/#check">get score</a>
+                <a href="/search/">search</a>
                 <a href="/badges/">badges</a>
-                <a href="/submit/">submit</a>
                 {% if logged_in_carbon %}
                 <a href="/c/{{ logged_in_carbon.username }}/" class="nav-user">{{ logged_in_carbon.username }}</a>
                 <a href="/logout/">logout</a>
