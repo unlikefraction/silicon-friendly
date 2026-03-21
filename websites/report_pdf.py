@@ -25,7 +25,7 @@ def _get_competitors(website, limit=9):
             "name": w.name,
             "url": w.url,
             "level": w.level,
-            "description": (w.description or "")[:120],
+            "description": (w.description or ""),
             "is_self": False,
         })
     return competitors
@@ -48,86 +48,95 @@ def _build_ranked_list(website, competitors):
 
 
 def _md_to_html(md_text):
-    """Convert markdown to HTML. Handles headers, bold, italic, code, lists, hr."""
+    """Convert markdown to HTML. Handles headers, bold, italic, code fences, lists, hr."""
     lines = md_text.split('\n')
     html_lines = []
     in_list = False
+    list_type = None
+    in_code_block = False
+    code_lang = ""
+    code_lines = []
 
     for line in lines:
         stripped = line.strip()
 
+        # Code fence toggle
+        if stripped.startswith('```'):
+            if not in_code_block:
+                if in_list:
+                    html_lines.append(f'</{list_type}>')
+                    in_list = False
+                in_code_block = True
+                code_lang = stripped[3:].strip()
+                code_lines = []
+                continue
+            else:
+                lang_label = f'<div class="code-lang">{html.escape(code_lang)}</div>' if code_lang else ''
+                html_lines.append(f'{lang_label}<pre class="code-fence"><code>{html.escape(chr(10).join(code_lines))}</code></pre>')
+                in_code_block = False
+                code_lang = ""
+                code_lines = []
+                continue
+
+        if in_code_block:
+            code_lines.append(line)
+            continue
+
         # Horizontal rule
         if stripped in ('---', '***', '___'):
             if in_list:
-                html_lines.append('</ul>')
+                html_lines.append(f'</{list_type}>')
                 in_list = False
             html_lines.append('<hr>')
             continue
 
         # Headers
-        if stripped.startswith('##### '):
-            if in_list:
-                html_lines.append('</ul>')
-                in_list = False
-            html_lines.append(f'<h5>{_inline_md(stripped[6:])}</h5>')
-            continue
-        if stripped.startswith('#### '):
-            if in_list:
-                html_lines.append('</ul>')
-                in_list = False
-            html_lines.append(f'<h4>{_inline_md(stripped[5:])}</h4>')
-            continue
-        if stripped.startswith('### '):
-            if in_list:
-                html_lines.append('</ul>')
-                in_list = False
-            html_lines.append(f'<h3>{_inline_md(stripped[4:])}</h3>')
-            continue
-        if stripped.startswith('## '):
-            if in_list:
-                html_lines.append('</ul>')
-                in_list = False
-            html_lines.append(f'<h2>{_inline_md(stripped[3:])}</h2>')
-            continue
-        if stripped.startswith('# '):
-            if in_list:
-                html_lines.append('</ul>')
-                in_list = False
-            html_lines.append(f'<h1>{_inline_md(stripped[2:])}</h1>')
-            continue
+        for h_level in range(5, 0, -1):
+            prefix = '#' * h_level + ' '
+            if stripped.startswith(prefix):
+                if in_list:
+                    html_lines.append(f'</{list_type}>')
+                    in_list = False
+                html_lines.append(f'<h{h_level}>{_inline_md(stripped[h_level + 1:])}</h{h_level}>')
+                break
+        else:
+            # List items
+            if stripped.startswith('- ') or stripped.startswith('* '):
+                if not in_list:
+                    html_lines.append('<ul>')
+                    in_list = True
+                    list_type = 'ul'
+                html_lines.append(f'<li>{_inline_md(stripped[2:])}</li>')
+                continue
 
-        # List items
-        if stripped.startswith('- ') or stripped.startswith('* '):
-            if not in_list:
-                html_lines.append('<ul>')
-                in_list = True
-            html_lines.append(f'<li>{_inline_md(stripped[2:])}</li>')
-            continue
+            # Numbered list
+            num_match = re.match(r'^(\d+)\.\s+(.+)', stripped)
+            if num_match:
+                if not in_list:
+                    html_lines.append('<ol>')
+                    in_list = True
+                    list_type = 'ol'
+                html_lines.append(f'<li>{_inline_md(num_match.group(2))}</li>')
+                continue
 
-        # Numbered list
-        num_match = re.match(r'^(\d+)\.\s+(.+)', stripped)
-        if num_match:
-            if not in_list:
-                html_lines.append('<ol>')
-                in_list = True
-            html_lines.append(f'<li>{_inline_md(num_match.group(2))}</li>')
-            continue
+            # Close list if needed
+            if in_list and not stripped:
+                html_lines.append(f'</{list_type}>')
+                in_list = False
 
-        # Close list if needed
-        if in_list and not stripped:
-            html_lines.append('</ul>' if html_lines[-1] != '<ol>' else '</ol>')
-            in_list = False
+            # Empty line
+            if not stripped:
+                html_lines.append('<br>')
+                continue
 
-        # Empty line = paragraph break
-        if not stripped:
-            html_lines.append('<br>')
-            continue
-
-        # Regular paragraph
-        html_lines.append(f'<p>{_inline_md(stripped)}</p>')
+            # Regular paragraph
+            html_lines.append(f'<p>{_inline_md(stripped)}</p>')
 
     if in_list:
-        html_lines.append('</ul>')
+        html_lines.append(f'</{list_type}>')
+    if in_code_block:
+        lang_label = f'<div class="code-lang">{html.escape(code_lang)}</div>' if code_lang else ''
+        html_lines.append(f'{lang_label}<pre class="code-fence"><code>{html.escape(chr(10).join(code_lines))}</code></pre>')
 
     return '\n'.join(html_lines)
 
@@ -264,10 +273,7 @@ def generate_report_html(job):
         color: #999;
     }}
     @bottom-right {{
-        content: "siliconfriendly.com  ·  unlikefraction.com";
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 9px;
-        color: #999;
+        content: element(running-footer);
     }}
 }}
 * {{ margin: 0; padding: 0; box-sizing: border-box; }}
@@ -523,12 +529,53 @@ li {{
 
 /* CTA */
 .cta-box {{
+    border: 1.5px solid #d4cfc7;
+    padding: 20px 24px;
+    margin: 28px 0;
+    font-size: 12px;
+    line-height: 1.7;
+    color: #666;
+}}
+
+/* Running footer with clickable links */
+.running-footer {{
+    position: running(running-footer);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+}}
+.running-footer a {{
+    color: #999;
+    text-decoration: none;
+}}
+
+/* Code fence (```language blocks) */
+.code-fence {{
     background: #1a1a1a;
     color: #ede8e0;
-    padding: 24px 28px;
-    margin: 28px 0;
-    font-size: 13px;
-    line-height: 1.7;
+    padding: 16px 20px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10.5px;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    margin: 12px 0 16px 0;
+    overflow-x: auto;
+}}
+.code-fence code {{
+    background: none;
+    border: none;
+    padding: 0;
+    font-size: inherit;
+    color: inherit;
+}}
+.code-lang {{
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: #999;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-top: 12px;
+    margin-bottom: -8px;
 }}
 
 /* Code block */
@@ -580,6 +627,10 @@ li {{
 </style>
 </head>
 <body>
+
+<div class="running-footer">
+    <a href="https://siliconfriendly.com">siliconfriendly.com</a> &middot; <a href="https://unlikefraction.com">unlikefraction.com</a>
+</div>
 
 <!-- COVER -->
 <div class="cover">
