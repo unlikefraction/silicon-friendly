@@ -497,23 +497,75 @@ Respond with raw Markdown only (no JSON wrapping, no outer code fences)."""
 
 
 def _send_check_report_email(job):
-    """Email the report to the carbon."""
+    """Email a brief overview + PDF attachment to the carbon."""
     if not job.carbon or not job.carbon.email:
         return
+    import base64
     from common.mail import send_email
-    report = job.report_md or "Report generation failed."
-    html_body = f"""<div style="font-family: 'Courier New', Consolas, monospace; max-width: 700px; margin: 0 auto; padding: 2rem; background: #1a1a1a; color: #ede8e0;">
-<h1 style="font-size: 1.5rem; margin-bottom: 0.5rem;">Silicon Friendly Report</h1>
-<p style="color: #999; margin-bottom: 2rem;">{job.domain} — Level {job.overall_level}</p>
-<pre style="white-space: pre-wrap; word-wrap: break-word; line-height: 1.7; font-size: 14px;">{report}</pre>
-<hr style="border: none; border-top: 1px solid #333; margin: 2rem 0;">
-<p style="color: #666; font-size: 12px;">View full results: <a href="https://siliconfriendly.com/w/{job.domain}/" style="color: #c9b99a;">siliconfriendly.com/w/{job.domain}/</a></p>
+    from websites.report_pdf import generate_pdf, _get_competitors, _build_ranked_list
+
+    # Get competitor rank
+    website = job.website
+    competitors = _get_competitors(website) if website else []
+    ranked_list, rank = _build_ranked_list(website, competitors) if website and competitors else ([], 1)
+    total = len(ranked_list) if ranked_list else 1
+
+    name = job.website_name or job.domain
+    level = job.overall_level
+    domain = job.domain
+
+    subject = f"SiliconFriendly Report - {name} ranks #{rank} out of {total} competitors"
+
+    page_url = f"https://siliconfriendly.com/w/{domain}/"
+    report_url = f"https://siliconfriendly.com/api/check/{domain}/report/{job.id}/"
+
+    html_body = f"""<div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 600px; margin: 0 auto; padding: 0;">
+<div style="background: #ede8e0; padding: 32px; text-align: center;">
+    <div style="font-family: 'Courier New', monospace; font-size: 48px; font-weight: 700; color: #1a1a1a;">L{level}</div>
+    <div style="font-size: 24px; font-weight: 800; color: #1a1a1a; margin-top: 8px;">{domain}</div>
+</div>
+
+<div style="padding: 28px 32px;">
+    <p style="font-size: 15px; color: #1a1a1a; line-height: 1.6; margin: 0 0 16px 0;">
+        <strong>{name}</strong> achieved <strong>Level {level}</strong> in its Silicon Friendly evaluation, ranking <strong>#{rank} out of {total}</strong> similar websites.
+    </p>
+
+    <p style="font-size: 14px; color: #666; line-height: 1.6; margin: 0 0 24px 0;">
+        The full report is attached as a PDF. It includes a level-by-level breakdown of all 30 criteria, competitor analysis, and specific recommendations for improvement.
+    </p>
+
+    <div style="margin: 24px 0;">
+        <a href="{page_url}" style="display: inline-block; background: #1a1a1a; color: #ede8e0; padding: 12px 24px; text-decoration: none; font-size: 14px; font-weight: 600;">View on SiliconFriendly</a>
+        &nbsp;&nbsp;
+        <a href="{report_url}" style="display: inline-block; border: 1px solid #1a1a1a; color: #1a1a1a; padding: 12px 24px; text-decoration: none; font-size: 14px; font-weight: 600;">Download Report</a>
+    </div>
+</div>
+
+<div style="padding: 20px 32px; border-top: 1px solid #e5e0d7; font-size: 12px; color: #999;">
+    <a href="https://siliconfriendly.com" style="color: #999; text-decoration: none;">siliconfriendly.com</a> &middot;
+    <a href="https://unlikefraction.com" style="color: #999; text-decoration: none;">unlikefraction.com</a>
+</div>
 </div>"""
+
+    # Generate PDF
+    try:
+        pdf_bytes = generate_pdf(job)
+        pdf_b64 = base64.b64encode(pdf_bytes).decode("utf-8")
+        attachments = [{
+            "Name": f"siliconfriendly-{domain}-L{level}.pdf",
+            "Content": pdf_b64,
+            "ContentType": "application/pdf",
+        }]
+    except Exception as e:
+        logger.error("Failed to generate PDF for email: %s", e)
+        attachments = None
+
     try:
         send_email(
             to_email=job.carbon.email,
-            subject=f"Silicon Friendly Report: {job.domain} is L{job.overall_level}",
+            subject=subject,
             html_body=html_body,
+            attachments=attachments,
         )
     except Exception as e:
         logger.error("Failed to send check report email: %s", e)

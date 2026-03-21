@@ -4,8 +4,11 @@ from django.conf import settings
 POSTMARK_API_URL = "https://api.postmarkapp.com/email"
 
 
-def send_email(*, to_email, subject, html_body, text_body=None):
-    """Send email via Postmark. Returns True on success, False on failure."""
+def send_email(*, to_email, subject, html_body, text_body=None, attachments=None):
+    """Send email via Postmark. Returns True on success, False on failure.
+
+    attachments: list of dicts with keys: Name, Content (base64), ContentType
+    """
     if not settings.POSTMARK_SERVER_TOKEN:
         print(f"[Email] Postmark not configured, skipping: {subject} -> {to_email}")
         return False
@@ -20,6 +23,8 @@ def send_email(*, to_email, subject, html_body, text_body=None):
     }
     if text_body:
         payload["TextBody"] = text_body
+    if attachments:
+        payload["Attachments"] = attachments
 
     headers = {
         "Accept": "application/json",
