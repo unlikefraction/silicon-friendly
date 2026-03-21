@@ -496,6 +496,7 @@ li {{
     padding: 14px 16px;
     margin: 2px -16px;
     border-bottom: none;
+    display: block;
 }}
 .competitor-self .competitor-name {{
     color: #ede8e0;
@@ -668,7 +669,7 @@ li {{
     <h1>What to do now</h1>
     <div style="margin-top: 16px;">{_level_advice(level)}</div>
     <div class="cta-box">
-        <strong>Full Disclosure:</strong> Re-verification costs $10 (one-time). You get 3 on-demand re-verifications and a detailed report with each one on how you can improve and what you're doing right.
+        Re-verification costs $10 (one-time). You get 3 on-demand re-verifications and a detailed report with each one on how you can improve and what you're doing right.
     </div>
 </div>
 
@@ -732,12 +733,13 @@ def _render_level_page(lp):
 def _render_competitor(c, index):
     is_self = c.get("is_self", False)
     if is_self:
-        return f"""<div class="competitor-row competitor-self">
-    <div>
-        <div class="competitor-name">{index + 1}. {html.escape(c['name'])} <span class="you-tag">YOU</span></div>
-        <div class="competitor-url">{html.escape(c['url'])} &mdash; {html.escape(c['description'])}</div>
+        return f"""<div class="competitor-self">
+    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+        <span class="competitor-level competitor-level-self">L{c['level']}</span>
+        <span class="competitor-name" style="color: #ede8e0;">{index + 1}. {html.escape(c['name'])} <span class="you-tag">YOU</span></span>
     </div>
-    <div class="competitor-level competitor-level-self">L{c['level']}</div>
+    <div class="competitor-url" style="color: #999;">{html.escape(c['url'])}</div>
+    <div style="color: #bbb; font-size: 11px; margin-top: 4px; line-height: 1.5;">{html.escape(c['description'])}</div>
 </div>"""
     return f"""<div class="competitor-row">
     <div>
