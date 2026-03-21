@@ -465,59 +465,33 @@ li {{
 .report-content h3 {{ font-size: 14px; margin-top: 22px; }}
 
 /* Competitors */
-.competitor-row {{
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 0;
-    border-bottom: 1px solid #d4cfc7;
+.competitor-entry {{
+    padding: 14px 16px;
+    margin-bottom: 4px;
     page-break-inside: avoid;
+    border-bottom: 1px solid #d4cfc7;
 }}
-.competitor-row:last-child {{ border-bottom: none; }}
+.competitor-entry:last-child {{ border-bottom: none; }}
+.competitor-badge {{
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 16px;
+    padding: 4px 10px;
+    flex-shrink: 0;
+}}
 .competitor-name {{
     font-weight: 700;
-    font-size: 13px;
+    font-size: 14px;
 }}
 .competitor-url {{
     font-family: 'JetBrains Mono', monospace;
     font-size: 10px;
-    color: #666;
     margin-top: 2px;
 }}
-.competitor-level {{
-    font-family: 'JetBrains Mono', monospace;
-    font-weight: 700;
-    font-size: 16px;
-    background: #1a1a1a;
-    color: #ede8e0;
-    padding: 4px 10px;
-}}
-.competitor-self {{
-    background: #1a1a1a;
-    padding: 16px 18px;
-    margin: 4px 0;
-    border-bottom: none;
-    page-break-before: auto;
-    page-break-inside: avoid;
-}}
-.competitor-self-desc {{
-    color: #bbb;
-    font-size: 11px;
+.competitor-desc {{
+    font-size: 11.5px;
     margin-top: 4px;
     line-height: 1.6;
-    word-wrap: break-word;
-    overflow-wrap: break-word;
-    white-space: normal;
-}}
-.competitor-self .competitor-name {{
-    color: #ede8e0;
-}}
-.competitor-self .competitor-url {{
-    color: #999;
-}}
-.competitor-level-self {{
-    background: #ede8e0;
-    color: #1a1a1a;
 }}
 .you-tag {{
     font-family: 'JetBrains Mono', monospace;
@@ -743,21 +717,20 @@ def _render_level_page(lp):
 
 def _render_competitor(c, index):
     is_self = c.get("is_self", False)
-    if is_self:
-        return f"""<div class="competitor-self">
-    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
-        <span class="competitor-level competitor-level-self">L{c['level']}</span>
-        <span class="competitor-name" style="color: #ede8e0;">{index + 1}. {html.escape(c['name'])} <span class="you-tag">YOU</span></span>
+    bg = "background: #1a1a1a; color: #ede8e0;" if is_self else ""
+    name_color = "color: #ede8e0;" if is_self else ""
+    url_color = "color: #999;" if is_self else "color: #666;"
+    desc_color = "color: #bbb;" if is_self else "color: #555;"
+    badge_style = "background: #ede8e0; color: #1a1a1a;" if is_self else "background: #1a1a1a; color: #ede8e0;"
+    you_tag = ' <span class="you-tag">YOU</span>' if is_self else ""
+
+    return f"""<div class="competitor-entry" style="{bg}">
+    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 6px;">
+        <span class="competitor-badge" style="{badge_style}">L{c['level']}</span>
+        <span class="competitor-name" style="{name_color}">{index + 1}. {html.escape(c['name'])}{you_tag}</span>
     </div>
-    <div class="competitor-url" style="color: #999;">{html.escape(c['url'])}</div>
-    <div class="competitor-self-desc">{html.escape(c['description'])}</div>
-</div>"""
-    return f"""<div class="competitor-row">
-    <div>
-        <div class="competitor-name">{index + 1}. {html.escape(c['name'])}</div>
-        <div class="competitor-url">{html.escape(c['url'])} &mdash; {html.escape(c['description'])}</div>
-    </div>
-    <div class="competitor-level">L{c['level']}</div>
+    <div class="competitor-url" style="{url_color}">{html.escape(c['url'])}</div>
+    <div class="competitor-desc" style="{desc_color}">{html.escape(c['description'])}</div>
 </div>"""
 
 
