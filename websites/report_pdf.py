@@ -5,8 +5,8 @@ from websites.models import LEVEL_RANGES
 from websites.tasks import CRITERIA_DOCS, LEVEL_NAMES
 
 
-def _get_competitors(website, limit=10):
-    """Find similar websites using vector search."""
+def _get_competitors(website, limit=9):
+    """Find similar websites using vector search. Returns 9 others (we add self to make 10)."""
     from websites.models import Website
     if website.embedding is None:
         return []
@@ -25,10 +25,26 @@ def _get_competitors(website, limit=10):
             "name": w.name,
             "url": w.url,
             "level": w.level,
-            "description": (w.description or "")[:150],
-            "similarity": round((1.0 - w.distance) * 100),
+            "description": (w.description or "")[:120],
+            "is_self": False,
         })
     return competitors
+
+
+def _build_ranked_list(website, competitors):
+    """Build a list of 10 (self + 9 competitors) sorted by level descending."""
+    all_sites = list(competitors)
+    all_sites.append({
+        "name": website.name,
+        "url": website.url,
+        "level": website.level,
+        "description": (website.description or "")[:120],
+        "is_self": True,
+    })
+    all_sites.sort(key=lambda x: x["level"], reverse=True)
+    # Find rank of self
+    rank = next((i + 1 for i, s in enumerate(all_sites) if s["is_self"]), len(all_sites))
+    return all_sites, rank
 
 
 def _md_to_html(md_text):
@@ -193,13 +209,11 @@ def generate_report_html(job):
     name = job.website_name or domain
 
     competitors = []
+    ranked_list = []
+    rank = 1
     if website:
         competitors = _get_competitors(website)
-
-    rank = 1
-    for c in competitors:
-        if c["level"] > level:
-            rank += 1
+        ranked_list, rank = _build_ranked_list(website, competitors)
 
     level_pages = []
     for lv in range(1, 6):
@@ -471,6 +485,33 @@ li {{
     color: #ede8e0;
     padding: 4px 10px;
 }}
+.competitor-self {{
+    background: #1a1a1a;
+    padding: 14px 16px;
+    margin: 2px -16px;
+    border-bottom: none;
+}}
+.competitor-self .competitor-name {{
+    color: #ede8e0;
+}}
+.competitor-self .competitor-url {{
+    color: #999;
+}}
+.competitor-level-self {{
+    background: #ede8e0;
+    color: #1a1a1a;
+}}
+.you-tag {{
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    font-weight: 700;
+    background: #5a9a6b;
+    color: #fff;
+    padding: 2px 6px;
+    letter-spacing: 0.1em;
+    margin-left: 8px;
+    vertical-align: middle;
+}}
 
 /* Advice */
 .key-message {{
@@ -551,23 +592,23 @@ li {{
     <div class="cover-name">{html.escape(name)}</div>
 </div>
 
-<!-- LEVEL BREAKDOWNS -->
+<!-- COMPETITOR ANALYSIS (PAGE 2) -->
+<div class="page-break">
+    <div class="section-label">COMPETITOR ANALYSIS</div>
+    <h1>How you compare</h1>
+    {f'<p style="font-size: 15px; margin-bottom: 28px; margin-top: 8px;">You rank <strong>#{rank}</strong> out of <strong>{len(ranked_list)}</strong> competitors.</p>' if ranked_list else '<p style="color: #999; margin-top: 8px;">No similar websites found for comparison yet. Check back after more sites are indexed.</p>'}
+    {''.join(_render_competitor(c, i) for i, c in enumerate(ranked_list))}
+</div>
+
+<!-- LEVEL BREAKDOWNS (PAGES 3-7) -->
 {''.join(_render_level_page(lp) for lp in level_pages)}
 
-<!-- REPORT -->
+<!-- DETAILED REPORT -->
 <div class="page-break">
     <div class="section-label">DETAILED REPORT</div>
     <h1>Report for {html.escape(domain)}</h1>
     <p style="font-family: 'JetBrains Mono', monospace; font-size: 10px; color: #999; margin-bottom: 28px;">{created}</p>
     <div class="report-content">{report_html}</div>
-</div>
-
-<!-- COMPETITOR ANALYSIS -->
-<div class="page-break">
-    <div class="section-label">COMPETITOR ANALYSIS</div>
-    <h1>How you compare</h1>
-    {f'<p style="font-size: 15px; margin-bottom: 28px; margin-top: 8px;">You rank <strong>#{rank}</strong> out of <strong>{len(competitors) + 1}</strong> similar websites.</p>' if competitors else '<p style="color: #999; margin-top: 8px;">No similar websites found for comparison yet. Check back after more sites are indexed.</p>'}
-    {''.join(_render_competitor(c, i) for i, c in enumerate(competitors))}
 </div>
 
 <!-- WHAT TO DO NOW -->
@@ -638,6 +679,15 @@ def _render_level_page(lp):
 
 
 def _render_competitor(c, index):
+    is_self = c.get("is_self", False)
+    if is_self:
+        return f"""<div class="competitor-row competitor-self">
+    <div>
+        <div class="competitor-name">{index + 1}. {html.escape(c['name'])} <span class="you-tag">YOU</span></div>
+        <div class="competitor-url">{html.escape(c['url'])} &mdash; {html.escape(c['description'])}</div>
+    </div>
+    <div class="competitor-level competitor-level-self">L{c['level']}</div>
+</div>"""
     return f"""<div class="competitor-row">
     <div>
         <div class="competitor-name">{index + 1}. {html.escape(c['name'])}</div>
