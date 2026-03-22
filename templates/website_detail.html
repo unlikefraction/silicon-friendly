@@ -33,7 +33,7 @@
         </div>
         {% if is_owner and check_reports %}
         <div style="display: flex; align-items: center; gap: 0.75rem;">
-            <span style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--fg-muted);">Report for {{ check_reports.0.created_at|date:"M d, Y · g:i A" }}</span>
+            <span class="local-time" data-utc="{{ check_reports.0.created_at|date:'c' }}" style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--fg-muted);">Report for {{ check_reports.0.created_at|date:"M d, Y · g:i A" }}</span>
             <a href="/api/check/{{ website.url }}/report/{{ check_reports.0.id }}/" style="display: inline-flex; align-items: center; gap: 0.3rem; font-family: var(--font-mono); font-size: 0.8rem; color: var(--fg); text-decoration: none; padding: 0.3rem 0.7rem; border: 1px solid var(--border);">&#8595; PDF</a>
         </div>
         {% endif %}
@@ -74,7 +74,7 @@
             <div style="padding: 1rem 1.25rem; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between;">
                 <div>
                     <div style="font-family: var(--font-mono); font-size: 0.85rem; font-weight: 600;">L{{ report.overall_level }} Check</div>
-                    <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--fg-muted);">{{ report.created_at|date:"M d, Y" }} at {{ report.created_at|date:"g:i A" }}</div>
+                    <div class="local-time" data-utc="{{ report.created_at|date:'c' }}" style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--fg-muted);">{{ report.created_at|date:"M d, Y" }} at {{ report.created_at|date:"g:i A" }}</div>
                 </div>
                 <a href="/api/check/{{ website.url }}/report/{{ report.id }}/" style="display: inline-flex; align-items: center; gap: 0.3rem; font-family: var(--font-mono); font-size: 0.75rem; color: var(--fg); text-decoration: none; padding: 0.3rem 0.6rem; border: 1px solid var(--border);" title="Download PDF">&#8595; PDF</a>
             </div>
@@ -178,4 +178,22 @@ function switchReport(reportId) {
 }
 </script>
 {% endif %}
+
+<script>
+document.querySelectorAll('.local-time').forEach(function(el) {
+    var utc = el.getAttribute('data-utc');
+    if (!utc) return;
+    var d = new Date(utc);
+    var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    var h = d.getHours(), m = d.getMinutes();
+    var ampm = h >= 12 ? 'PM' : 'AM';
+    h = h % 12 || 12;
+    var formatted = months[d.getMonth()] + ' ' + d.getDate() + ', ' + d.getFullYear() + ' · ' + h + ':' + (m < 10 ? '0' : '') + m + ' ' + ampm;
+    if (el.textContent.startsWith('Report for')) {
+        el.textContent = 'Report for ' + formatted;
+    } else {
+        el.textContent = formatted;
+    }
+});
+</script>
 {% endblock %}
