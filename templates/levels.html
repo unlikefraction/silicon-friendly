@@ -2,31 +2,47 @@
 {% block title %}Levels - Silicon Friendly{% endblock %}
 
 {% block content %}
-<section class="page-section">
-    <h1>> levels</h1>
-    <p>> how we rate AI-agent friendliness</p>
+<section class="hero" style="min-height: auto; padding-bottom: 2rem;">
+    <div class="section-label">levels</div>
+    <h1 class="hero-title" style="font-size: clamp(40px, 8vw, 100px);">how we rate.</h1>
+    <p class="hero-subtitle">6 binary criteria per level. need 4/6 to pass.<br>levels are cumulative. L0 means you haven't passed L1 yet.</p>
+</section>
 
-    <pre class="level-explanation">
-┌────────────────────────────────────────────────────────────┐
-│  SCORING: 6 binary criteria per level. Need 4/6 to pass.  │
-│  Levels are CUMULATIVE: must pass all previous levels.     │
-│  L0 = doesn't meet L1 requirements.                       │
-└────────────────────────────────────────────────────────────┘
-    </pre>
-
+<section style="padding: 0 clamp(2rem, 8vw, 10rem) 6rem;">
     {% for level_num, criteria in levels.items %}
-    <div class="level-section">
-        <pre class="level-header">
-╔═══════════════════════════════════════════╗
-║  LEVEL {{ level_num }}{% if level_num == 1 %} - Basic Accessibility          {% elif level_num == 2 %} - Discoverability                {% elif level_num == 3 %} - Structured Interaction        {% elif level_num == 4 %} - Agent Integration              {% elif level_num == 5 %} - Autonomous Operation           {% endif %}║
-╚═══════════════════════════════════════════╝</pre>
-
-        {% for c in criteria %}
-        <div class="criteria-item">
-            <code>{{ c.field }}</code>
-            <p>{{ c.label }}</p>
+    <div style="margin-bottom: 3rem; padding-top: 2rem; border-top: 1px solid var(--border);">
+        <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
+            <span style="display: inline-flex; align-items: center; justify-content: center; width: 48px; height: 48px; background: var(--fg); color: var(--bg); font-family: var(--font-mono); font-size: 1.1rem; font-weight: 700;">L{{ level_num }}</span>
+            <div>
+                <h2 style="font-size: 1.2rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 0.1rem;">
+                    {% if level_num == 1 %}Basic Accessibility
+                    {% elif level_num == 2 %}Discoverability
+                    {% elif level_num == 3 %}Structured Interaction
+                    {% elif level_num == 4 %}Agent Integration
+                    {% elif level_num == 5 %}Autonomous Operation
+                    {% endif %}
+                </h2>
+                <p style="font-family: var(--font-mono); font-size: 12px; color: var(--fg-muted);">
+                    {% if level_num == 1 %}can agents read your content?
+                    {% elif level_num == 2 %}can agents find things on your site?
+                    {% elif level_num == 3 %}can agents talk to your APIs?
+                    {% elif level_num == 4 %}can agents do real work on your site?
+                    {% elif level_num == 5 %}can agents operate autonomously?
+                    {% endif %}
+                </p>
+            </div>
         </div>
-        {% endfor %}
+
+        <div style="border: 1px solid var(--border);">
+            {% for c in criteria %}
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); gap: 1rem;{% if forloop.last %} border-bottom: none;{% endif %}">
+                <div style="flex: 1;">
+                    <div style="font-weight: 600; font-size: 0.9rem;">{{ c.label }}</div>
+                </div>
+                <code style="font-family: var(--font-mono); font-size: 11px; color: var(--fg-muted); background: rgba(26,26,26,0.05); padding: 2px 6px; border: 1px solid var(--border); white-space: nowrap; flex-shrink: 0;">{{ c.field }}</code>
+            </div>
+            {% endfor %}
+        </div>
     </div>
     {% endfor %}
 </section>
