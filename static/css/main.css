@@ -2056,6 +2056,11 @@ footer {
         padding: 4rem 1.5rem;
     }
 
+    .checker-hero-compact {
+        min-height: auto;
+        padding: 2rem 1.5rem 1.5rem;
+    }
+
     .section, .how-it-works, .level-directory, .entry-point-section, .just-verified {
         padding: 4rem 1.5rem;
     }
