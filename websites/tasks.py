@@ -666,15 +666,13 @@ def run_website_check(check_job_id):
             job.save(update_fields=[f"level_{level}_results", f"level_{level}_reasoning", "updated_at"])
             all_results.update(results)
 
-        # Compute overall level
+        # Compute overall level (highest passing, not cumulative)
         overall = 0
         for level in range(1, 6):
             fields = LEVEL_RANGES[level]
             passed = sum(1 for f in fields if all_results.get(f, False))
             if passed >= 4:
                 overall = level
-            else:
-                break
         job.overall_level = overall
 
         # Step 6: Generate report

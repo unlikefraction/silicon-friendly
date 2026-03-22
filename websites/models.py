@@ -25,12 +25,14 @@ LEVEL_RANGES = {
 
 
 def _compute_level(obj):
+    """Highest level where 4/6 criteria pass. Not cumulative."""
+    highest = 0
     for level in range(1, 6):
         fields = LEVEL_RANGES[level]
         passed = sum(1 for f in fields if getattr(obj, f))
-        if passed < 4:
-            return level - 1
-    return 5
+        if passed >= 4:
+            highest = level
+    return highest
 
 
 class Website(models.Model):
