@@ -527,24 +527,6 @@ def _send_check_report_email(job):
         report_preview += '<p style="color:#999;margin:12px 0;">...</p>'
         report_preview += _md_to_html('\n'.join(last_3))
 
-    # Competitor rows
-    comp_html = ""
-    for i, c in enumerate(ranked_list[:5]):
-        is_self = c.get("is_self", False)
-        bg = "background:#1a1a1a;color:#ede8e0;" if is_self else ""
-        name_style = "color:#ede8e0;" if is_self else "color:#1a1a1a;"
-        url_style = "color:#999;" if is_self else "color:#666;"
-        badge_bg = "#ede8e0" if is_self else "#1a1a1a"
-        badge_fg = "#1a1a1a" if is_self else "#ede8e0"
-        you = ' <span style="background:#5a9a6b;color:#fff;font-size:9px;font-weight:700;padding:2px 6px;letter-spacing:0.1em;font-family:Courier New,monospace;">YOU</span>' if is_self else ""
-        comp_html += f"""<div style="padding:12px 14px;{bg}border-bottom:1px solid #d4cfc7;">
-<div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">
-<span style="background:{badge_bg};color:{badge_fg};font-family:Courier New,monospace;font-weight:700;font-size:14px;padding:3px 8px;">L{c['level']}</span>
-<span style="font-weight:700;font-size:13px;{name_style}">{i+1}. {html_mod.escape(c['name'])}{you}</span>
-</div>
-<div style="font-family:Courier New,monospace;font-size:10px;{url_style}">{html_mod.escape(c['url'])}</div>
-</div>"""
-
     html_body = f"""<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;max-width:600px;margin:0 auto;background:#ede8e0;">
 
 <div style="padding:40px 32px;text-align:center;">
@@ -557,13 +539,8 @@ def _send_check_report_email(job):
 
 <div style="padding:0 32px 28px;">
     <p style="font-size:15px;color:#1a1a1a;line-height:1.6;margin:0 0 20px;">
-        <strong>{name}</strong> achieved <strong>Level {level}</strong>, ranking <strong>#{rank} out of {total}</strong> similar websites.
+        <strong>{name}</strong> achieved <strong>Level {level}</strong>, ranking <strong>#{rank} among {total}</strong> competitors.
     </p>
-
-    <div style="font-family:'Courier New',monospace;font-size:10px;text-transform:uppercase;letter-spacing:0.15em;color:#999;margin-bottom:12px;">Competitor Analysis</div>
-    <div style="border:1px solid #d4cfc7;margin-bottom:24px;">
-        {comp_html}
-    </div>
 
     <div style="font-family:'Courier New',monospace;font-size:10px;text-transform:uppercase;letter-spacing:0.15em;color:#999;margin-bottom:12px;">Report Preview</div>
     <div style="font-size:13px;color:#1a1a1a;line-height:1.7;margin-bottom:24px;">

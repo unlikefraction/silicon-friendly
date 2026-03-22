@@ -465,45 +465,6 @@ li {{
 .report-content h3 {{ font-size: 14px; margin-top: 22px; }}
 
 /* Competitors */
-.competitor-entry {{
-    padding: 14px 16px;
-    margin-bottom: 4px;
-    page-break-inside: avoid;
-    border-bottom: 1px solid #d4cfc7;
-}}
-.competitor-entry:last-child {{ border-bottom: none; }}
-.competitor-badge {{
-    font-family: 'JetBrains Mono', monospace;
-    font-weight: 700;
-    font-size: 16px;
-    padding: 4px 10px;
-    flex-shrink: 0;
-}}
-.competitor-name {{
-    font-weight: 700;
-    font-size: 14px;
-}}
-.competitor-url {{
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    margin-top: 2px;
-}}
-.competitor-desc {{
-    font-size: 11.5px;
-    margin-top: 4px;
-    line-height: 1.6;
-}}
-.you-tag {{
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 9px;
-    font-weight: 700;
-    background: #5a9a6b;
-    color: #fff;
-    padding: 2px 6px;
-    letter-spacing: 0.1em;
-    margin-left: 8px;
-    vertical-align: middle;
-}}
 
 /* Advice */
 .key-message {{
@@ -633,8 +594,7 @@ li {{
 <div class="page-break">
     <div class="section-label">COMPETITOR ANALYSIS</div>
     <h1>How you compare</h1>
-    {f'<p style="font-size: 15px; margin-bottom: 28px; margin-top: 8px;">You rank <strong>#{rank}</strong> out of <strong>{len(ranked_list)}</strong> competitors.</p>' if ranked_list else '<p style="color: #999; margin-top: 8px;">No similar websites found for comparison yet. Check back after more sites are indexed.</p>'}
-    {''.join(_render_competitor(c, i) for i, c in enumerate(ranked_list))}
+    {f'<p style="font-size: 18px; margin-top: 16px;">You rank <strong>#{rank}</strong> among <strong>{len(ranked_list)}</strong> competitors.</p>' if ranked_list else '<p style="color: #999; margin-top: 16px;">No similar websites found for comparison yet. Check back after more sites are indexed.</p>'}
 </div>
 
 <!-- LEVEL BREAKDOWNS (PAGES 3-7) -->
