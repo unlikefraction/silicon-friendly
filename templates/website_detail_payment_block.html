@@ -1,32 +1,28 @@
 {% load static %}
-<pre style="margin: 0; color: var(--fg, #ccc);">> a trusted silicon will verify your website and
-> give you a detailed report.
->
-> $10 for 3 verification triggers on {{ website.url }}
->
-> why? the report tells you what to improve.
-> then improve and get reverified.</pre>
-
-<div style="margin-top: 1rem;">
-    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-        <button onclick="document.getElementById('pay-crypto-inline').style.display='block'; document.getElementById('pay-card-inline').style.display='none';" style="background: none; border: 1px solid var(--accent, #0f0); color: var(--accent, #0f0); font-family: JetBrains Mono, monospace; cursor: pointer; padding: 0.25rem 0.75rem;">[ crypto ]</button>
-        <button onclick="payWithDodoInline()" style="background: none; border: 1px solid var(--accent, #0f0); color: var(--accent, #0f0); font-family: JetBrains Mono, monospace; cursor: pointer; padding: 0.25rem 0.75rem;">[ card / upi / netbanking ]</button>
-    </div>
-
-    <div id="pay-crypto-inline" style="display: none; margin-top: 1rem;">
-        <pre style="margin: 0 0 0.5rem 0; color: var(--muted, #666);">> select chain:</pre>
-        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-            <button onclick="payWithWalletInline('base')" class="chain-btn" style="background: none; border: 1px solid var(--border, #333); color: var(--fg, #ccc); font-family: JetBrains Mono, monospace; cursor: pointer; padding: 0.25rem 0.75rem;">Base</button>
-            <button onclick="payWithWalletInline('polygon')" class="chain-btn" style="background: none; border: 1px solid var(--border, #333); color: var(--fg, #ccc); font-family: JetBrains Mono, monospace; cursor: pointer; padding: 0.25rem 0.75rem;">Polygon</button>
-            <button onclick="payWithWalletInline('arbitrum')" class="chain-btn" style="background: none; border: 1px solid var(--border, #333); color: var(--fg, #ccc); font-family: JetBrains Mono, monospace; cursor: pointer; padding: 0.25rem 0.75rem;">Arbitrum</button>
-            <button onclick="payWithWalletInline('ethereum')" class="chain-btn" style="background: none; border: 1px solid var(--border, #333); color: var(--fg, #ccc); font-family: JetBrains Mono, monospace; cursor: pointer; padding: 0.25rem 0.75rem;">Ethereum</button>
-            <button onclick="payWithWalletInline('bsc')" class="chain-btn" style="background: none; border: 1px solid var(--border, #333); color: var(--fg, #ccc); font-family: JetBrains Mono, monospace; cursor: pointer; padding: 0.25rem 0.75rem;">BSC</button>
-            <button onclick="payWithWalletInline('avalanche')" class="chain-btn" style="background: none; border: 1px solid var(--border, #333); color: var(--fg, #ccc); font-family: JetBrains Mono, monospace; cursor: pointer; padding: 0.25rem 0.75rem;">Avalanche</button>
-        </div>
-    </div>
-
-    <pre id="inline-payment-status" style="margin: 0.5rem 0 0 0; color: var(--muted, #666);"></pre>
+<div style="font-family: var(--font-sans); font-size: 0.9rem; line-height: 1.6; color: var(--fg);">
+    <p style="margin-bottom: 0.5rem;">A trusted silicon will verify your website and give you a detailed report.</p>
+    <p style="font-weight: 700; margin-bottom: 0.25rem;">$10 for 3 verification triggers on {{ website.url }}</p>
+    <p style="font-size: 0.8rem; color: var(--fg-muted);">The report tells you what to improve. Then improve and get reverified.</p>
 </div>
+
+<div style="margin-top: 1.25rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
+    <button onclick="document.getElementById('pay-crypto-inline').style.display='block'; document.getElementById('pay-card-inline').style.display='none';" class="btn" style="font-size: 0.8rem; padding: 0.4rem 1rem;">Crypto</button>
+    <button onclick="payWithDodoInline()" class="btn btn-primary" style="font-size: 0.8rem; padding: 0.4rem 1rem;">Card / UPI / Netbanking</button>
+</div>
+
+<div id="pay-crypto-inline" style="display: none; margin-top: 1.25rem;">
+    <p style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--fg-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.5rem;">Select chain</p>
+    <div style="display: flex; gap: 0.4rem; flex-wrap: wrap;">
+        <button onclick="payWithWalletInline('base')" class="btn" style="font-size: 0.75rem; padding: 0.3rem 0.7rem;">Base</button>
+        <button onclick="payWithWalletInline('polygon')" class="btn" style="font-size: 0.75rem; padding: 0.3rem 0.7rem;">Polygon</button>
+        <button onclick="payWithWalletInline('arbitrum')" class="btn" style="font-size: 0.75rem; padding: 0.3rem 0.7rem;">Arbitrum</button>
+        <button onclick="payWithWalletInline('ethereum')" class="btn" style="font-size: 0.75rem; padding: 0.3rem 0.7rem;">Ethereum</button>
+        <button onclick="payWithWalletInline('bsc')" class="btn" style="font-size: 0.75rem; padding: 0.3rem 0.7rem;">BSC</button>
+        <button onclick="payWithWalletInline('avalanche')" class="btn" style="font-size: 0.75rem; padding: 0.3rem 0.7rem;">Avalanche</button>
+    </div>
+</div>
+
+<div id="inline-payment-status" style="margin-top: 0.75rem; font-family: var(--font-mono); font-size: 0.8rem; color: var(--fg-muted);"></div>
 
 <script>
 var USDC_CONTRACTS = {
@@ -51,8 +47,8 @@ var ERC20_TRANSFER_ABI = "0xa9059cbb";
 function setInlineStatus(msg, isError) {
     var el = document.getElementById("inline-payment-status");
     if (el) {
-        el.textContent = "> " + msg;
-        el.style.color = isError ? "var(--error, #e74c3c)" : "var(--accent, #0f0)";
+        el.textContent = msg;
+        el.style.color = isError ? "var(--error)" : "var(--green)";
     }
 }
 
@@ -65,28 +61,28 @@ function encodeTransfer(to, amount, decimals) {
 
 async function payWithWalletInline(chainKey) {
     if (!window.ethereum) {
-        setInlineStatus("no ethereum wallet detected. install MetaMask.", true);
+        setInlineStatus("No wallet detected. Install MetaMask.", true);
         return;
     }
-    setInlineStatus("connecting wallet...");
+    setInlineStatus("Connecting wallet...");
     try {
         var accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
-        if (!accounts.length) { setInlineStatus("no accounts found.", true); return; }
-    } catch(e) { setInlineStatus("wallet connection failed.", true); return; }
+        if (!accounts.length) { setInlineStatus("No accounts found.", true); return; }
+    } catch(e) { setInlineStatus("Wallet connection failed.", true); return; }
 
-    setInlineStatus("switching to " + CHAIN_CONFIG[chainKey].name + "...");
+    setInlineStatus("Switching to " + CHAIN_CONFIG[chainKey].name + "...");
     try {
         await window.ethereum.request({ method: "wallet_switchEthereumChain", params: [{ chainId: CHAIN_CONFIG[chainKey].chainId }] });
-    } catch(e) { setInlineStatus("failed to switch chain.", true); return; }
+    } catch(e) { setInlineStatus("Failed to switch chain.", true); return; }
 
     var data = encodeTransfer(RECEIVE_WALLET, 10, CHAIN_CONFIG[chainKey].decimals);
-    setInlineStatus("approve $10 USDC transfer in your wallet...");
+    setInlineStatus("Approve $10 USDC transfer in your wallet...");
     try {
         var txHash = await window.ethereum.request({
             method: "eth_sendTransaction",
             params: [{ from: accounts[0], to: USDC_CONTRACTS[chainKey], data: data, value: "0x0" }],
         });
-        setInlineStatus("tx sent! submitting...");
+        setInlineStatus("Transaction sent. Submitting...");
         var csrfToken = document.querySelector("[name=csrfmiddlewaretoken]");
         var res = await fetch("/api/payments/crypto/submit/", {
             method: "POST",
@@ -95,20 +91,20 @@ async function payWithWalletInline(chainKey) {
         });
         if (res.status === 429) {
             var errData = await res.json();
-            setInlineStatus("slow down. try again in " + (errData.retry_after || 60) + " seconds.", true);
+            setInlineStatus("Slow down. Try again in " + (errData.retry_after || 60) + "s.", true);
             return;
         }
         var result = await res.json();
-        if (result.error) { setInlineStatus("submitted but failed: " + result.error, true); }
-        else { setInlineStatus("payment submitted! we will verify it shortly."); }
+        if (result.error) { setInlineStatus("Failed: " + result.error, true); }
+        else { setInlineStatus("Payment submitted. We'll verify it shortly."); }
     } catch(e) {
-        if (e.code === 4001) setInlineStatus("transaction rejected.", true);
-        else setInlineStatus("transaction failed: " + e.message, true);
+        if (e.code === 4001) setInlineStatus("Transaction rejected.", true);
+        else setInlineStatus("Transaction failed.", true);
     }
 }
 
 async function payWithDodoInline() {
-    setInlineStatus("creating checkout session...");
+    setInlineStatus("Creating checkout...");
     var csrfToken = document.querySelector("[name=csrfmiddlewaretoken]");
     try {
         var res = await fetch("/api/payments/dodo/create/", {
@@ -118,14 +114,14 @@ async function payWithDodoInline() {
         });
         if (res.status === 429) {
             var errData = await res.json();
-            setInlineStatus("slow down. try again in " + (errData.retry_after || 60) + " seconds.", true);
+            setInlineStatus("Slow down. Try again in " + (errData.retry_after || 60) + "s.", true);
             return;
         }
         var result = await res.json();
-        if (result.error) { setInlineStatus("checkout failed: " + result.error, true); return; }
+        if (result.error) { setInlineStatus("Checkout failed: " + result.error, true); return; }
         var checkoutUrl = (result.data && result.data.checkout_url) || result.checkout_url;
         if (checkoutUrl) { window.location.href = checkoutUrl; }
-        else { setInlineStatus("no checkout URL returned.", true); }
-    } catch(e) { setInlineStatus("request failed: " + e.message, true); }
+        else { setInlineStatus("No checkout URL returned.", true); }
+    } catch(e) { setInlineStatus("Request failed.", true); }
 }
 </script>
