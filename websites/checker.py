@@ -74,9 +74,19 @@ def start_check_api(request, domain):
         return JsonResponse({"error": "Invalid domain"}, status=400)
 
     # Check if website already exists in DB
+    # If it exists and the user is NOT the owner, redirect to the page
+    # If it exists and the user IS the owner, allow re-check (reverification)
     try:
         existing = Website.objects.get(url=domain)
-        return JsonResponse({"exists": True, "url": f"/w/{domain}/"})
+        is_owner = existing.submitted_by_carbon_id == carbon.id
+        if not is_owner:
+            return JsonResponse({"exists": True, "url": f"/w/{domain}/"})
+        # Owner can re-check — check if they have paid verifications remaining
+        from payments.models import PaymentRequest, remaining_verification_requests
+        active_payment = PaymentRequest.objects.filter(website=existing, status="completed").order_by("-created_at").first()
+        has_free = not CheckJob.objects.filter(domain=domain, carbon=carbon, status="done").exists()
+        if not has_free and (not active_payment or remaining_verification_requests(active_payment) <= 0):
+            return JsonResponse({"exists": True, "url": f"/w/{domain}/"})
     except Website.DoesNotExist:
         pass
 

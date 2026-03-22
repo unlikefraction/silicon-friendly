@@ -54,6 +54,14 @@
 {# ── Result section ── #}
 <div class="section checker-final-section">
 
+    {# ── Badge embed code (owner, L3+) ── #}
+    {% if is_owner and website.level >= 3 %}
+    <div style="border: 1px solid var(--border); padding: 1rem 1.25rem; margin-bottom: 2rem;">
+        <div style="font-family: var(--font-mono); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--fg-muted); margin-bottom: 0.5rem;">Embed your badge</div>
+        <div style="background: var(--terminal-bg); color: var(--terminal-fg); padding: 0.75rem 1rem; font-family: var(--font-mono); font-size: 0.8rem; word-break: break-all;">&lt;script src="https://siliconfriendly.com/badge/{{ website.url }}.js"&gt;&lt;/script&gt;</div>
+    </div>
+    {% endif %}
+
     {# ── Reports dropdown (owner only) ── #}
     {% if is_owner and check_reports %}
     <details style="border: 1px solid var(--border); overflow: hidden; margin-bottom: 2rem;">
@@ -82,111 +90,40 @@
 
     {# ── Owner alerts ── #}
     {% if is_owner and just_submitted %}
-    <div style="padding: 1rem 1.25rem; border: 1px solid rgba(90,154,107,0.3); margin-bottom: 1.5rem; font-family: var(--font-mono); font-size: 0.85rem; background: rgba(90,154,107,0.06); color: var(--green);">
-        &gt; website submitted. will appear in search once indexed.
+    <div style="padding: 1rem 1.25rem; border: 1px solid rgba(90,154,107,0.3); margin-bottom: 1.5rem; font-size: 0.9rem; color: var(--green);">
+        Website submitted. It will appear in search once indexed.
     </div>
     {% endif %}
 
     {% if is_owner and payment_success %}
-    <div style="padding: 1rem 1.25rem; border: 1px solid rgba(90,154,107,0.3); margin-bottom: 1.5rem; font-family: var(--font-mono); font-size: 0.85rem; background: rgba(90,154,107,0.06); color: var(--green);">
-        &gt; payment received. a trusted silicon will evaluate soon.
+    <div style="padding: 1rem 1.25rem; border: 1px solid rgba(90,154,107,0.3); margin-bottom: 1.5rem; font-size: 0.9rem; color: var(--green);">
+        Payment received. You can now reverify your website.
     </div>
     {% endif %}
 
     {# ── Pending payment ── #}
     {% if is_owner and pending_payment %}
-    <div class="terminal-result-block" style="margin-bottom: 1rem; padding: 1rem 1.25rem; font-size: 0.85rem;">
-        <div>&gt; PAYMENT PROCESSING</div>
-        <div style="color: var(--terminal-accent); margin-top: 0.25rem;">
-            {% if pending_payment.payment_method == "crypto" %}method: crypto ({{ pending_payment.chain }}){% else %}method: card / upi{% endif %} | {{ pending_payment.created_at|timesince }} ago
+    <div style="padding: 1rem 1.25rem; border: 1px solid var(--border); margin-bottom: 1.5rem; font-size: 0.9rem;">
+        <div style="font-family: var(--font-mono); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: #8a7040; margin-bottom: 0.35rem;">Payment Processing</div>
+        <div style="color: var(--fg-muted); font-size: 0.85rem;">
+            {% if pending_payment.payment_method == "crypto" %}Method: Crypto ({{ pending_payment.chain }}){% else %}Method: Card / UPI{% endif %} &middot; {{ pending_payment.created_at|timesince }} ago
         </div>
     </div>
     {% endif %}
 
-    {# ── Pending verification requests ── #}
-    {% if is_owner and pending_vrs %}
-    {% for vr in pending_vrs %}
-    <div class="terminal-result-block" style="margin-bottom: 1rem; padding: 1rem 1.25rem; font-size: 0.85rem;">
-        <div style="color: var(--green);">&gt; VERIFICATION #{{ vr.id }} — PENDING</div>
-        <div style="color: var(--terminal-accent); margin-top: 0.25rem;">requested {{ vr.created_at|date:"M d, Y" }} | waiting for a trusted silicon</div>
-    </div>
-    {% endfor %}
-    {% endif %}
-
-    {# ── Served reports ── #}
-    {% if is_owner and served_vrs %}
-    <details style="border: 1px solid var(--border); margin-bottom: 2rem; overflow: hidden;">
-        <summary style="padding: 1rem 1.25rem; cursor: pointer; font-family: var(--font-mono); font-size: 0.85rem; font-weight: 600; background: var(--surface); list-style: none; color: var(--fg); letter-spacing: 0.05em; text-transform: uppercase;">
-            {% if served_vrs|length > 1 %}{{ served_vrs|length }} Reports{% else %}Report{% endif %}
-        </summary>
-        <div style="padding: 1.25rem;">
-            {% if served_vrs|length > 1 %}
-            <select id="report-selector" onchange="switchReport(this.value)" style="width: 100%; padding: 0.5rem 0.75rem; background: var(--bg); color: var(--fg); border: 1px solid var(--border); font-family: var(--font-mono); font-size: 0.85rem; margin-bottom: 1rem;">
-                {% for vr in served_vrs %}
-                <option value="report-{{ vr.id }}">Report #{{ vr.id }} — {{ vr.served_at|date:"M d, Y" }}</option>
-                {% endfor %}
-            </select>
-            {% endif %}
-
-            {% for vr in served_vrs %}
-            <div id="report-{{ vr.id }}" class="vr-report" style="{% if not forloop.first %}display: none;{% endif %}">
-                <div style="color: var(--fg-muted); font-size: 0.8rem; font-family: var(--font-mono); margin-bottom: 0.75rem;">{{ vr.served_at|date:"M d, Y" }} at {{ vr.served_at|date:"g:i A" }}{% if vr.level_at_verification %} | {{ vr.level_at_verification }}{% endif %}</div>
-                <div style="white-space: pre-wrap; word-wrap: break-word; font-size: 0.88rem; line-height: 1.7; font-family: var(--font-mono);">{{ vr.detailed_report }}</div>
-            </div>
-            {% endfor %}
-        </div>
-    </details>
-    {% endif %}
-
-    {# ── Verification status (owner actions) ── #}
+    {# ── Reverify / Get Verified (owner actions) ── #}
     {% if is_owner %}
-    <div style="padding: 1.25rem; border: 1px solid var(--border); background: var(--surface); margin-bottom: 2.5rem;">
-        {% if pending_vrs and not is_verified %}
-            <div style="font-family: var(--font-mono); font-size: 0.85rem; color: var(--green);">verification in progress. a trusted silicon will evaluate soon.</div>
-        {% elif is_verified %}
-            <div style="font-family: var(--font-mono); font-size: 0.85rem; color: var(--green);">verified.{% if remaining_requests > 0 %} changed something?{% endif %}</div>
-            {% if active_payment and remaining_requests > 0 %}
-                <div style="margin-top: 1rem; text-align: right;">
-                    <button class="btn" onclick="toggleSection('reverify-section')" style="font-size: 0.85rem; padding: 0.5rem 1.25rem;">
-                        reverify ({{ remaining_requests }}/{{ active_payment.max_verification_requests }} left)
-                    </button>
-                </div>
-                <div id="reverify-section" style="display: none; margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px solid var(--border);">
-                    {% csrf_token %}
-                    <button class="btn btn-primary" onclick="requestReverification()" style="margin-top: 0.5rem;">Confirm Reverify</button>
-                    <div id="reverify-status" style="margin-top: 0.75rem; font-size: 0.85rem; font-family: var(--font-mono); color: var(--fg-muted);"></div>
-                </div>
-            {% elif not active_payment or remaining_requests <= 0 %}
-                <div style="margin-top: 1rem; text-align: right;">
-                    <button class="btn" onclick="toggleSection('buy-verification-section')" style="font-size: 0.85rem; padding: 0.5rem 1.25rem;">Get Reverified</button>
-                </div>
-                <div id="buy-verification-section" style="display: none; margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px solid var(--border);">
-                    {% include "website_detail_payment_block.html" %}
-                </div>
-            {% endif %}
+    <div style="padding: 1.25rem; border: 1px solid var(--border); margin-bottom: 2.5rem;">
+        {% if active_payment and remaining_requests > 0 %}
+            <div style="font-size: 0.9rem; margin-bottom: 0.5rem;">You have <strong>{{ remaining_requests }}</strong> verification{{ remaining_requests|pluralize }} remaining.</div>
+            <div style="font-size: 0.85rem; color: var(--fg-muted); margin-bottom: 1rem;">Each verification runs a full check across all 5 levels and generates a new report.</div>
+            <a href="/check/{{ website.url }}/" class="btn btn-primary" style="font-size: 0.85rem; padding: 0.5rem 1.25rem;">Reverify Now</a>
         {% else %}
-            <div style="font-family: var(--font-mono); font-size: 0.85rem; color: #8a7040;">
-                unverified. not listed in search until verified.<br>
-                {{ verification_count }} / 12 silicon verifications.
-            </div>
-            <div style="margin-top: 1rem; text-align: right;">
-                <button class="btn" onclick="toggleSection('get-verified-section')" style="font-size: 0.85rem; padding: 0.5rem 1.25rem;">Get Verified</button>
-            </div>
-            <div id="get-verified-section" style="display: none; margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px solid var(--border);">
-                {% if active_payment and remaining_requests > 0 %}
-                    <div style="font-family: var(--font-mono); font-size: 0.85rem;">
-                        {{ remaining_requests }} verification request(s) remaining.
-                    </div>
-                    {% if pending_vrs %}
-                    <div style="font-family: var(--font-mono); font-size: 0.85rem; color: var(--green); margin-top: 0.5rem;">already in progress...</div>
-                    {% else %}
-                    {% csrf_token %}
-                    <button class="btn btn-primary" onclick="requestReverification()" style="margin-top: 0.75rem;">Request Verification</button>
-                    <div id="reverify-status" style="margin-top: 0.75rem; font-size: 0.85rem; font-family: var(--font-mono); color: var(--fg-muted);"></div>
-                    {% endif %}
-                {% else %}
-                    {% include "website_detail_payment_block.html" %}
-                {% endif %}
+            <div style="font-size: 0.9rem; margin-bottom: 0.5rem;">Want to check again?</div>
+            <div style="font-size: 0.85rem; color: var(--fg-muted); margin-bottom: 1rem;">$10 for 3 verifications. Each one runs a full check and generates a detailed report.</div>
+            <button class="btn" onclick="toggleSection('buy-verification-section')" style="font-size: 0.85rem; padding: 0.5rem 1.25rem;">Get 3 Verifications</button>
+            <div id="buy-verification-section" style="display: none; margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px solid var(--border);">
+                {% include "website_detail_payment_block.html" %}
             </div>
         {% endif %}
     </div>
@@ -231,42 +168,6 @@
 function toggleSection(id) {
     var el = document.getElementById(id);
     if (el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
-}
-
-function requestReverification() {
-    var csrfToken = document.querySelector("[name=csrfmiddlewaretoken]");
-    if (!csrfToken) {
-        var el = document.getElementById("reverify-status");
-        if (el) el.textContent = "error: must be logged in.";
-        return;
-    }
-    fetch("/api/websites/{{ website.url }}/request-verification/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "X-CSRFToken": csrfToken.value },
-        body: JSON.stringify({}),
-    })
-    .then(function(res) {
-        if (res.status === 429) {
-            return res.json().then(function(d) {
-                var el = document.getElementById("reverify-status");
-                if (el) { el.textContent = "slow down. try again in " + (d.retry_after || 60) + "s."; el.style.color = "var(--error)"; }
-                throw new Error("rate limited");
-            });
-        }
-        return res.json();
-    })
-    .then(function(data) {
-        var el = document.getElementById("reverify-status");
-        if (data.error) {
-            if (el) el.textContent = "error: " + data.error;
-        } else {
-            if (el) { el.textContent = "verification requested. (" + data.remaining_requests + " remaining)"; el.style.color = "var(--green)"; }
-        }
-    })
-    .catch(function(err) {
-        var el = document.getElementById("reverify-status");
-        if (el) el.textContent = "request failed.";
-    });
 }
 
 function switchReport(reportId) {
