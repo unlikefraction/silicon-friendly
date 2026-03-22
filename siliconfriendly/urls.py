@@ -1430,8 +1430,6 @@ from websites.models import Website, WebsiteVerification, CRITERIA_FIELDS, LEVEL
 
 def badges_view(request):
     levels = [
-        {"num": 1, "name": "Basic Accessibility"},
-        {"num": 2, "name": "Discoverability"},
         {"num": 3, "name": "Structured Interaction"},
         {"num": 4, "name": "Agent Integration"},
         {"num": 5, "name": "Autonomous Operation"},
