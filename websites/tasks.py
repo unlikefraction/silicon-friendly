@@ -497,75 +497,100 @@ Respond with raw Markdown only (no JSON wrapping, no outer code fences)."""
 
 
 def _send_check_report_email(job):
-    """Email a brief overview + PDF attachment to the carbon."""
+    """Email report summary — no attachment (avoids spam filters)."""
     if not job.carbon or not job.carbon.email:
         return
-    import base64
+    import html as html_mod
     from common.mail import send_email
-    from websites.report_pdf import generate_pdf, _get_competitors, _build_ranked_list
+    from websites.report_pdf import _get_competitors, _build_ranked_list
 
-    # Get competitor rank
     website = job.website
     competitors = _get_competitors(website) if website else []
     ranked_list, rank = _build_ranked_list(website, competitors) if website and competitors else ([], 1)
     total = len(ranked_list) if ranked_list else 1
 
-    name = job.website_name or job.domain
+    name = html_mod.escape(job.website_name or job.domain)
     level = job.overall_level
     domain = job.domain
 
-    subject = f"SiliconFriendly Report - {name} ranks #{rank} out of {total} competitors"
-
+    subject = f"SiliconFriendly Report - {job.website_name or domain} ranks #{rank} out of {total} competitors"
     page_url = f"https://siliconfriendly.com/w/{domain}/"
     report_url = f"https://siliconfriendly.com/api/check/{domain}/report/{job.id}/"
 
-    html_body = f"""<div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 600px; margin: 0 auto; padding: 0;">
-<div style="background: #ede8e0; padding: 32px; text-align: center;">
-    <div style="font-family: 'Courier New', monospace; font-size: 48px; font-weight: 700; color: #1a1a1a;">L{level}</div>
-    <div style="font-size: 24px; font-weight: 800; color: #1a1a1a; margin-top: 8px;">{domain}</div>
+    # First 3 and last 3 lines of report
+    report_lines = [l for l in (job.report_md or "").strip().split('\n') if l.strip()]
+    first_3 = report_lines[:3] if len(report_lines) >= 3 else report_lines
+    last_3 = report_lines[-3:] if len(report_lines) >= 6 else []
+    from websites.report_pdf import _md_to_html
+    report_preview = _md_to_html('\n'.join(first_3))
+    if last_3:
+        report_preview += '<p style="color:#999;margin:12px 0;">...</p>'
+        report_preview += _md_to_html('\n'.join(last_3))
+
+    # Competitor rows
+    comp_html = ""
+    for i, c in enumerate(ranked_list[:5]):
+        is_self = c.get("is_self", False)
+        bg = "background:#1a1a1a;color:#ede8e0;" if is_self else ""
+        name_style = "color:#ede8e0;" if is_self else "color:#1a1a1a;"
+        url_style = "color:#999;" if is_self else "color:#666;"
+        badge_bg = "#ede8e0" if is_self else "#1a1a1a"
+        badge_fg = "#1a1a1a" if is_self else "#ede8e0"
+        you = ' <span style="background:#5a9a6b;color:#fff;font-size:9px;font-weight:700;padding:2px 6px;letter-spacing:0.1em;font-family:Courier New,monospace;">YOU</span>' if is_self else ""
+        comp_html += f"""<div style="padding:12px 14px;{bg}border-bottom:1px solid #d4cfc7;">
+<div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">
+<span style="background:{badge_bg};color:{badge_fg};font-family:Courier New,monospace;font-weight:700;font-size:14px;padding:3px 8px;">L{c['level']}</span>
+<span style="font-weight:700;font-size:13px;{name_style}">{i+1}. {html_mod.escape(c['name'])}{you}</span>
 </div>
+<div style="font-family:Courier New,monospace;font-size:10px;{url_style}">{html_mod.escape(c['url'])}</div>
+</div>"""
 
-<div style="padding: 28px 32px;">
-    <p style="font-size: 15px; color: #1a1a1a; line-height: 1.6; margin: 0 0 16px 0;">
-        <strong>{name}</strong> achieved <strong>Level {level}</strong> in its Silicon Friendly evaluation, ranking <strong>#{rank} out of {total}</strong> similar websites.
-    </p>
+    html_body = f"""<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;max-width:600px;margin:0 auto;background:#ede8e0;">
 
-    <p style="font-size: 14px; color: #666; line-height: 1.6; margin: 0 0 24px 0;">
-        The full report is attached as a PDF. It includes a level-by-level breakdown of all 30 criteria, competitor analysis, and specific recommendations for improvement.
-    </p>
-
-    <div style="margin: 24px 0;">
-        <a href="{page_url}" style="display: inline-block; background: #1a1a1a; color: #ede8e0; padding: 12px 24px; text-decoration: none; font-size: 14px; font-weight: 600;">View on SiliconFriendly</a>
-        &nbsp;&nbsp;
-        <a href="{report_url}" style="display: inline-block; border: 1px solid #1a1a1a; color: #1a1a1a; padding: 12px 24px; text-decoration: none; font-size: 14px; font-weight: 600;">Download Report</a>
+<div style="padding:40px 32px;text-align:center;">
+    <div style="font-family:'Courier New',monospace;font-size:56px;font-weight:700;color:#1a1a1a;">L{level}</div>
+    <div style="font-size:28px;font-weight:900;color:#1a1a1a;margin-top:8px;letter-spacing:-0.03em;">{html_mod.escape(domain)}.</div>
+    <div style="font-family:'Courier New',monospace;font-size:12px;color:#666;text-transform:uppercase;letter-spacing:0.15em;margin-top:8px;">
+        {'not silicon friendly yet' if level == 0 else f'level {level}: {LEVEL_NAMES.get(level, "").lower()}'}
     </div>
 </div>
 
-<div style="padding: 20px 32px; border-top: 1px solid #e5e0d7; font-size: 12px; color: #999;">
-    <a href="https://siliconfriendly.com" style="color: #999; text-decoration: none;">siliconfriendly.com</a> &middot;
-    <a href="https://unlikefraction.com" style="color: #999; text-decoration: none;">unlikefraction.com</a>
-</div>
-</div>"""
+<div style="padding:0 32px 28px;">
+    <p style="font-size:15px;color:#1a1a1a;line-height:1.6;margin:0 0 20px;">
+        <strong>{name}</strong> achieved <strong>Level {level}</strong>, ranking <strong>#{rank} out of {total}</strong> similar websites.
+    </p>
 
-    # Generate PDF
-    try:
-        pdf_bytes = generate_pdf(job)
-        pdf_b64 = base64.b64encode(pdf_bytes).decode("utf-8")
-        attachments = [{
-            "Name": f"siliconfriendly-{domain}-L{level}.pdf",
-            "Content": pdf_b64,
-            "ContentType": "application/pdf",
-        }]
-    except Exception as e:
-        logger.error("Failed to generate PDF for email: %s", e)
-        attachments = None
+    <div style="font-family:'Courier New',monospace;font-size:10px;text-transform:uppercase;letter-spacing:0.15em;color:#999;margin-bottom:12px;">Competitor Analysis</div>
+    <div style="border:1px solid #d4cfc7;margin-bottom:24px;">
+        {comp_html}
+    </div>
+
+    <div style="font-family:'Courier New',monospace;font-size:10px;text-transform:uppercase;letter-spacing:0.15em;color:#999;margin-bottom:12px;">Report Preview</div>
+    <div style="font-size:13px;color:#1a1a1a;line-height:1.7;margin-bottom:24px;">
+        {report_preview}
+    </div>
+
+    <div style="text-align:center;margin:28px 0;">
+        <a href="{page_url}" style="display:inline-block;background:#1a1a1a;color:#ede8e0;padding:14px 28px;text-decoration:none;font-size:14px;font-weight:700;letter-spacing:-0.01em;">View Full Report on SiliconFriendly</a>
+    </div>
+    <p style="text-align:center;font-size:12px;color:#999;margin:0;">
+        <a href="{report_url}" style="color:#666;text-decoration:none;">Download PDF Report</a>
+    </p>
+</div>
+
+<div style="padding:20px 32px;border-top:1px solid #d4cfc7;text-align:center;">
+    <a href="https://siliconfriendly.com" style="font-family:'Courier New',monospace;font-size:11px;color:#999;text-decoration:none;">siliconfriendly.com</a>
+    <span style="color:#d4cfc7;margin:0 6px;">&middot;</span>
+    <a href="https://unlikefraction.com" style="font-family:'Courier New',monospace;font-size:11px;color:#999;text-decoration:none;">unlikefraction.com</a>
+</div>
+
+</div>"""
 
     try:
         send_email(
             to_email=job.carbon.email,
             subject=subject,
             html_body=html_body,
-            attachments=attachments,
         )
     except Exception as e:
         logger.error("Failed to send check report email: %s", e)
