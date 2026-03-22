@@ -213,7 +213,7 @@ def _level_advice(level):
 def generate_report_html(job):
     """Generate the complete HTML for the PDF report."""
     website = job.website
-    level = job.overall_level
+    level = website.level if website else job.overall_level
     domain = job.domain
     name = job.website_name or domain
 
