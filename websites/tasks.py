@@ -574,7 +574,7 @@ def _send_check_report_email(job):
         <a href="{page_url}" style="display:inline-block;background:#1a1a1a;color:#ede8e0;padding:14px 28px;text-decoration:none;font-size:14px;font-weight:700;letter-spacing:-0.01em;">View Full Report on SiliconFriendly</a>
     </div>
     <p style="text-align:center;font-size:12px;color:#999;margin:0;">
-        <a href="{report_url}" style="color:#666;text-decoration:none;">Download PDF Report</a>
+        The PDF of your report can be seen once you login to your account.
     </p>
 </div>
 
