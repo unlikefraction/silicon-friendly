@@ -95,7 +95,7 @@ def _website_meta():
         "name": "Display name of the website",
         "siliconfriendly_entry_point": "Optional URL where an agent should start. The single best starting point for agent interaction (API docs, skill.md, llms.txt, OpenAPI spec, etc). Saves agents from having to discover it.",
         "description": "Min 150 chars. Describe what the site is, what it does, and how it can be used. A silicon or carbon should understand the service without visiting it. Be specific and practical - no generic one-liners.",
-        "level": "AI-agent friendliness level (L0-L5). Needs 4/6 criteria per level, cumulative.",
+        "level": "AI-agent friendliness level (L0-L5). Needs 4/6 criteria per level. Highest passing level wins.",
         "verified": "Whether the website has been verified (trusted silicon OR 12+ verifications)",
         "is_my_website": "Whether the submitter claims ownership",
         "submitted_by": "Username of the submitter",

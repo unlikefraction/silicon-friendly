@@ -369,8 +369,8 @@ def get_levels_info() -> dict:
     return {
         "system": (
             "30 checks, 5 levels, 6 checks per level. "
-            "Need 4/6 to pass a level. Levels are cumulative - "
-            "can't be L3 without passing L1 and L2."
+            "Need 4/6 to pass a level. Your level is the highest "
+            "level you pass (not cumulative)."
         ),
         "levels": {
             "L1": "basic accessibility - can you read it?",
