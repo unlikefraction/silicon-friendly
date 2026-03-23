@@ -530,8 +530,13 @@ def _send_check_report_email(job):
     html_body = f"""<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;max-width:600px;margin:0 auto;background:#ede8e0;">
 
 <div style="padding:40px 32px;text-align:center;">
+    <a href="https://siliconfriendly.com" style="text-decoration:none;">
+        <div style="font-family:'Courier New',monospace;font-size:11px;color:#999;text-transform:uppercase;letter-spacing:0.15em;margin-bottom:16px;">siliconfriendly.com</div>
+    </a>
     <div style="font-family:'Courier New',monospace;font-size:56px;font-weight:700;color:#1a1a1a;">L{level}</div>
-    <div style="font-size:28px;font-weight:900;color:#1a1a1a;margin-top:8px;letter-spacing:-0.03em;">{html_mod.escape(domain)}.</div>
+    <div style="font-size:28px;font-weight:900;color:#1a1a1a;margin-top:8px;letter-spacing:-0.03em;">
+        <a href="{page_url}" style="color:#1a1a1a;text-decoration:none;">{html_mod.escape(domain)}</a>
+    </div>
     <div style="font-family:'Courier New',monospace;font-size:12px;color:#666;text-transform:uppercase;letter-spacing:0.15em;margin-top:8px;">
         {'not silicon friendly yet' if level == 0 else f'level {level}: {LEVEL_NAMES.get(level, "").lower()}'}
     </div>
@@ -539,7 +544,7 @@ def _send_check_report_email(job):
 
 <div style="padding:0 32px 28px;">
     <p style="font-size:15px;color:#1a1a1a;line-height:1.6;margin:0 0 20px;">
-        <strong>{name}</strong> achieved <strong>Level {level}</strong>, ranking <strong>#{rank} among {total}</strong> competitors.
+        <a href="{page_url}" style="color:#1a1a1a;text-decoration:underline;font-weight:700;">{name}</a> achieved <strong>Level {level}</strong>, ranking <strong>#{rank} among {total}</strong> competitors.
     </p>
 
     <div style="font-family:'Courier New',monospace;font-size:10px;text-transform:uppercase;letter-spacing:0.15em;color:#999;margin-bottom:12px;">Report Preview</div>
@@ -548,7 +553,7 @@ def _send_check_report_email(job):
     </div>
 
     <div style="text-align:center;margin:28px 0;">
-        <a href="{page_url}" style="display:inline-block;background:#1a1a1a;color:#ede8e0;padding:14px 28px;text-decoration:none;font-size:14px;font-weight:700;letter-spacing:-0.01em;">View Full Report on SiliconFriendly</a>
+        <a href="{page_url}" style="display:inline-block;background:#1a1a1a;color:#ede8e0;padding:14px 32px;text-decoration:none;font-size:15px;font-weight:700;">View Full Report on SiliconFriendly</a>
     </div>
     <p style="text-align:center;font-size:12px;color:#999;margin:0;">
         The PDF of your report can be seen once you login to your account.
@@ -556,7 +561,7 @@ def _send_check_report_email(job):
 </div>
 
 <div style="padding:20px 32px;border-top:1px solid #d4cfc7;text-align:center;">
-    <a href="https://siliconfriendly.com" style="font-family:'Courier New',monospace;font-size:11px;color:#999;text-decoration:none;">siliconfriendly.com</a>
+    <a href="https://siliconfriendly.com" style="font-family:'Courier New',monospace;font-size:11px;color:#666;text-decoration:none;font-weight:700;">siliconfriendly.com</a>
     <span style="color:#d4cfc7;margin:0 6px;">&middot;</span>
     <a href="https://unlikefraction.com" style="font-family:'Courier New',monospace;font-size:11px;color:#999;text-decoration:none;">unlikefraction.com</a>
 </div>
