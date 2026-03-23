@@ -32,7 +32,15 @@
             </div>
         </div>
 
-        <p style="font-size: 0.8rem; color: var(--fg-muted); margin-top: 1rem; line-height: 1.5;">Both options verify the domain server-side. The badge only renders on the verified domain (or its www variant). It auto-detects light/dark theme.</p>
+        <div style="margin-top: 1.25rem;">
+            <div style="font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--fg-muted); margin-bottom: 0.3rem;">Markdown (for READMEs)</div>
+            <div style="position: relative;">
+                <code style="display: block; padding: 0.75rem 1rem; padding-right: 4.5rem; background: var(--terminal-bg); color: var(--terminal-fg); font-size: 12px; font-family: var(--font-mono); white-space: nowrap; overflow-x: auto;">[![Silicon Friendly](https://siliconfriendly.com/badge/<span style="color: var(--terminal-accent);">yourdomain.com</span>.svg)](https://siliconfriendly.com/w/<span style="color: var(--terminal-accent);">yourdomain.com</span>/)</code>
+                <button class="copy-btn" onclick="copyCode(this)" style="position: absolute; right: 6px; top: 50%; transform: translateY(-50%); font-family: var(--font-mono); font-size: 10px; padding: 0.25rem 0.6rem; background: transparent; border: 1px solid #444; color: var(--terminal-fg); cursor: pointer; text-transform: uppercase; letter-spacing: 0.1em;">copy</button>
+            </div>
+        </div>
+
+        <p style="font-size: 0.8rem; color: var(--fg-muted); margin-top: 1rem; line-height: 1.5;">All options verify server-side. The badge always shows your actual level — it can't be faked.</p>
     </div>
 
     {# ── Level previews ── #}
