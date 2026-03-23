@@ -193,15 +193,16 @@ def _send_abandoned_payment_email(payment):
     email_html += '<div style="padding:32px;text-align:center;"><a href="https://siliconfriendly.com" style="font-family:Courier New,monospace;font-size:11px;color:#999;text-decoration:none;text-transform:uppercase;letter-spacing:0.15em;">siliconfriendly.com</a></div>'
     email_html += '<div style="padding:0 32px 32px;">'
     email_html += '<p style="font-size:15px;color:#1a1a1a;line-height:1.7;margin:0 0 16px;">Hey,</p>'
-    email_html += f'<p style="font-size:15px;color:#1a1a1a;line-height:1.7;margin:0 0 16px;">We noticed you started a re-verification for <strong><a href="{page_url}" style="color:#1a1a1a;">{name}</a></strong> but the payment didn\'t go through.</p>'
+    email_html += f'<p style="font-size:15px;color:#1a1a1a;line-height:1.7;margin:0 0 16px;">We noticed you tried to re-verify <strong><a href="{page_url}" style="color:#1a1a1a;">{name}</a></strong>, but the payment didn\'t go through.</p>'
     email_html += '<p style="font-size:15px;color:#1a1a1a;line-height:1.7;margin:0 0 8px;">Was this because:</p>'
     email_html += '<ul style="font-size:15px;color:#1a1a1a;line-height:1.8;margin:0 0 16px;padding-left:20px;">'
     email_html += '<li>The payment failed?</li>'
     email_html += '<li>You changed your mind?</li>'
     email_html += '<li>Something else we need to improve?</li>'
     email_html += '</ul>'
-    email_html += '<p style="font-size:15px;color:#1a1a1a;line-height:1.7;margin:0 0 16px;">We\'d love to know so we can make things better. Just reply to this email and let us know.</p>'
-    email_html += '<p style="font-size:14px;color:#666;line-height:1.7;margin:0 0 20px;">This helps us to offer free first verifications and ensure that the SF open standard becomes a global standard and remains up-to-date with the latest in AI.</p>'
+    email_html += '<p style="font-size:15px;color:#1a1a1a;line-height:1.7;margin:0 0 16px;">We\'d love to hear from you. Just reply to this email and let us know.</p>'
+    email_html += '<p style="font-size:14px;color:#666;line-height:1.7;margin:0 0 8px;">If you decide to pay, it helps us offer free first verifications and keep Silicon Friendly running.</p>'
+    email_html += '<p style="font-size:14px;color:#666;line-height:1.7;margin:0 0 20px;">And your feedback helps us ensure that the Silicon Friendly open standard becomes a global standard that stays up-to-date with the latest in AI.</p>'
     email_html += f'<p style="font-size:15px;color:#1a1a1a;line-height:1.7;margin:0 0 24px;">You can re-verify from <a href="{page_url}" style="color:#1a1a1a;font-weight:700;">your website\'s page</a>.</p>'
     email_html += f'<div style="text-align:center;margin:28px 0;"><a href="{page_url}" style="display:inline-block;background:#1a1a1a;color:#ede8e0;padding:14px 32px;text-decoration:none;font-size:15px;font-weight:700;">Visit SiliconFriendly</a></div>'
     email_html += '</div>'
@@ -210,7 +211,7 @@ def _send_abandoned_payment_email(payment):
 
     send_email(
         to_email=carbon.email,
-        subject=f"Did something go wrong with your payment?",
+        subject="Did something go wrong with Silicon Friendly?",
         html_body=email_html,
     )
 
