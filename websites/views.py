@@ -517,6 +517,48 @@ class WebsiteBadgeJsView(APIView):
         return HttpResponse(js, content_type="application/javascript")
 
 
+class UniversalBadgeJsView(APIView):
+    """Universal embed — auto-detects current site's domain, fetches badge."""
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request):
+        base = env.FRONTEND_BASE_URL
+        js = f"""(function(){{
+  var d=document,h=window.location.hostname.replace(/^www\\./,'');
+  if(!h||h==='localhost')return;
+  var x=new XMLHttpRequest();
+  x.open('GET','{base}/api/websites/'+encodeURIComponent(h)+'/level/',false);
+  try{{x.send()}}catch(e){{console.log('SiliconFriendly: could not reach server');return}}
+  if(x.status!==200){{console.log('SiliconFriendly: no SF score found for site: '+h);return}}
+  var data=JSON.parse(x.responseText);
+  if(!data.level&&data.level!==0){{console.log('SiliconFriendly: no SF score found for site: '+h);return}}
+  var s=d.createElement('a'),i=d.createElement('img');
+  var theme=window.matchMedia&&window.matchMedia('(prefers-color-scheme:light)').matches?'light':'dark';
+  i.src='{base}/badge/'+encodeURIComponent(h)+'.svg?theme='+theme;
+  i.alt='Silicon Friendly L'+data.level;
+  i.style.height='28px';
+  s.href='{base}/w/'+encodeURIComponent(h)+'/';
+  s.target='_blank';
+  s.rel='noopener';
+  s.appendChild(i);
+  d.currentScript.parentNode.insertBefore(s,d.currentScript);
+}})();"""
+        return HttpResponse(js, content_type="application/javascript")
+
+
+class WebsiteLevelApiView(APIView):
+    """Quick API to get a website's level by domain."""
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request, domain):
+        domain = _normalize_url(domain)
+        try:
+            website = Website.objects.get(url=domain)
+            return api_response({"domain": domain, "level": website.level, "name": website.name})
+        except Website.DoesNotExist:
+            return error_response("Website not found", status=404)
+
+
 def _badge_svg(level_text, domain="", theme="dark"):
     aria = f"Silicon Friendly {level_text}" if domain else "Silicon Friendly"
     if theme == "light":

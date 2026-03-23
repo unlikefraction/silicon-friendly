@@ -9,7 +9,19 @@
     <p class="hero-subtitle">embed your silicon friendly badge.<br>two styles, three levels. L3 and above earn it.</p>
 </section>
 
-<section style="padding: 0 clamp(2rem, 8vw, 10rem) 6rem;">
+<section style="padding: 0 clamp(2rem, 8vw, 10rem) 4rem;">
+
+    {# ── Universal embed ── #}
+    <div style="margin-bottom: 3rem; padding: 2rem; border: 1px solid var(--border);">
+        <h2 style="font-size: 1.1rem; font-weight: 800; margin-bottom: 0.5rem;">Universal Embed</h2>
+        <p style="font-size: 0.9rem; color: var(--fg-muted); margin-bottom: 1rem; line-height: 1.6;">Add this one line to any website. It auto-detects your domain and shows the right badge. If your site isn't scored yet, nothing renders.</p>
+        <div style="position: relative;">
+            <code style="display: block; padding: 0.75rem 1rem; padding-right: 4.5rem; background: var(--terminal-bg); color: var(--terminal-fg); font-size: 12px; font-family: var(--font-mono); white-space: nowrap; overflow-x: auto;">&lt;script src="https://siliconfriendly.com/badge/embed.js"&gt;&lt;/script&gt;</code>
+            <button class="copy-btn" onclick="copyCode(this)" style="position: absolute; right: 6px; top: 50%; transform: translateY(-50%); font-family: var(--font-mono); font-size: 10px; padding: 0.25rem 0.6rem; background: transparent; border: 1px solid #444; color: var(--terminal-fg); cursor: pointer; text-transform: uppercase; letter-spacing: 0.1em;">copy</button>
+        </div>
+    </div>
+
+    {# ── Level badges ── #}
     {% for level in levels %}
     <div class="badge-level-section" id="level-{{ level.num }}" style="margin-bottom: 3rem; padding-top: 2rem; border-top: 1px solid var(--border);">
         <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
@@ -17,9 +29,7 @@
             <div>
                 <h2 style="font-size: 1.2rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 0.15rem;">Level {{ level.num }} — {{ level.name }}</h2>
                 <p style="font-size: 13px; color: var(--fg-muted); font-family: var(--font-mono);">
-                    {% if level.num == 1 %}Can agents read your content?
-                    {% elif level.num == 2 %}Can agents find things on your site?
-                    {% elif level.num == 3 %}Can agents talk to your APIs?
+                    {% if level.num == 3 %}Can agents talk to your APIs?
                     {% elif level.num == 4 %}Can agents do real work on your site?
                     {% elif level.num == 5 %}Can agents operate autonomously?
                     {% endif %}
@@ -27,7 +37,7 @@
             </div>
         </div>
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
             <!-- Light on Dark -->
             <div style="display: flex; align-items: center; justify-content: center; padding: 2rem 1.5rem; min-height: 100px; background: #1a1a1a; border: 1px solid var(--border);">
                 <img src="{% static level.light_on_dark_path %}" alt="Silicon Friendly L{{ level.num }} — Light on Dark" style="max-width: 100%; height: auto;">
@@ -38,15 +48,49 @@
                 <img src="{% static level.dark_on_light_path %}" alt="Silicon Friendly L{{ level.num }} — Dark on Light" style="max-width: 100%; height: auto;">
             </div>
         </div>
+
+        {# ── Embed codes ── #}
+        <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+            <div>
+                <div style="font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--fg-muted); margin-bottom: 0.3rem;">JavaScript (auto theme)</div>
+                <div style="position: relative;">
+                    <code style="display: block; padding: 0.5rem 0.75rem; padding-right: 4.5rem; background: var(--terminal-bg); color: var(--terminal-fg); font-size: 11px; white-space: nowrap; overflow-x: auto; font-family: var(--font-mono);">&lt;script src="https://siliconfriendly.com/badge/yourdomain.com.js"&gt;&lt;/script&gt;</code>
+                    <button class="copy-btn" onclick="copyCode(this)" style="position: absolute; right: 4px; top: 50%; transform: translateY(-50%); font-family: var(--font-mono); font-size: 10px; padding: 0.2rem 0.6rem; background: transparent; border: 1px solid #444; color: var(--terminal-fg); cursor: pointer; text-transform: uppercase; letter-spacing: 0.1em;">copy</button>
+                </div>
+            </div>
+            <div>
+                <div style="font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--fg-muted); margin-bottom: 0.3rem;">HTML (light on dark)</div>
+                <div style="position: relative;">
+                    <code style="display: block; padding: 0.5rem 0.75rem; padding-right: 4.5rem; background: var(--terminal-bg); color: var(--terminal-fg); font-size: 11px; white-space: nowrap; overflow-x: auto; font-family: var(--font-mono);">&lt;a href="https://siliconfriendly.com"&gt;&lt;img src="https://siliconfriendly.com/static/badges/badge-l{{ level.num }}-light-on-dark.svg" alt="Silicon Friendly L{{ level.num }}" height="48"&gt;&lt;/a&gt;</code>
+                    <button class="copy-btn" onclick="copyCode(this)" style="position: absolute; right: 4px; top: 50%; transform: translateY(-50%); font-family: var(--font-mono); font-size: 10px; padding: 0.2rem 0.6rem; background: transparent; border: 1px solid #444; color: var(--terminal-fg); cursor: pointer; text-transform: uppercase; letter-spacing: 0.1em;">copy</button>
+                </div>
+            </div>
+            <div>
+                <div style="font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--fg-muted); margin-bottom: 0.3rem;">Markdown</div>
+                <div style="position: relative;">
+                    <code style="display: block; padding: 0.5rem 0.75rem; padding-right: 4.5rem; background: var(--terminal-bg); color: var(--terminal-fg); font-size: 11px; white-space: nowrap; overflow-x: auto; font-family: var(--font-mono);">[![Silicon Friendly L{{ level.num }}](https://siliconfriendly.com/static/badges/badge-l{{ level.num }}-light-on-dark.svg)](https://siliconfriendly.com)</code>
+                    <button class="copy-btn" onclick="copyCode(this)" style="position: absolute; right: 4px; top: 50%; transform: translateY(-50%); font-family: var(--font-mono); font-size: 10px; padding: 0.2rem 0.6rem; background: transparent; border: 1px solid #444; color: var(--terminal-fg); cursor: pointer; text-transform: uppercase; letter-spacing: 0.1em;">copy</button>
+                </div>
+            </div>
+        </div>
     </div>
     {% endfor %}
 </section>
 
 <style>
 @media (max-width: 768px) {
-    .badge-level-section > div:last-child {
+    .badge-level-section > div:nth-child(2) {
         grid-template-columns: 1fr !important;
     }
 }
 </style>
+
+<script>
+function copyCode(btn) {
+    var code = btn.parentElement.querySelector('code');
+    navigator.clipboard.writeText(code.textContent);
+    btn.textContent = 'copied!';
+    setTimeout(function() { btn.textContent = 'copy'; }, 2000);
+}
+</script>
 {% endblock %}

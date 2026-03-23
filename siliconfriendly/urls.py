@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.urls import path, include
 from django.http import JsonResponse, HttpResponse
 
-from websites.views import WebsiteBadgeSvgView, WebsiteBadgeJsView
+from websites.views import WebsiteBadgeSvgView, WebsiteBadgeJsView, UniversalBadgeJsView, WebsiteLevelApiView
 from websites.checker import check_website_api, check_page_view, start_check_api, check_status_api, report_download_view
 from common.ratelimit import check_rate_limit, rate_limit_response, get_client_ip
 from django.core.cache import cache
@@ -2107,8 +2107,10 @@ urlpatterns = [
     path('api/chat/', include('chat.urls')),
 
     # Badge routes
+    path('badge/embed.js', UniversalBadgeJsView.as_view()),
     path('badge/<str:domain>.svg', WebsiteBadgeSvgView.as_view()),
     path('badge/<str:domain>.js', WebsiteBadgeJsView.as_view()),
+    path('api/websites/<str:domain>/level/', WebsiteLevelApiView.as_view()),
 
     # Silicon-friendly routes
     path('llms.txt', llms_txt),
